@@ -1,0 +1,50 @@
+[
+  {
+    "username": "praveen",
+    "password": "9441609701",
+    "sales": [
+      {
+        "date": "01/01/2026",
+        "oneL": 1,
+        "halfL": 1,
+        "quarterL": 0
+      },
+      {
+        "date": "02/01/2026",
+        "oneL": 1,
+        "halfL": 0,
+        "quarterL": 0
+      }
+    ]
+  },
+  {
+    "username": "Krishna Murthi",
+    "password": "9618901622",
+    "sales": [
+      {
+        "date": "01/01/2026",
+        "oneL": 1,
+        "halfL": 1,
+        "quarterL": 0
+      },
+      {
+        "date": "02/01/2026",
+        "oneL": 0,
+        "halfL": 2,
+        "quarterL": 0
+      }
+    ]
+  },
+  {
+    "username": "qwerty",
+    "password": "123456789",
+    "sales": [
+      {
+        "date": "01/01/2026",
+        "oneL": 1,
+        "halfL": 0,
+        "quarterL": 0
+      }
+    ]
+  }
+]

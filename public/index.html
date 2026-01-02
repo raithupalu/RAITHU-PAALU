@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RAITHU PAALU v1.2</title>
+    <meta name="google-site-verification" content="TfTRd9bbjMi72vLhOGTuCeZD6eBZRzzt6Y9lC74qHkY" />
+
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --text-color: #ffffff;
+      --secondary-bg: #2a2a2a;
+      --border-color: #333;
+      --hover-bg: #383838;
+      --sidebar-bg: linear-gradient(135deg, #333, #1e1e1e);
+      --button-bg: linear-gradient(135deg, #4CAF50, #388E3C);
+      --table-bg: #2a2a2a;
+      --table-alt: #333;
+    }
+
+    .light-mode {
+      --bg-color: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+      --card-bg: white;
+      --text-color: #333;
+      --secondary-bg: #fafafa;
+      --border-color: #ddd;
+      --hover-bg: #e8f5e9;
+      --sidebar-bg: linear-gradient(135deg, #4CAF50, #2E7D32);
+      --button-bg: linear-gradient(135deg, #4CAF50, #388E3C);
+      --table-bg: #fafafa;
+      --table-alt: #f5f5f5;
+    }
+
+    * { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-color); color: var(--text-color); transition: background 0.3s, color 0.3s; }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      background: var(--button-bg);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, #607d8b, #546e7a);
+      box-shadow: 0 4px 8px rgba(96, 125, 139, 0.3);
+    }
+
+    button.secondary:hover {
+      box-shadow: 0 6px 12px rgba(96, 125, 139, 0.4);
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, #f44336, #d32f2f);
+      box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+    }
+
+    button.danger:hover {
+      box-shadow: 0 6px 12px rgba(244, 67, 54, 0.4);
+    }
+
+    .center {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: var(--card-bg);
+      width: 420px;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      text-align: center;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: var(--secondary-bg);
+      color: var(--text-color);
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 2px solid var(--border-color);
+      background: var(--secondary-bg);
+      color: var(--text-color);
+      font-size: 16px;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+
+    .dashboard {
+      display: flex;
+      height: 100vh;
+      background: var(--bg-color);
+      transition: background 0.3s;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      color: white;
+      padding: 30px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #4CAF50;
+    }
+
+    .menu {
+      flex: 1;
+    }
+
+    .menu div {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .menu div:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translateX(5px);
+    }
+
+    .menu .logout {
+      margin-top: auto;
+      margin-bottom: 0;
+    }
+
+    .content {
+      flex: 1;
+      padding: 40px;
+      background: var(--card-bg);
+      overflow-y: auto;
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .user-card {
+      background: linear-gradient(135deg, var(--secondary-bg), #333);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+      color: var(--text-color);
+    }
+
+    .user-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    th {
+      background: linear-gradient(135deg, #4CAF50, #388E3C);
+      color: white;
+      padding: 15px;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--table-bg);
+      color: var(--text-color);
+    }
+
+    tr:nth-child(even) td {
+      background: var(--table-alt);
+    }
+
+    tr:hover td {
+      background: var(--hover-bg);
+    }
+
+    ul li {
+      margin-bottom: 8px;
+      padding: 5px 0;
+      color: var(--text-color);
+    }
+
+    h1, h2, h3 {
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+
+    p {
+      line-height: 1.6;
+      color: var(--text-color);
+    }
+
+    hr {
+      border: none;
+      height: 2px;
+      background: linear-gradient(90deg, #4CAF50, var(--border-color));
+      margin: 30px 0;
+    }
+
+    canvas {
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .profile-form {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .profile-form input {
+      margin-bottom: 15px;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--button-bg);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .order-form {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .order-form select, .order-form button {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .order-item {
+      background: var(--card-bg);
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    .order-admin {
+      background: var(--card-bg);
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    .order-admin button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .order-admin button:hover {
+      background: #45a049;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+      }
+
+      .menu {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+      }
+
+      .menu div {
+        flex: 1 1 45%;
+        margin: 5px;
+        text-align: center;
+      }
+
+      .content {
+        padding: 15px;
+      }
+
+      .theme-toggle {
+        position: static;
+        margin-bottom: 10px;
+        align-self: flex-end;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 300px;
+      }
+
+      .user-card {
+        padding: 10px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+
+      .order-form select, .order-form button {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .menu div {
+        flex: 1 1 100%;
+      }
+
+      h1, h2 {
+        font-size: 24px;
+      }
+
+      p {
+        font-size: 16px;
+      }
+
+      .card {
+        width: 95%;
+        padding: 20px;
+      }
+
+      .center {
+        padding: 10px;
+      }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+<div id="app"></div>
+
+<script>
+const app = document.getElementById("app");
+
+/* ---------- LANDING ---------- */
+function landing() {
+  app.innerHTML = `
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <div class="center">
+      <div class="card" style="width:460px">
+        <h1 style="color:#4CAF50">🌱 RAITHU PAALU 🌾🥛</h1>
+
+        <p style="color:#cccccc; line-height:1.6">
+          RAITHU PAALU is a digital platform built to support
+          <b>local farmers</b> by ensuring transparent milk tracking,
+          fair pricing, and daily accountability.
+        </p>
+
+        <p style="color:#cccccc">
+          Farmers deliver fresh milk daily.
+          Customers can view their consumption,
+          monthly progress, and total amount clearly.
+        </p>
+
+        <hr>
+
+        <h3 style="color:#4CAF50">Why RAITHU PAALU?</h3>
+
+        <ul style="text-align:left; color:#cccccc">
+          <li>🐄 Direct support to farmers</li>
+          <li>📅 Daily & monthly milk tracking</li>
+          <li>💰 Transparent pricing system</li>
+          <li>📊 Visual reports & charts</li>
+        </ul>
+
+        <br>
+
+        <button onclick="showRegister()">Create Account</button>
+        <br><br>
+        <button class="secondary" onclick="showLogin()">Login</button>
+      </div>
+    </div>
+  `;
+
+  updateThemeIcon();
+}
+
+
+/* ---------- AUTH ---------- */
+function showLogin(msg="") {
+  app.innerHTML = `
+    <div class="center">
+      <div class="card">
+        <h2>Login</h2>
+        <input id="u" placeholder="Username">
+        <div style="position:relative">
+  <input id="p" type="password" placeholder="Password" style="padding-right:40px">
+  <span onclick="togglePassword()" 
+        style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
+               cursor:pointer; font-size:18px;">
+    👁
+  </span>
+</div>
+
+        <button onclick="login()">Login</button>
+        <p style="color:red">${msg}</p>
+      </div>
+    </div>`;
+}
+
+
+
+function showRegister() {
+  app.innerHTML = `
+    <div class="center">
+      <div class="card">
+        <h2>Create Account</h2>
+        <input id="u" placeholder="Username">
+        <div style="position:relative">
+  <input id="p" type="password" placeholder="Password" style="padding-right:40px">
+  <span onclick="togglePassword()" 
+        style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
+               cursor:pointer; font-size:18px;">
+    👁
+  </span>
+</div>
+
+        <button onclick="register()">Register</button>
+      </div>
+    </div>`;
+}
+function togglePassword() {
+  const pass = document.getElementById("p");
+  pass.type = pass.type === "password" ? "text" : "password";
+}
+
+function register() {
+  if (!u.value || !p.value) {
+    alert("All fields are required");
+    return;
+  }
+
+  fetch("/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: u.value.trim(),
+      password: p.value.trim()
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+
+    // ✅ Auto-login after successful registration
+    localStorage.user = JSON.stringify({
+      username: u.value.trim(),
+      sales: []
+    });
+
+    userDashboard();
+  });
+}
+
+
+
+function login() {
+  fetch("/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: u.value.trim(),
+      password: p.value.trim()
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res) {
+  alert("Invalid username or password");
+  return;
+}
+
+
+    if (res.role === "admin") {
+      adminDashboard();
+    } else {
+      localStorage.user = JSON.stringify(res);
+      userDashboard();
+    }
+  });
+}
+
+
+/* ---------- USER ---------- */
+function userDashboard() {
+  const u = JSON.parse(localStorage.user);
+
+  app.innerHTML = `
+    <div class="dashboard">
+      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      <div class="sidebar">
+        <h3>Hello ${u.username}</h3>
+        <div class="menu">
+          <div onclick="userDashboard()">🏠 Home</div>
+          <div onclick="yourProfile()">👤 Your Profile</div>
+          <div onclick="userProgress()">📊 My Progress</div>
+          <div onclick="orders()">📦 Orders</div>
+          <div onclick="feedback()">💬 Feedback</div>
+          <div onclick="logout()" class="logout">🚪 Logout</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <h2>Welcome to RAITHU PAALU 🌾🥛</h2>
+        <p style="color: var(--text-color); font-size:18px;">
+          🐄 Track your daily milk supply, view monthly progress, and stay transparent with pricing! 📈💰
+        </p>
+
+        <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 40px;">
+          <div style="text-align: center;">
+            <p style="font-size: 20px; font-weight: bold; color: #4CAF50;">Your Milk Distribution Overview 🥛</p>
+            <canvas id="pieChart" width="300" height="300"></canvas>
+          </div>
+          <div style="text-align: center;">
+            <h3 style="color: #2196F3;">Monthly Revenue 📊</h3>
+            <canvas id="barChart" width="500" height="300"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  updateThemeIcon();
+  drawPieChart(u.sales || []);
+  drawBarChart(u.sales || []);
+
+}
+
+function userProgress() {
+  const u = JSON.parse(localStorage.user);
+
+  if (!u.sales || u.sales.length === 0) {
+    document.querySelector(".content").innerHTML =
+      "<h3>No milk records yet</h3>";
+    return;
+  }
+
+  // GROUP BY MONTH (DD/MM/YYYY SAFE)
+  const groups = {};
+  u.sales.forEach(s => {
+    const [day, month, year] = s.date.split("/");
+    const key = `${month}/${year}`; // ex: 01/2026
+
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+
+  let html = `<h2>My Progress</h2>`;
+
+  Object.keys(groups).forEach(key => {
+    const [m, y] = key.split("/");
+    const monthName = new Date(y, m - 1).toLocaleString("default", {
+      month: "long"
+    });
+
+    html += `
+      <div class="user-card" onclick="showMonth('${key}')">
+        📅 ${monthName} ${y}
+      </div>`;
+  });
+
+  document.querySelector(".content").innerHTML = html;
+  window.monthData = groups; // store temporarily
+}
+function showMonth(key) {
+  const records = window.monthData[key];
+
+  let rows = "";
+  let total1L = 0, totalHalf = 0, totalQuarter = 0, totalAmount = 0;
+
+  records.forEach(s => {
+    const amt = (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
+
+    total1L += s.oneL;
+    totalHalf += s.halfL;
+    totalQuarter += s.quarterL;
+    totalAmount += amt;
+
+    const today = new Date();
+const todayStr =
+  String(today.getDate()).padStart(2, "0") + "/" +
+  String(today.getMonth() + 1).padStart(2, "0") + "/" +
+  today.getFullYear();
+
+rows += `
+  <tr style="${s.date === todayStr ? 'background:#e8f5e9;font-weight:bold;' : ''}">
+
+        <td>${s.date}</td>
+        <td>${s.oneL}</td>
+        <td>${s.halfL}</td>
+        <td>${s.quarterL}</td>
+        <td>₹${amt}</td>
+      </tr>`;
+  });
+
+  document.querySelector(".content").innerHTML = `
+    <div>
+      <button class="secondary" onclick="userProgress()">⬅ Back</button>
+      <button class="secondary" onclick="downloadReport('${key}')">⬇ Download Report 📄</button>
+    </div>
+
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>1L</th>
+        <th>½L</th>
+        <th>¼L</th>
+        <th>Amount</th>
+      </tr>
+      ${rows}
+    </table>
+
+    <hr>
+
+    <p>1 Litre : <b>${total1L}</b> → ₹${total1L * 70}</p>
+    <p>½ Litre : <b>${totalHalf}</b> → ₹${totalHalf * 35}</p>
+    <p>¼ Litre : <b>${totalQuarter}</b> → ₹${totalQuarter * 18}</p>
+
+    <h2 style="text-align:right;color:#2e7d32">
+      Total Amount : ₹${totalAmount}
+    </h2>
+  `;
+}
+function downloadReport(key) {
+  const records = window.monthData[key];
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(16);
+  doc.text("Milk Report for " + key, 10, 10);
+
+  let y = 20;
+  doc.setFontSize(12);
+  records.forEach(s => {
+    const amt = (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
+    doc.text(`${s.date}: 1L=${s.oneL}, 0.5L=${s.halfL}, 0.25L=${s.quarterL}, Amount=₹${amt}`, 10, y);
+    y += 10;
+  });
+
+  doc.save(`Milk_Report_${key.replace("/", "_")}.pdf`);
+}
+
+function yourProfile() {
+  const u = JSON.parse(localStorage.user);
+
+  document.querySelector(".content").innerHTML = `
+    <h2>Your Profile 👤</h2>
+    <div class="profile-form">
+      <p><strong>Username:</strong> ${u.username}</p>
+      <hr>
+      <h3>Change Password 🔒</h3>
+      <input id="oldPass" type="password" placeholder="Current Password">
+      <input id="newPass" type="password" placeholder="New Password">
+      <input id="confirmPass" type="password" placeholder="Confirm New Password">
+      <button onclick="changePassword()">Change Password</button>
+    </div>
+  `;
+}
+
+function changePassword() {
+  const oldPass = document.getElementById("oldPass").value;
+  const newPass = document.getElementById("newPass").value;
+  const confirmPass = document.getElementById("confirmPass").value;
+
+  if (!oldPass || !newPass || !confirmPass) {
+    alert("All fields are required");
+    return;
+  }
+
+  if (newPass !== confirmPass) {
+    alert("New passwords do not match");
+    return;
+  }
+
+  const u = JSON.parse(localStorage.user);
+
+  fetch("/change-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: u.username,
+      oldPassword: oldPass,
+      newPassword: newPass
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+    } else {
+      alert("Password changed successfully!");
+      // Update localStorage if needed, but since password is not stored there, fine.
+    }
+  });
+}
+
+function orders() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  if (!u) return landing();
+
+  fetch('/orders/' + u.username)
+    .then(r => r.json())
+    .then(userOrders => {
+      app.innerHTML = `
+        <div class="dashboard">
+          <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+          <div class="sidebar">
+            <h3>Hello ${u.username}</h3>
+            <div class="menu">
+              <div onclick="userDashboard()">🏠 Home</div>
+              <div onclick="yourProfile()">👤 Your Profile</div>
+              <div onclick="userProgress()">📊 My Progress</div>
+              <div onclick="orders()">📦 Orders</div>
+              <div onclick="feedback()">💬 Feedback</div>
+              <div onclick="logout()" class="logout">🚪 Logout</div>
+            </div>
+          </div>
+
+          <div class="content">
+            <h2>Your Orders 📦</h2>
+
+            <div class="order-form">
+              <h3>Place New Order</h3>
+              <select id="quantity">
+                <option value="1">1 Litre</option>
+                <option value="0.5">1/2 Litre</option>
+                <option value="0.25">1/4 Litre</option>
+                <option value="2">2 Litres</option>
+                <option value="3">3 Litres</option>
+              </select>
+              <button onclick="placeOrder()">Place Order</button>
+            </div>
+
+            <h3>Your Order History</h3>
+            <div id="orderHistory"></div>
+
+          </div>
+        </div>
+      `;
+
+      updateThemeIcon();
+      displayOrderHistory(userOrders);
+    });
+}
+
+function placeOrder() {
+  const quantity = document.getElementById('quantity').value;
+  const u = JSON.parse(localStorage.getItem('user'));
+
+  fetch('/place-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: u.username, quantity: parseFloat(quantity) })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        alert('Order placed successfully!');
+        orders(); // refresh
+      } else {
+        alert('Error placing order: ' + (res.error || 'Unknown error'));
+      }
+    });
+}
+
+function displayOrderHistory(orders) {
+  const history = document.getElementById('orderHistory');
+  if (orders.length === 0) {
+    history.innerHTML = '<p>No orders yet.</p>';
+    return;
+  }
+
+  history.innerHTML = orders.map(o => `
+    <div class="order-item">
+      <p>Quantity: ${o.quantity} L</p>
+      <p>Status: ${o.status}</p>
+      <p>Date: ${new Date(o.timestamp).toLocaleString()}</p>
+    </div>
+  `).join('');
+}
+
+function feedback() {
+  document.querySelector(".content").innerHTML = `
+    <h2>Feedback 💬</h2>
+    <div class="profile-form">
+      <textarea id="feedbackText" placeholder="Share your feedback..." rows="5"></textarea>
+      <button onclick="submitFeedback()">Submit Feedback</button>
+    </div>
+  `;
+}
+
+function submitFeedback() {
+  const feedback = document.getElementById("feedbackText").value;
+  if (!feedback.trim()) {
+    alert("Please enter your feedback");
+    return;
+  }
+  alert("Thank you for your feedback! We appreciate it.");
+  // In a real app, send to server.
+}
+
+
+
+
+/* ---------- ADMIN ---------- */
+function adminDashboard() {
+  fetch("/users").then(r => r.json()).then(users => {
+
+    let total1L = 0, totalHalf = 0, totalQuarter = 0, totalAmount = 0;
+
+    users.forEach(u => {
+      u.sales.forEach(s => {
+        total1L += s.oneL;
+        totalHalf += s.halfL;
+        totalQuarter += s.quarterL;
+        totalAmount += (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
+      });
+    });
+
+    const cards = users.map(u => `
+      <div class="user-card" onclick="editUser('${u.username}')">
+        👤 ${u.username}
+      </div>`).join("");
+
+    app.innerHTML = `
+      <div class="dashboard">
+        <div class="sidebar">
+          <h3>ADMIN PANEL</h3>
+          <div class="menu">
+            <div onclick="logout()">Logout</div>
+          </div>
+        </div>
+
+        <div class="content">
+          <h2>Overall Summary</h2>
+
+          <p>1 Litre : <b>${total1L}</b> → ₹${total1L * 70}</p>
+          <p>½ Litre : <b>${totalHalf}</b> → ₹${totalHalf * 35}</p>
+          <p>¼ Litre : <b>${totalQuarter}</b> → ₹${totalQuarter * 18}</p>
+
+          <h2 style="color:#2e7d32">
+            Total Revenue : ₹${totalAmount}
+          </h2>
+
+          <hr>
+
+          <h2>Registered Users</h2>
+          ${cards}
+
+          <hr>
+
+          <h2>New Orders 📦</h2>
+          <div id="ordersList"></div>
+        </div>
+      </div>`;
+
+      loadOrders();
+  });
+}
+
+function loadOrders() {
+  fetch('/all-orders')
+    .then(r => r.json())
+    .then(orders => {
+      const ordersList = document.getElementById('ordersList');
+      if (orders.length === 0) {
+        ordersList.innerHTML = '<p>No orders yet.</p>';
+        return;
+      }
+      ordersList.innerHTML = orders.map(o => `
+        <div class="order-admin">
+          <p><strong>User:</strong> ${o.username}</p>
+          <p><strong>Quantity:</strong> ${o.quantity} L</p>
+          <p><strong>Status:</strong> ${o.status}</p>
+          <p><strong>Date:</strong> ${new Date(o.timestamp).toLocaleString()}</p>
+          ${o.status === 'pending' ? `<button onclick="updateOrderStatus('${o.id}', 'fulfilled')">Mark as Fulfilled</button>` : ''}
+        </div>
+      `).join('');
+    });
+}
+
+function updateOrderStatus(id, status) {
+  fetch('/update-order-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        loadOrders();
+      } else {
+        alert('Error updating order: ' + (res.error || 'Unknown error'));
+      }
+    });
+}
+
+
+function editUser(username) {
+  fetch("/users").then(r => r.json()).then(users => {
+    const u = users.find(x => x.username === username);
+
+    let total1L = 0, totalHalf = 0, totalQuarter = 0, totalAmount = 0;
+
+    const rows = u.sales.map(s => {
+      total1L += s.oneL;
+      totalHalf += s.halfL;
+      totalQuarter += s.quarterL;
+      totalAmount += (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
+      const today = new Date();
+const todayStr =
+  String(today.getDate()).padStart(2, "0") + "/" +
+  String(today.getMonth() + 1).padStart(2, "0") + "/" +
+  today.getFullYear();
+
+return `
+  <tr style="${s.date === todayStr ? 'background:#e8f5e9;font-weight:bold;' : ''}">
+
+          <td>${s.date}</td>
+          <td>${s.oneL}</td>
+          <td>${s.halfL}</td>
+          <td>${s.quarterL}</td>
+          <td>
+            <button class="danger" onclick="deleteSale('${username}','${s.date}')">
+              Delete
+            </button>
+          </td>
+        </tr>`;
+    }).join("");
+
+    document.querySelector(".content").innerHTML = `
+      <button class="secondary" onclick="adminDashboard()">⬅ Back</button>
+      <h2>${username}</h2>
+
+      <h3>Milk Records</h3>
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>1L</th>
+          <th>½L</th>
+          <th>¼L</th>
+          <th>Action</th>
+        </tr>
+        ${rows}
+      </table>
+
+      <h3>Add / Update</h3>
+      <input id="date" type="date">
+      <input id="l1" placeholder="1L">
+      <input id="l2" placeholder="½L">
+      <input id="l3" placeholder="¼L">
+      <button onclick="saveMilk('${username}')">Save</button>
+
+      <hr>
+
+      <h3>Summary</h3>
+      <p>1 Litre : <b>${total1L}</b> → ₹${total1L * 70}</p>
+      <p>½ Litre : <b>${totalHalf}</b> → ₹${totalHalf * 35}</p>
+      <p>¼ Litre : <b>${totalQuarter}</b> → ₹${totalQuarter * 18}</p>
+
+      <h2 style="color:#2e7d32">
+        Total Amount : ₹${totalAmount}
+      </h2>
+
+      <button class="danger" onclick="removeUser('${username}')">
+        ❌ Remove User
+      </button>
+    `;
+  });
+}
+
+
+function saveMilk(username) {
+
+  if (!date.value) {
+    alert("Please select a date");
+    return;
+  }
+
+  // ✅ FORCE DD/MM/YYYY FROM CALENDAR
+  const parts = date.value.split("-");
+  const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+  fetch("/add-sale", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username,
+      sale: {
+        date: formattedDate,   // ✅ ALWAYS DD/MM/YYYY
+        oneL: +l1.value || 0,
+        halfL: +l2.value || 0,
+        quarterL: +l3.value || 0
+      }
+    })
+  })
+  .then(data => {
+  if (data.error) {
+    alert(data.error);
+  } else {
+    alert("Milk details saved successfully ✅");
+    editUser(username);
+  }
+});
+
+}
+
+
+
+function deleteSale(username,date) {
+  if(!confirm("Delete entry?")) return;
+  fetch("/delete-sale",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,date})})
+  .then(()=>editUser(username));
+}
+
+function removeUser(username) {
+  if(!confirm("⚠️ Delete user permanently?")) return;
+
+  fetch("/delete-user", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ username })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) alert(data.error);
+    else {
+      alert("User removed successfully");
+      adminDashboard();
+    }
+  });
+}
+
+function drawPieChart(sales) {
+  let oneL = 0, halfL = 0, quarterL = 0;
+
+  sales.forEach(s => {
+    oneL += s.oneL;
+    halfL += s.halfL;
+    quarterL += s.quarterL;
+  });
+
+  const canvas = document.getElementById("pieChart");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const total = oneL + halfL + quarterL;
+  if (total === 0) {
+    ctx.font = "16px Arial";
+    ctx.fillText("No data available", 80, 150);
+    return;
+  }
+
+  const data = [
+    { label: "1 Litre", value: oneL, color: "#FF5722" },
+    { label: "½ Litre", value: halfL, color: "#2196F3" },
+    { label: "¼ Litre", value: quarterL, color: "#4CAF50" }
+  ];
+
+  let startAngle = 0;
+
+  data.forEach(d => {
+    const slice = (d.value / total) * Math.PI * 2;
+
+    ctx.beginPath();
+    ctx.moveTo(150, 150);
+    ctx.arc(150, 150, 120, startAngle, startAngle + slice);
+    ctx.closePath();
+    ctx.fillStyle = d.color;
+    ctx.fill();
+
+    startAngle += slice;
+  });
+
+  // Legend
+  ctx.font = "14px Arial";
+  data.forEach((d, i) => {
+    ctx.fillStyle = d.color;
+    ctx.fillRect(10, 10 + i * 20, 12, 12);
+    ctx.fillStyle = "#000";
+    ctx.fillText(`${d.label}: ${d.value}`, 30, 20 + i * 20);
+  });
+}
+
+function drawBarChart(sales) {
+
+  const monthTotals = {};
+
+  sales.forEach(s => {
+    const [day, month, year] = s.date.split("/");
+    const key = `${month}/${year}`;
+
+    const amt =
+      (s.oneL * 70) +
+      (s.halfL * 35) +
+      (s.quarterL * 18);
+
+    monthTotals[key] = (monthTotals[key] || 0) + amt;
+  });
+
+  const canvas = document.getElementById("barChart");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const keys = Object.keys(monthTotals);
+  if (keys.length === 0) {
+    ctx.fillText("No data available", 180, 150);
+    return;
+  }
+
+  const max = Math.max(...Object.values(monthTotals));
+  const barWidth = 40;
+  const gap = 30;
+  const baseY = 260;
+
+  keys.forEach((key, i) => {
+    const value = monthTotals[key];
+    const barHeight = (value / max) * 200;
+
+    const x = 50 + i * (barWidth + gap);
+    const y = baseY - barHeight;
+
+    ctx.fillStyle = "#2196F3";
+    ctx.fillRect(x, y, barWidth, barHeight);
+
+    // Label
+    const [m, y2] = key.split("/");
+    const monthName = new Date(y2, m - 1).toLocaleString("default", { month: "short" });
+
+    ctx.fillStyle = "#000";
+    ctx.fillText(`${monthName} ${y2}`, x - 5, baseY + 15);
+    ctx.fillText(`₹${value}`, x - 5, y - 5);
+  });
+}
+
+function logout() {
+  localStorage.clear();
+  landing();
+}
+
+function toggleTheme() {
+  const currentTheme = localStorage.getItem('theme') || 'light';
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', newTheme);
+  if (newTheme === 'light') {
+    document.documentElement.classList.add('light-mode');
+  } else {
+    document.documentElement.classList.remove('light-mode');
+  }
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const theme = localStorage.getItem('theme') || 'light';
+  const toggleBtn = document.querySelector('.theme-toggle');
+  if (toggleBtn) {
+    toggleBtn.textContent = theme === 'light' ? '🌙' : '☀️';
+  }
+}
+
+// Set initial theme on load
+const initialTheme = localStorage.getItem('theme') || 'light';
+if (initialTheme === 'light') {
+  document.documentElement.classList.add('light-mode');
+} else {
+  document.documentElement.classList.remove('light-mode');
+}
+
+landing();
+</script>
+</body>
+</html>
