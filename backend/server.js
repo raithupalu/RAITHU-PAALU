@@ -1,3 +1,6 @@
+require("dotenv").config();   // FIRST
+require("./db");              // SECOND
+// const User = require("./models/User");
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
@@ -68,53 +71,54 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
+app.get("/health", (req, res) => {
+  res.send("OK");
+});
+
 /* REGISTER (NO EMAIL) */
-app.post("/register", (req, res) => {
-  const { username, password } = req.body;
+const User = require("./models/User");
 
-  if (!username || !password) {
-    return res.json({ error: "All fields are required" });
+app.post("/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.json({ error: "Missing fields" });
+    }
+
+    const exists = await User.findOne({ username });
+    if (exists) {
+      return res.json({ error: "User already exists" });
+    }
+
+    const user = await User.create({
+      username,
+      password,
+      sales: []
+    });
+
+    console.log("✅ User created:", user.username);
+    res.json(user);
+
+  } catch (err) {
+    console.error("❌ Register error:", err);
+    res.status(500).json({ error: "Server error" });
   }
-
-  const users = readUsers();
-
-  const cleanUsername = username.trim().toLowerCase();
-
-  const userExists = users.some(
-    u => u.username.trim().toLowerCase() === cleanUsername
-  );
-
-  if (userExists) {
-    return res.json({ error: "User already exists" });
-  }
-
-  const newUser = {
-    username: username.trim(),
-    password: password.trim(),
-    sales: []
-  };
-
-  users.push(newUser);
-  writeUsers(users);
-
-  res.json({ success: true });
 });
 
 
 /* LOGIN */
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  if (username === "admin" && password === "admin123")
+  if (username === "admin" && password === "admin123") {
     return res.json({ role: "admin" });
+  }
 
-  const users = readUsers();
-  const user = users.find(
-    u => u.username === username && u.password === password
-  );
-
+  const user = await User.findOne({ username, password });
   res.json(user || null);
 });
+
 
 /* CHANGE PASSWORD */
 app.post("/change-password", (req, res) => {
@@ -138,9 +142,11 @@ app.post("/change-password", (req, res) => {
 });
 
 /* ADMIN GET USERS */
-app.get("/users", (req, res) => {
-  res.json(readUsers());
+app.get("/users", async (req, res) => {
+  const users = await User.find();
+  res.json(users);
 });
+
 
 function sendMonthlyReports() {
   const users = readUsers();
@@ -184,40 +190,23 @@ function sendMonthlyReports() {
 }
 
 /* ADD OR UPDATE SALE (FIXED) */
-app.post("/add-sale", (req, res) => {
+app.post("/add-sale", async (req, res) => {
   const { username, sale } = req.body;
 
-  if (!sale.date)
-    return res.json({ error: "Date required" });
-
-  const users = readUsers();
-  const user = users.find(u => u.username === username);
+  const user = await User.findOne({ username });
   if (!user) return res.json({ error: "User not found" });
 
-  const date = toDDMMYYYY(sale.date);
-
-  const idx = user.sales.findIndex(s => s.date === date);
-  if (idx !== -1) {
-    // UPDATE
-    user.sales[idx] = {
-      date,
-      oneL: sale.oneL,
-      halfL: sale.halfL,
-      quarterL: sale.quarterL
-    };
+  const existing = user.sales.find(s => s.date === sale.date);
+  if (existing) {
+    Object.assign(existing, sale);
   } else {
-    // ADD
-    user.sales.push({
-      date,
-      oneL: sale.oneL,
-      halfL: sale.halfL,
-      quarterL: sale.quarterL
-    });
+    user.sales.push(sale);
   }
 
-  writeUsers(users);
+  await user.save();
   res.json({ success: true });
 });
+
 
 /* DELETE SALE */
 app.post("/delete-sale", (req, res) => {
