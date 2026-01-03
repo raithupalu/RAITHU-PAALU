@@ -1,1274 +1,597 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>RAITHU PAALU v1.2</title>
-    <meta name="google-site-verification" content="TfTRd9bbjMi72vLhOGTuCeZD6eBZRzzt6Y9lC74qHkY" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>రైతు పాలు</title>
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  
   <style>
     :root {
-      --bg-color: #121212;
+      --primary: #43a047; 
+      --primary-dark: #2e7d32;
+      --sidebar-bg: #43a047; 
+      --bg: #f8f9fa;
+      --text: #333;
+      --card-bg: #fff;
+      --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .dark-mode {
+      --primary: #66bb6a;
+      --primary-dark: #2e7d32;
+      --sidebar-bg: #1b5e20;
+      --bg: #121212;
+      --text: #e0e0e0;
       --card-bg: #1e1e1e;
-      --text-color: #ffffff;
-      --secondary-bg: #2a2a2a;
-      --border-color: #333;
-      --hover-bg: #383838;
-      --sidebar-bg: linear-gradient(135deg, #333, #1e1e1e);
-      --button-bg: linear-gradient(135deg, #4CAF50, #388E3C);
-      --table-bg: #2a2a2a;
-      --table-alt: #333;
+      --shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
 
-    .light-mode {
-      --bg-color: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-      --card-bg: white;
-      --text-color: #333;
-      --secondary-bg: #fafafa;
-      --border-color: #ddd;
-      --hover-bg: #e8f5e9;
-      --sidebar-bg: linear-gradient(135deg, #4CAF50, #2E7D32);
-      --button-bg: linear-gradient(135deg, #4CAF50, #388E3C);
-      --table-bg: #fafafa;
-      --table-alt: #f5f5f5;
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background 0.3s, color 0.3s; }
+    body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+    /* --- SIDEBAR --- */
+    .dashboard-container { display: flex; width: 100%; height: 100%; }
+    .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+    
+    .logo { font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center; letter-spacing: 0.5px; }
+    .logo span { background: #fff; color: var(--sidebar-bg); padding: 2px 8px; border-radius: 4px; }
+    .greeting { font-size: 16px; font-weight: 500; margin-bottom: 30px; opacity: 0.95; padding-left: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; }
+    
+    .sidebar-btn {
+      background: rgba(255,255,255,0.1); color: white; padding: 12px 20px;
+      margin-bottom: 12px; border-radius: 8px; cursor: pointer; display: flex;
+      align-items: center; gap: 12px; font-weight: 500; transition: all 0.2s;
     }
+    .sidebar-btn:hover { background: rgba(255,255,255,0.25); transform: translateX(5px); }
+    .sidebar-btn.active { background: #fff; color: var(--sidebar-bg); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    
+    /* --- MAIN AREA --- */
+    .main-content { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
+    .top-controls { position: absolute; top: 20px; right: 30px; display: flex; gap: 15px; align-items: center; z-index: 100; }
+    select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; background: var(--card-bg); color: var(--text); }
+    .theme-btn { font-size: 24px; cursor: pointer; background: none; border: none; }
 
-    * { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; box-sizing: border-box; }
-    body { margin: 0; background: var(--bg-color); color: var(--text-color); transition: background 0.3s, color 0.3s; }
-
-    button {
-      padding: 12px 18px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      color: white;
-      background: var(--button-bg);
-      font-weight: 600;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
-    }
-
-    button.secondary {
-      background: linear-gradient(135deg, #607d8b, #546e7a);
-      box-shadow: 0 4px 8px rgba(96, 125, 139, 0.3);
-    }
-
-    button.secondary:hover {
-      box-shadow: 0 6px 12px rgba(96, 125, 139, 0.4);
-    }
-
-    button.danger {
-      background: linear-gradient(135deg, #f44336, #d32f2f);
-      box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-    }
-
-    button.danger:hover {
-      box-shadow: 0 6px 12px rgba(244, 67, 54, 0.4);
-    }
-
-    .center {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
+    /* --- CARDS & LAYOUTS --- */
+    h2 { color: var(--primary); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
+    
     .card {
       background: var(--card-bg);
-      width: 420px;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-      text-align: center;
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-      transition: background 0.3s, color 0.3s;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border-radius: 10px;
-      border: 2px solid var(--border-color);
-      background: var(--secondary-bg);
-      color: var(--text-color);
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #4CAF50;
-      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-    }
-
-    textarea {
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border-radius: 10px;
-      border: 2px solid var(--border-color);
-      background: var(--secondary-bg);
-      color: var(--text-color);
-      font-size: 16px;
-      resize: vertical;
-    }
-
-    textarea:focus {
-      outline: none;
-      border-color: #4CAF50;
-    }
-
-    .dashboard {
-      display: flex;
-      height: 100vh;
-      background: var(--bg-color);
-      transition: background 0.3s;
-    }
-
-    .sidebar {
-      width: 280px;
-      background: var(--sidebar-bg);
-      color: white;
       padding: 30px;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      height: 100%;
     }
 
-    .sidebar h3 {
-      margin-bottom: 20px;
-      font-size: 24px;
-      color: #4CAF50;
+    /* Stats Grid (General) */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    
+    /* Users Grid (Small Cards) */
+    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    
+    .stat-box {
+      padding: 20px; border-radius: 12px; color: white; text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s;
     }
-
-    .menu {
-      flex: 1;
+    
+    /* Small User Card Style */
+    .user-box {
+      background: #424242; color: white;
+      padding: 15px; border-radius: 8px; text-align: center;
+      cursor: pointer; transition: transform 0.2s;
+      box-shadow: var(--shadow);
     }
+    .user-box:hover { transform: scale(1.05); background: #616161; }
+    .user-box h3 { margin: 0; font-size: 0.9rem; opacity: 0.8; color: #ccc; }
+    .user-box h1 { margin: 5px 0 0 0; font-size: 1.1rem; word-break: break-word; }
 
-    .menu div {
-      background: rgba(255,255,255,0.1);
-      padding: 15px;
-      margin-bottom: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: center;
-      font-weight: 500;
-      transition: all 0.3s ease;
+    .stat-box:hover { transform: translateY(-5px); }
+    .stat-box h3 { margin: 0 0 10px 0; opacity: 0.9; font-size: 1rem; color: white; }
+    .stat-box h1 { margin: 0; font-size: 2rem; }
+
+    /* Month Card */
+    .month-card {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      color: white; padding: 20px; border-radius: 12px; text-align: center;
+      cursor: pointer; font-size: 1.1em; font-weight: bold; margin-bottom: 15px;
+      box-shadow: var(--shadow); transition: transform 0.2s;
     }
+    .month-card:hover { transform: scale(1.02); }
 
-    .menu div:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translateX(5px);
-    }
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th { background: var(--primary); color: white; padding: 15px; text-align: center; font-size: 14px; }
+    td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: var(--card-bg); font-size: 14px; }
+    tr:hover td { background-color: rgba(0,0,0,0.02); }
 
-    .menu .logout {
-      margin-top: auto;
-      margin-bottom: 0;
-    }
+    /* Breakdown List */
+    .breakdown-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 14px; }
+    .breakdown-item:last-child { border: none; font-weight: bold; color: var(--primary); font-size: 16px; margin-top: 5px; }
 
-    .content {
-      flex: 1;
-      padding: 40px;
-      background: var(--card-bg);
-      overflow-y: auto;
-      color: var(--text-color);
-      transition: background 0.3s, color 0.3s;
-    }
+    /* Buttons */
+    button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    button:hover { filter: brightness(1.1); }
+    .btn-red { background: #e53935; padding: 5px 10px; font-size: 12px; }
+    .btn-blue { background: #1e88e5; }
+    .milk-btn { display: inline-block; width: auto; margin: 5px; background: transparent; color: var(--text); border: 2px solid var(--primary); }
+    .milk-btn.active { background: var(--primary); color: white; }
 
-    .user-card {
-      background: linear-gradient(135deg, var(--secondary-bg), #333);
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 15px;
-      cursor: pointer;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-      border: 1px solid var(--border-color);
-      transition: all 0.3s ease;
-      color: var(--text-color);
-    }
+    /* Inputs */
+    input, select, textarea { width: 100%; padding: 12px; margin: 8px 0 20px 0; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; }
+    .pass-wrapper { position: relative; width: 100%; }
+    .pass-icon { position: absolute; right: 12px; top: 40%; transform: translateY(-50%); cursor: pointer; font-size: 18px; color: #666; }
 
-    .user-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-    }
+    /* Auth */
+    .auth-container { width: 100%; display: flex; justify-content: center; align-items: center; background: #e8f5e9; height: 100vh; }
+    .auth-box { background: white; padding: 40px; border-radius: 20px; width: 400px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-
-    th {
-      background: linear-gradient(135deg, #4CAF50, #388E3C);
-      color: white;
-      padding: 15px;
-      font-weight: 600;
-    }
-
-    td {
-      padding: 15px;
-      text-align: center;
-      border-bottom: 1px solid var(--border-color);
-      background: var(--table-bg);
-      color: var(--text-color);
-    }
-
-    tr:nth-child(even) td {
-      background: var(--table-alt);
-    }
-
-    tr:hover td {
-      background: var(--hover-bg);
-    }
-
-    ul li {
-      margin-bottom: 8px;
-      padding: 5px 0;
-      color: var(--text-color);
-    }
-
-    h1, h2, h3 {
-      color: #4CAF50;
-      margin-bottom: 10px;
-    }
-
-    p {
-      line-height: 1.6;
-      color: var(--text-color);
-    }
-
-    hr {
-      border: none;
-      height: 2px;
-      background: linear-gradient(90deg, #4CAF50, var(--border-color));
-      margin: 30px 0;
-    }
-
-    canvas {
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-
-    .profile-form {
-      max-width: 500px;
-      margin: 0 auto;
-    }
-
-    .profile-form input {
-      margin-bottom: 15px;
-    }
-
-    .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: var(--button-bg);
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-
-    .theme-toggle:hover {
-      transform: scale(1.1);
-    }
-
-    .order-form {
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border-color);
-    }
-
-    .order-form select, .order-form button {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-color);
-      color: var(--text-color);
-    }
-
-    .order-item {
-      background: var(--card-bg);
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-    }
-
-    .order-admin {
-      background: var(--card-bg);
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-    }
-
-    .order-admin button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .order-admin button:hover {
-      background: #45a049;
-    }
-
-    @media (max-width: 768px) {
-      .dashboard {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        width: 100%;
-        height: auto;
-        position: static;
-      }
-
-      .menu {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
-      }
-
-      .menu div {
-        flex: 1 1 45%;
-        margin: 5px;
-        text-align: center;
-      }
-
-      .content {
-        padding: 15px;
-      }
-
-      .theme-toggle {
-        position: static;
-        margin-bottom: 10px;
-        align-self: flex-end;
-      }
-
-      canvas {
-        width: 100% !important;
-        height: auto !important;
-        max-width: 300px;
-      }
-
-      .user-card {
-        padding: 10px;
-      }
-
-      table {
-        font-size: 14px;
-      }
-
-      th, td {
-        padding: 8px;
-      }
-
-      .order-form select, .order-form button {
-        width: 100%;
-        box-sizing: border-box;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .menu div {
-        flex: 1 1 100%;
-      }
-
-      h1, h2 {
-        font-size: 24px;
-      }
-
-      p {
-        font-size: 16px;
-      }
-
-      .card {
-        width: 95%;
-        padding: 20px;
-      }
-
-      .center {
-        padding: 10px;
-      }
+    @media(max-width: 768px) { 
+        .dashboard-container { flex-direction: column; } 
+        .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 10px; }
+        .grid-2 { grid-template-columns: 1fr; }
+        .users-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
     }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-
 <body>
-<div id="app"></div>
+
+<div id="app" style="width:100%; height:100%"></div>
+<div id="toast" style="visibility:hidden; min-width:250px; background:#333; color:#fff; text-align:center; border-radius:50px; padding:16px; position:fixed; z-index:9999; left:50%; bottom:30px; transform:translateX(-50%);"></div>
 
 <script>
+// --- CONFIG & STATE ---
+const PRICES = { twoL: 140, oneL: 70, threeQuarterL: 55, halfL: 35 };
+let currentLang = localStorage.getItem('lang') || 'en';
+let currentTheme = localStorage.getItem('theme') || 'light';
+let selectedMilk = { twoL: 0, oneL: 0, threeQuarterL: 0, halfL: 0 };
+let currentMonthView = null; 
+
+if(currentTheme === 'dark') document.body.classList.add('dark-mode');
+
+// --- TRANSLATIONS ---
+const T = {
+  en: {
+    welcome: "Welcome to రైతు పాలు",
+    login: "Login", register: "Register", username: "Username", password: "Password",
+    home: "🏠 Home", profile: "👤 Your Profile", progress: "📊 My Progress", orders: "📦 Orders", feedback: "💬 Feedback", logout: "🚪 Logout",
+    summary: "📊 Summary", users: "👥 Users", hello: "Hello",
+    placeOrderTitle: "Place New Order", yourOrders: "Your Orders", history: "Order History",
+    placeBtn: "Place Order", 
+    feedbackTitle: "Feedback", feedbackPlace: "Share your feedback...", submitBtn: "Submit Feedback",
+    back: "⬅ Back", downloadPdf: "📄 Download PDF",
+    q1: "1 Litre", q2: "2 Litre", q34: "3/4 Litre", q12: "1/2 Litre",
+    overview: "Overview", totalDays: "Total Days", grandTotal: "Grand Total",
+    cost: "Cost", date: "Date", action: "Action", save: "Save Entry", delete: "Delete",
+    changePassBtn: "Change Password", oldPass: "Old Password", newPass: "New Password",
+    totalRev: "Total Revenue", newOrders: "New Orders", pastOrders: "Past Orders", accept: "Accept", statusSuccess: "Success", statusPending: "Pending"
+  },
+  te: {
+    welcome: "రైతు పాలుకు స్వాగతం",
+    login: "లాగిన్", register: "నమోదు", username: "పేరు", password: "పాస్‌వర్డ్",
+    home: "🏠 హోమ్", profile: "👤 మీ ప్రొఫైల్", progress: "📊 నా పురోగతి", orders: "📦 ఆర్డర్లు", feedback: "💬 అభిప్రాయం", logout: "🚪 నిష్క్రమించు",
+    summary: "📊 సారాంశం", users: "👥 వినియోగదారులు", hello: "హలో",
+    placeOrderTitle: "కొత్త ఆర్డర్ చేయండి", yourOrders: "మీ ఆర్డర్లు", history: "మీ ఆర్డర్ చరిత్ర",
+    placeBtn: "ఆర్డర్ చేయండి",
+    feedbackTitle: "అభిప్రాయం", feedbackPlace: "మీ అభిప్రాయాన్ని వ్రాయండి...", submitBtn: "సమర్పించు",
+    back: "⬅ వెనుకకు", downloadPdf: "📄 PDF డౌన్‌లోడ్",
+    q1: "1 లీటరు", q2: "2 లీటర్లు", q34: "3/4 లీటరు", q12: "1/2 లీటరు",
+    overview: "అవలోకనం", totalDays: "మొత్తం రోజులు", grandTotal: "మొత్తం",
+    cost: "ధర", date: "తేదీ", action: "చర్య", save: "భద్రపరచు", delete: "తొలగించు",
+    changePassBtn: "పాస్‌వర్డ్ మార్చండి", oldPass: "పాత పాస్‌వర్డ్", newPass: "కొత్త పాస్‌వర్డ్",
+    totalRev: "మొత్తం ఆదాయం", newOrders: "కొత్త ఆర్డర్లు", pastOrders: "పాత ఆర్డర్లు", accept: "ఆమోదించండి", statusSuccess: "విజయవంతమైంది", statusPending: "పెండింగ్"
+  },
+  hi: {
+    welcome: "రైతు పాలు में आपका स्वागत है",
+    login: "लॉग इन", register: "पंजीकरण", username: "नाम", password: "पासवर्ड",
+    home: "🏠 होम", profile: "👤 प्रोफाइल", progress: "📊 प्रगति", orders: "📦 आर्डर", feedback: "💬 प्रतिक्रिया", logout: "🚪 लॉग आउट",
+    summary: "📊 सारांश", users: "👥 उपयोगकर्ता", hello: "नमस्ते",
+    placeOrderTitle: "नया ऑर्डर दें", yourOrders: "आपके ऑर्डर", history: "ऑर्डर इतिहास",
+    placeBtn: "ऑर्डर दें",
+    feedbackTitle: "प्रतिक्रिया", feedbackPlace: "अपनी प्रतिक्रिया लिखें...", submitBtn: "जमा करें",
+    back: "⬅ पीछे", downloadPdf: "📄 पीडीएफ डाउनलोड",
+    q1: "1 लीटर", q2: "2 लीटर", q34: "3/4 लीटर", q12: "1/2 लीटर",
+    overview: "अवलोकन", totalDays: "कुल दिन", grandTotal: "कुल योग",
+    cost: "लागत", date: "तारीख", action: "कार्रवाई", save: "सहेजें", delete: "हटाएं",
+    changePassBtn: "पासवर्ड बदलें", oldPass: "पुराना पासवर्ड", newPass: "नया पासवर्ड",
+    totalRev: "कुल राजस्व", newOrders: "नए ऑर्डर", pastOrders: "पिछले ऑर्डर", accept: "स्वीकार करें", statusSuccess: "सफल", statusPending: "लंबित"
+  }
+};
+const t = (key) => T[currentLang][key] || key;
 const app = document.getElementById("app");
 
-/* ---------- LANDING ---------- */
-function landing() {
-  app.innerHTML = `
-    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-    <div class="center">
-      <div class="card" style="width:460px">
-        <h1 style="color:#4CAF50">🌱 RAITHU PAALU 🌾🥛</h1>
-
-        <p style="color:#cccccc; line-height:1.6">
-          RAITHU PAALU is a digital platform built to support
-          <b>local farmers</b> by ensuring transparent milk tracking,
-          fair pricing, and daily accountability.
-        </p>
-
-        <p style="color:#cccccc">
-          Farmers deliver fresh milk daily.
-          Customers can view their consumption,
-          monthly progress, and total amount clearly.
-        </p>
-
-        <hr>
-
-        <h3 style="color:#4CAF50">Why RAITHU PAALU?</h3>
-
-        <ul style="text-align:left; color:#cccccc">
-          <li>🐄 Direct support to farmers</li>
-          <li>📅 Daily & monthly milk tracking</li>
-          <li>💰 Transparent pricing system</li>
-          <li>📊 Visual reports & charts</li>
-        </ul>
-
-        <br>
-
-        <button onclick="showRegister()">Create Account</button>
-        <br><br>
-        <button class="secondary" onclick="showLogin()">Login</button>
-      </div>
-    </div>
-  `;
-
-  updateThemeIcon();
+// --- UTILS ---
+function setLang(lang) { currentLang = lang; localStorage.setItem('lang', lang); location.reload(); }
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', currentTheme); document.body.classList.toggle('dark-mode');
+  const btn = document.getElementById('themeIcon'); if(btn) btn.innerText = currentTheme === 'light' ? '🌙' : '☀️';
 }
-
-
-/* ---------- AUTH ---------- */
-function showLogin(msg="") {
-  app.innerHTML = `
-    <div class="center">
-      <div class="card">
-        <h2>Login</h2>
-        <input id="u" placeholder="Username">
-        <div style="position:relative">
-  <input id="p" type="password" placeholder="Password" style="padding-right:40px">
-  <span onclick="togglePassword()" 
-        style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
-               cursor:pointer; font-size:18px;">
-    👁
-  </span>
-</div>
-
-        <button onclick="login()">Login</button>
-        <p style="color:red">${msg}</p>
-      </div>
-    </div>`;
+function showToast(msg) {
+  const x = document.getElementById("toast"); x.style.visibility = "visible"; x.innerText = msg;
+  setTimeout(() => x.style.visibility = "hidden", 3000);
 }
-
-
-
-function showRegister() {
-  app.innerHTML = `
-    <div class="center">
-      <div class="card">
-        <h2>Create Account</h2>
-        <input id="u" placeholder="Username">
-        <div style="position:relative">
-  <input id="p" type="password" placeholder="Password" style="padding-right:40px">
-  <span onclick="togglePassword()" 
-        style="position:absolute; right:12px; top:50%; transform:translateY(-50%);
-               cursor:pointer; font-size:18px;">
-    👁
-  </span>
-</div>
-
-        <button onclick="register()">Register</button>
-      </div>
-    </div>`;
-}
-function togglePassword() {
-  const pass = document.getElementById("p");
-  pass.type = pass.type === "password" ? "text" : "password";
-}
-
-function register() {
-  if (!u.value || !p.value) {
-    alert("All fields are required");
-    return;
-  }
-
-  fetch("/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: u.value.trim(),
-      password: p.value.trim()
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-
-    // ✅ Auto-login after successful registration
-    localStorage.user = JSON.stringify({
-      username: u.value.trim(),
-      sales: []
-    });
-
-    userDashboard();
+function getMonthName(m) { return ["January","February","March","April","May","June","July","August","September","October","November","December"][parseInt(m)-1]; }
+function sortSalesByDate(sales) {
+  return sales.sort((a, b) => {
+    const [d1, m1, y1] = a.date.split('/'); const [d2, m2, y2] = b.date.split('/');
+    return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
   });
 }
-
-
-
-function login() {
-  fetch("/login", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: u.value.trim(),
-      password: p.value.trim()
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (!res) {
-  alert("Invalid username or password");
-  return;
-}
-
-
-    if (res.role === "admin") {
-      adminDashboard();
-    } else {
-      localStorage.user = JSON.stringify(res);
-      userDashboard();
-    }
+function calculateStats(sales) {
+  let stats = { t2:0, t1:0, t34:0, t12:0, days: sales.length, cost2:0, cost1:0, cost34:0, cost12:0, totalCost:0 };
+  sales.forEach(s => {
+    stats.t2 += s.twoL||0; stats.cost2 += (s.twoL||0)*PRICES.twoL;
+    stats.t1 += s.oneL||0; stats.cost1 += (s.oneL||0)*PRICES.oneL;
+    stats.t34 += s.threeQuarterL||0; stats.cost34 += (s.threeQuarterL||0)*PRICES.threeQuarterL;
+    stats.t12 += s.halfL||0; stats.cost12 += (s.halfL||0)*PRICES.halfL;
   });
+  stats.totalCost = stats.cost2 + stats.cost1 + stats.cost34 + stats.cost12;
+  return stats;
 }
 
-
-/* ---------- USER ---------- */
-function userDashboard() {
-  const u = JSON.parse(localStorage.user);
-
-  app.innerHTML = `
-    <div class="dashboard">
-      <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-      <div class="sidebar">
-        <h3>Hello ${u.username}</h3>
-        <div class="menu">
-          <div onclick="userDashboard()">🏠 Home</div>
-          <div onclick="yourProfile()">👤 Your Profile</div>
-          <div onclick="userProgress()">📊 My Progress</div>
-          <div onclick="orders()">📦 Orders</div>
-          <div onclick="feedback()">💬 Feedback</div>
-          <div onclick="logout()" class="logout">🚪 Logout</div>
-        </div>
-      </div>
-
-      <div class="content">
-        <h2>Welcome to RAITHU PAALU 🌾🥛</h2>
-        <p style="color: var(--text-color); font-size:18px;">
-          🐄 Track your daily milk supply, view monthly progress, and stay transparent with pricing! 📈💰
-        </p>
-
-        <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 40px;">
-          <div style="text-align: center;">
-            <p style="font-size: 20px; font-weight: bold; color: #4CAF50;">Your Milk Distribution Overview 🥛</p>
-            <canvas id="pieChart" width="300" height="300"></canvas>
-          </div>
-          <div style="text-align: center;">
-            <h3 style="color: #2196F3;">Monthly Revenue 📊</h3>
-            <canvas id="barChart" width="500" height="300"></canvas>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  `;
-
-  updateThemeIcon();
-  drawPieChart(u.sales || []);
-  drawBarChart(u.sales || []);
-
+// --- RENDERERS ---
+function renderControls() {
+  return `<div class="top-controls"><select onchange="setLang(this.value)">
+    <option value="en" ${currentLang==='en'?'selected':''}>English</option>
+    <option value="te" ${currentLang==='te'?'selected':''}>తెలుగు</option>
+    <option value="hi" ${currentLang==='hi'?'selected':''}>हिंदी</option>
+  </select><button class="theme-btn" onclick="toggleTheme()" id="themeIcon">${currentTheme==='light'?'🌙':'☀️'}</button></div>`;
 }
 
-function userProgress() {
-  const u = JSON.parse(localStorage.user);
+function renderDashboardShell(user, contentHTML, activeTab) {
+  const role = user.role;
+  const greeting = `${t('hello')} ${user.username} 👋`;
+  
+  const menu = role === 'admin' 
+    ? [{key:'summary', label:t('summary'), func:'adminSummary()'}, {key:'orders', label:t('orders'), func:'adminOrders()'}, {key:'users', label:t('users'), func:'adminUsers()'}]
+    : [{key:'home', label:t('home'), func:'userHome()'}, {key:'profile', label:t('profile'), func:'userProfile()'}, {key:'progress', label:t('progress'), func:'userProgress()'}, {key:'orders', label:t('orders'), func:'userOrders()'}, {key:'feedback', label:t('feedback'), func:'userFeedback()'}];
 
-  if (!u.sales || u.sales.length === 0) {
-    document.querySelector(".content").innerHTML =
-      "<h3>No milk records yet</h3>";
-    return;
-  }
-
-  // GROUP BY MONTH (DD/MM/YYYY SAFE)
-  const groups = {};
-  u.sales.forEach(s => {
-    const [day, month, year] = s.date.split("/");
-    const key = `${month}/${year}`; // ex: 01/2026
-
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(s);
-  });
-
-  let html = `<h2>My Progress</h2>`;
-
-  Object.keys(groups).forEach(key => {
-    const [m, y] = key.split("/");
-    const monthName = new Date(y, m - 1).toLocaleString("default", {
-      month: "long"
-    });
-
-    html += `
-      <div class="user-card" onclick="showMonth('${key}')">
-        📅 ${monthName} ${y}
-      </div>`;
-  });
-
-  document.querySelector(".content").innerHTML = html;
-  window.monthData = groups; // store temporarily
-}
-function showMonth(key) {
-  const records = window.monthData[key];
-
-  let rows = "";
-  let total1L = 0, totalHalf = 0, totalQuarter = 0, totalAmount = 0;
-
-  records.forEach(s => {
-    const amt = (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
-
-    total1L += s.oneL;
-    totalHalf += s.halfL;
-    totalQuarter += s.quarterL;
-    totalAmount += amt;
-
-    const today = new Date();
-const todayStr =
-  String(today.getDate()).padStart(2, "0") + "/" +
-  String(today.getMonth() + 1).padStart(2, "0") + "/" +
-  today.getFullYear();
-
-rows += `
-  <tr style="${s.date === todayStr ? 'background:#e8f5e9;font-weight:bold;' : ''}">
-
-        <td>${s.date}</td>
-        <td>${s.oneL}</td>
-        <td>${s.halfL}</td>
-        <td>${s.quarterL}</td>
-        <td>₹${amt}</td>
-      </tr>`;
-  });
-
-  document.querySelector(".content").innerHTML = `
-    <div>
-      <button class="secondary" onclick="userProgress()">⬅ Back</button>
-      <button class="secondary" onclick="downloadReport('${key}')">⬇ Download Report 📄</button>
-    </div>
-
-    <table>
-      <tr>
-        <th>Date</th>
-        <th>1L</th>
-        <th>½L</th>
-        <th>¼L</th>
-        <th>Amount</th>
-      </tr>
-      ${rows}
-    </table>
-
-    <hr>
-
-    <p>1 Litre : <b>${total1L}</b> → ₹${total1L * 70}</p>
-    <p>½ Litre : <b>${totalHalf}</b> → ₹${totalHalf * 35}</p>
-    <p>¼ Litre : <b>${totalQuarter}</b> → ₹${totalQuarter * 18}</p>
-
-    <h2 style="text-align:right;color:#2e7d32">
-      Total Amount : ₹${totalAmount}
-    </h2>
-  `;
-}
-function downloadReport(key) {
-  const records = window.monthData[key];
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  doc.setFontSize(16);
-  doc.text("Milk Report for " + key, 10, 10);
-
-  let y = 20;
-  doc.setFontSize(12);
-  records.forEach(s => {
-    const amt = (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
-    doc.text(`${s.date}: 1L=${s.oneL}, 0.5L=${s.halfL}, 0.25L=${s.quarterL}, Amount=₹${amt}`, 10, y);
-    y += 10;
-  });
-
-  doc.save(`Milk_Report_${key.replace("/", "_")}.pdf`);
-}
-
-function yourProfile() {
-  const u = JSON.parse(localStorage.user);
-
-  document.querySelector(".content").innerHTML = `
-    <h2>Your Profile 👤</h2>
-    <div class="profile-form">
-      <p><strong>Username:</strong> ${u.username}</p>
-      <hr>
-      <h3>Change Password 🔒</h3>
-      <input id="oldPass" type="password" placeholder="Current Password">
-      <input id="newPass" type="password" placeholder="New Password">
-      <input id="confirmPass" type="password" placeholder="Confirm New Password">
-      <button onclick="changePassword()">Change Password</button>
-    </div>
-  `;
-}
-
-function changePassword() {
-  const oldPass = document.getElementById("oldPass").value;
-  const newPass = document.getElementById("newPass").value;
-  const confirmPass = document.getElementById("confirmPass").value;
-
-  if (!oldPass || !newPass || !confirmPass) {
-    alert("All fields are required");
-    return;
-  }
-
-  if (newPass !== confirmPass) {
-    alert("New passwords do not match");
-    return;
-  }
-
-  const u = JSON.parse(localStorage.user);
-
-  fetch("/change-password", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: u.username,
-      oldPassword: oldPass,
-      newPassword: newPass
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.error) {
-      alert(data.error);
-    } else {
-      alert("Password changed successfully!");
-      // Update localStorage if needed, but since password is not stored there, fine.
-    }
-  });
-}
-
-function orders() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  if (!u) return landing();
-
-  fetch('/orders/' + u.username)
-    .then(r => r.json())
-    .then(userOrders => {
-      app.innerHTML = `
-        <div class="dashboard">
-          <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-          <div class="sidebar">
-            <h3>Hello ${u.username}</h3>
-            <div class="menu">
-              <div onclick="userDashboard()">🏠 Home</div>
-              <div onclick="yourProfile()">👤 Your Profile</div>
-              <div onclick="userProgress()">📊 My Progress</div>
-              <div onclick="orders()">📦 Orders</div>
-              <div onclick="feedback()">💬 Feedback</div>
-              <div onclick="logout()" class="logout">🚪 Logout</div>
-            </div>
-          </div>
-
-          <div class="content">
-            <h2>Your Orders 📦</h2>
-
-            <div class="order-form">
-              <h3>Place New Order</h3>
-              <select id="quantity">
-                <option value="1">1 Litre</option>
-                <option value="0.5">1/2 Litre</option>
-                <option value="0.25">1/4 Litre</option>
-                <option value="2">2 Litres</option>
-                <option value="3">3 Litres</option>
-              </select>
-              <button onclick="placeOrder()">Place Order</button>
-            </div>
-
-            <h3>Your Order History</h3>
-            <div id="orderHistory"></div>
-
-          </div>
-        </div>
-      `;
-
-      updateThemeIcon();
-      displayOrderHistory(userOrders);
-    });
-}
-
-function placeOrder() {
-  const quantity = document.getElementById('quantity').value;
-  const u = JSON.parse(localStorage.getItem('user'));
-
-  fetch('/place-order', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: u.username, quantity: parseFloat(quantity) })
-  })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        alert('Order placed successfully!');
-        orders(); // refresh
-      } else {
-        alert('Error placing order: ' + (res.error || 'Unknown error'));
-      }
-    });
-}
-
-function displayOrderHistory(orders) {
-  const history = document.getElementById('orderHistory');
-  if (orders.length === 0) {
-    history.innerHTML = '<p>No orders yet.</p>';
-    return;
-  }
-
-  history.innerHTML = orders.map(o => `
-    <div class="order-item">
-      <p>Quantity: ${o.quantity} L</p>
-      <p>Status: ${o.status}</p>
-      <p>Date: ${new Date(o.timestamp).toLocaleString()}</p>
+  const sidebarHTML = menu.map(item => `
+    <div class="sidebar-btn ${activeTab===item.key?'active':''}" onclick="${item.func}">
+      ${item.label}
     </div>
   `).join('');
+
+  app.innerHTML = `
+    <div class="dashboard-container">
+      <div class="sidebar">
+        <div class="logo">🌾 రైతు <span>పాలు</span></div>
+        <div class="greeting">${greeting}</div>
+        ${sidebarHTML}
+        <div class="sidebar-btn" style="margin-top:auto; background:#d32f2f; justify-content:center" onclick="logout()">
+          ${t('logout')}
+        </div>
+      </div>
+      <div class="main-content">
+        ${renderControls()}
+        ${contentHTML}
+      </div>
+    </div>`;
 }
 
-function feedback() {
-  document.querySelector(".content").innerHTML = `
-    <h2>Feedback 💬</h2>
-    <div class="profile-form">
-      <textarea id="feedbackText" placeholder="Share your feedback..." rows="5"></textarea>
-      <button onclick="submitFeedback()">Submit Feedback</button>
+// --- ADMIN FUNCTIONALITY ---
+async function adminSummary() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch('/users'); 
+  const users = await res.json();
+  
+  let totalRev=0, t2=0, t1=0, t34=0, t12=0;
+  users.forEach(u => u.sales.forEach(s => {
+    t2 += s.twoL||0; t1 += s.oneL||0; t34 += s.threeQuarterL||0; t12 += s.halfL||0;
+    totalRev += (s.twoL*PRICES.twoL)+(s.oneL*PRICES.oneL)+(s.threeQuarterL*PRICES.threeQuarterL)+(s.halfL*PRICES.halfL);
+  }));
+
+  const html = `
+    <h2>${t('summary')}</h2>
+    <div class="stats-grid">
+      <div class="stat-box" style="background:#2e7d32"><h3>${t('totalRev')}</h3><h1>₹${totalRev.toLocaleString()}</h1></div>
+      <div class="stat-box" style="background:#1565C0"><h3>${t('q2')}</h3><h1>${t2}</h1></div>
+      <div class="stat-box" style="background:#E65100"><h3>${t('q1')}</h3><h1>${t1}</h1></div>
+      <div class="stat-box" style="background:#6A1B9A"><h3>${t('q34')}</h3><h1>${t34}</h1></div>
+      <div class="stat-box" style="background:#455A64"><h3>${t('q12')}</h3><h1>${t12}</h1></div>
     </div>
   `;
+  renderDashboardShell(u, html, 'summary');
 }
 
-function submitFeedback() {
-  const feedback = document.getElementById("feedbackText").value;
-  if (!feedback.trim()) {
-    alert("Please enter your feedback");
-    return;
-  }
-  alert("Thank you for your feedback! We appreciate it.");
-  // In a real app, send to server.
+async function adminOrders() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch('/orders'); 
+  const orders = await res.json();
+  const pending = orders.filter(o => o.status === 'Pending');
+  const past = orders.filter(o => o.status !== 'Pending');
+
+  const html = `
+    <h2>${t('orders')}</h2>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="color:#e53935">${t('newOrders')}</h3>
+        ${pending.length === 0 ? '<p>No pending orders</p>' : ''}
+        ${pending.map(o => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #eee;">
+            <div><b>${o.username}</b> - ${o.quantity}L <br> <small>${new Date(o.timestamp).toLocaleString()}</small></div>
+            <button class="btn-green" style="background:#4CAF50" onclick="acceptOrder('${o.id}')">${t('accept')}</button>
+          </div>`).join('')}
+      </div>
+
+      <div class="card">
+        <h3>${t('pastOrders')}</h3>
+        <div style="max-height:400px; overflow-y:auto">
+          <table>
+            <tr><th>User</th><th>Qty</th><th>Status</th><th>Date</th></tr>
+            ${past.map(o => `<tr><td>${o.username}</td><td>${o.quantity}L</td><td style="color:green">${o.status}</td><td>${new Date(o.timestamp).toLocaleDateString()}</td></tr>`).join('')}
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+  renderDashboardShell(u, html, 'orders');
 }
 
+async function acceptOrder(id) {
+  await fetch('/update-order', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, status:'Success'})});
+  showToast("Order Accepted ✅"); adminOrders();
+}
 
+async function adminUsers() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch('/users'); 
+  const users = await res.json();
+  
+  const html = `
+    <h2>${t('users')}</h2>
+    <div class="users-grid">
+      ${users.map(usr => `
+        <div class="user-box" onclick="editUser('${usr.username}')">
+          <h3>User</h3>
+          <h1>${usr.username}</h1>
+        </div>`).join('')}
+    </div>
+  `;
+  renderDashboardShell(u, html, 'users');
+}
 
-
-/* ---------- ADMIN ---------- */
-function adminDashboard() {
-  fetch("/users").then(r => r.json()).then(users => {
-
-    let total1L = 0, totalHalf = 0, totalQuarter = 0, totalAmount = 0;
-
-    users.forEach(u => {
-      u.sales.forEach(s => {
-        total1L += s.oneL;
-        totalHalf += s.halfL;
-        totalQuarter += s.quarterL;
-        totalAmount += (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
-      });
-    });
-
-    const cards = users.map(u => `
-      <div class="user-card" onclick="editUser('${u.username}')">
-        👤 ${u.username}
-      </div>`).join("");
-
-    app.innerHTML = `
-      <div class="dashboard">
-        <div class="sidebar">
-          <h3>ADMIN PANEL</h3>
-          <div class="menu">
-            <div onclick="logout()">Logout</div>
-          </div>
-        </div>
-
-        <div class="content">
-          <h2>Overall Summary</h2>
-
-          <p>1 Litre : <b>${total1L}</b> → ₹${total1L * 70}</p>
-          <p>½ Litre : <b>${totalHalf}</b> → ₹${totalHalf * 35}</p>
-          <p>¼ Litre : <b>${totalQuarter}</b> → ₹${totalQuarter * 18}</p>
-
-          <h2 style="color:#2e7d32">
-            Total Revenue : ₹${totalAmount}
-          </h2>
-
-          <hr>
-
-          <h2>Registered Users</h2>
-          ${cards}
-
-          <hr>
-
-          <h2>New Orders 📦</h2>
-          <div id="ordersList"></div>
-        </div>
-      </div>`;
-
-      loadOrders();
+async function editUser(name) {
+  const currUser = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch('/users'); const users = await res.json();
+  const u = users.find(x => x.username === name);
+  const sales = sortSalesByDate(u.sales);
+  
+  // Calculate Totals for this specific user
+  let st = { t2:0, t1:0, t34:0, t12:0, c2:0, c1:0, c34:0, c12:0, total:0 };
+  u.sales.forEach(s => {
+    st.t2 += s.twoL||0; st.c2 += (s.twoL||0)*PRICES.twoL;
+    st.t1 += s.oneL||0; st.c1 += (s.oneL||0)*PRICES.oneL;
+    st.t34 += s.threeQuarterL||0; st.c34 += (s.threeQuarterL||0)*PRICES.threeQuarterL;
+    st.t12 += s.halfL||0; st.c12 += (s.halfL||0)*PRICES.halfL;
   });
-}
+  st.total = st.c2 + st.c1 + st.c34 + st.c12;
 
-function loadOrders() {
-  fetch('/all-orders')
-    .then(r => r.json())
-    .then(orders => {
-      const ordersList = document.getElementById('ordersList');
-      if (orders.length === 0) {
-        ordersList.innerHTML = '<p>No orders yet.</p>';
-        return;
-      }
-      ordersList.innerHTML = orders.map(o => `
-        <div class="order-admin">
-          <p><strong>User:</strong> ${o.username}</p>
-          <p><strong>Quantity:</strong> ${o.quantity} L</p>
-          <p><strong>Status:</strong> ${o.status}</p>
-          <p><strong>Date:</strong> ${new Date(o.timestamp).toLocaleString()}</p>
-          ${o.status === 'pending' ? `<button onclick="updateOrderStatus('${o.id}', 'fulfilled')">Mark as Fulfilled</button>` : ''}
+  const html = `
+    <button class="btn-blue" onclick="adminUsers()" style="margin-bottom:15px">${t('back')}</button>
+    <h2>Editing: ${name}</h2>
+    
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <h3>Add Daily Entry</h3>
+          <input type="date" id="d" style="width:200px">
+          <br>
+          <button class="milk-btn" onclick="tog(this,'twoL')">2L</button>
+          <button class="milk-btn" onclick="tog(this,'oneL')">1L</button>
+          <button class="milk-btn" onclick="tog(this,'threeQuarterL')">3/4L</button>
+          <button class="milk-btn" onclick="tog(this,'halfL')">1/2L</button>
+          <br><br>
+          <button onclick="save('${name}')">${t('save')}</button>
         </div>
-      `).join('');
-    });
+
+        <div class="card" style="margin-top:20px;">
+          <h3>User Totals Summary</h3>
+          <div class="breakdown-item"><span>${t('q2')} (${st.t2})</span><span>₹${st.c2}</span></div>
+          <div class="breakdown-item"><span>${t('q1')} (${st.t1})</span><span>₹${st.c1}</span></div>
+          <div class="breakdown-item"><span>${t('q34')} (${st.t34})</span><span>₹${st.c34}</span></div>
+          <div class="breakdown-item"><span>${t('q12')} (${st.t12})</span><span>₹${st.c12}</span></div>
+          <div class="breakdown-item"><span>${t('grandTotal')}</span><span>₹${st.total}</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Records</h3>
+        <div style="max-height:400px; overflow-y:auto;">
+          <table>
+            <tr><th>Date</th><th>2L</th><th>1L</th><th>3/4L</th><th>1/2L</th><th>₹</th><th>Act</th></tr>
+            ${sales.slice().reverse().map(s => {
+               const cost = (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+               return `
+              <tr>
+                <td>${s.date}</td>
+                <td>${s.twoL||0}</td>
+                <td>${s.oneL||0}</td>
+                <td>${s.threeQuarterL||0}</td>
+                <td>${s.halfL||0}</td>
+                <td>${cost}</td>
+                <td><button class="btn-red" onclick="del('${name}','${s.date}')">Del</button></td>
+              </tr>`}).join('')}
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+  renderDashboardShell(currUser, html, 'users');
 }
 
-function updateOrderStatus(id, status) {
-  fetch('/update-order-status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, status })
-  })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        loadOrders();
-      } else {
-        alert('Error updating order: ' + (res.error || 'Unknown error'));
-      }
-    });
+// --- USER VIEWS (SIDE-BY-SIDE RESTORED) ---
+
+async function userProfile() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  const html = `
+    <h2>${t('profile')}</h2>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="color:#555">${t('username')}</h3>
+        <p style="font-size:1.5em; font-weight:bold; color:var(--primary)">${u.username}</p>
+        <p style="color:#777">Role: User</p>
+      </div>
+
+      <div class="card">
+        <h3>${t('changePassBtn')}</h3>
+        <div class="pass-wrapper"><input id="oldP" type="password" placeholder="${t('oldPass')}"><span class="pass-icon" onclick="togglePass('oldP')">👁️</span></div>
+        <div class="pass-wrapper"><input id="newP" type="password" placeholder="${t('newPass')}"><span class="pass-icon" onclick="togglePass('newP')">👁️</span></div>
+        <button onclick="changePass('${u.username}')">${t('save')}</button>
+      </div>
+    </div>
+  `;
+  renderDashboardShell(u, html, 'profile');
 }
 
+async function userOrders() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch(`/orders/${u.username}`); const orders = await res.json();
+  
+  const html = `
+    <h2>${t('yourOrders')}</h2>
+    
+    <div class="grid-2">
+      <div class="card">
+        <h3>${t('placeOrderTitle')}</h3>
+        <select id="oq" style="width:100%; padding:10px; margin-bottom:20px;">
+          <option value="1">1 Litre</option>
+          <option value="2">2 Litre</option>
+          <option value="0.75">3/4 Litre</option>
+          <option value="0.5">1/2 Litre</option>
+        </select>
+        <button onclick="placeOrder('${u.username}')">${t('placeBtn')}</button>
+      </div>
 
-function editUser(username) {
-  fetch("/users").then(r => r.json()).then(users => {
-    const u = users.find(x => x.username === username);
+      <div class="card">
+        <h3>${t('history')}</h3>
+        ${orders.length === 0 ? '<p>No orders found.</p>' : ''}
+        <div style="max-height:400px; overflow-y:auto">
+          ${orders.map(o => `
+            <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+               <span><b>${o.quantity}L</b> - ${new Date(o.timestamp).toLocaleDateString()}</span>
+               <span style="color:${o.status==='Pending'?'orange':'green'}; font-weight:bold">${o.status}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  renderDashboardShell(u, html, 'orders');
+}
 
-    let total1L = 0, totalHalf = 0, totalQuarter = 0, totalAmount = 0;
+async function userProgress() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch(`/user/${u.username}`); const data = await res.json();
+  const grouped = {};
+  data.sales.forEach(s => { const [d,m,y] = s.date.split('/'); const key = `${m}-${y}`; if(!grouped[key]) grouped[key] = []; grouped[key].push(s); });
 
-    const rows = u.sales.map(s => {
-      total1L += s.oneL;
-      totalHalf += s.halfL;
-      totalQuarter += s.quarterL;
-      totalAmount += (s.oneL * 70) + (s.halfL * 35) + (s.quarterL * 18);
-      const today = new Date();
-const todayStr =
-  String(today.getDate()).padStart(2, "0") + "/" +
-  String(today.getMonth() + 1).padStart(2, "0") + "/" +
-  today.getFullYear();
+  if(currentMonthView) {
+    const sorted = sortSalesByDate(grouped[currentMonthView]);
+    const st = calculateStats(sorted);
+    const [m, y] = currentMonthView.split('-');
+    const title = `${getMonthName(m)} ${y}`;
 
-return `
-  <tr style="${s.date === todayStr ? 'background:#e8f5e9;font-weight:bold;' : ''}">
+    const html = `
+      <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <button class="btn-blue" onclick="currentMonthView=null; userProgress()">${t('back')}</button>
+        <button style="background:#FF5722" onclick="downloadPDF('${title}')">${t('downloadPdf')}</button>
+      </div>
+      <h2>${title}</h2>
 
-          <td>${s.date}</td>
-          <td>${s.oneL}</td>
-          <td>${s.halfL}</td>
-          <td>${s.quarterL}</td>
-          <td>
-            <button class="danger" onclick="deleteSale('${username}','${s.date}')">
-              Delete
-            </button>
-          </td>
-        </tr>`;
-    }).join("");
+      <div class="card">
+        <h3>${t('overview')}</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+           <p><b>${t('q2')}:</b> ${st.t2}</p> <p><b>${t('cost')}:</b> ₹${st.cost2}</p>
+           <p><b>${t('q1')}:</b> ${st.t1}</p> <p><b>${t('cost')}:</b> ₹${st.cost1}</p>
+           <p><b>${t('q34')}:</b> ${st.t34}</p> <p><b>${t('cost')}:</b> ₹${st.cost34}</p>
+           <p><b>${t('q12')}:</b> ${st.t12}</p> <p><b>${t('cost')}:</b> ₹${st.cost12}</p>
+        </div>
+        <hr>
+        <h3 style="color:var(--primary); text-align:right">${t('grandTotal')}: ₹${st.totalCost}</h3>
+      </div>
 
-    document.querySelector(".content").innerHTML = `
-      <button class="secondary" onclick="adminDashboard()">⬅ Back</button>
-      <h2>${username}</h2>
-
-      <h3>Milk Records</h3>
-      <table>
-        <tr>
-          <th>Date</th>
-          <th>1L</th>
-          <th>½L</th>
-          <th>¼L</th>
-          <th>Action</th>
-        </tr>
-        ${rows}
-      </table>
-
-      <h3>Add / Update</h3>
-      <input id="date" type="date">
-      <input id="l1" placeholder="1L">
-      <input id="l2" placeholder="½L">
-      <input id="l3" placeholder="¼L">
-      <button onclick="saveMilk('${username}')">Save</button>
-
-      <hr>
-
-      <h3>Summary</h3>
-      <p>1 Litre : <b>${total1L}</b> → ₹${total1L * 70}</p>
-      <p>½ Litre : <b>${totalHalf}</b> → ₹${totalHalf * 35}</p>
-      <p>¼ Litre : <b>${totalQuarter}</b> → ₹${totalQuarter * 18}</p>
-
-      <h2 style="color:#2e7d32">
-        Total Amount : ₹${totalAmount}
-      </h2>
-
-      <button class="danger" onclick="removeUser('${username}')">
-        ❌ Remove User
-      </button>
+      <div class="card">
+        <table>
+          <tr><th>${t('date')}</th><th>2L</th><th>1L</th><th>3/4L</th><th>1/2L</th><th>₹</th></tr>
+          ${sorted.map(s => {
+             const c=(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+             return `<tr><td>${s.date}</td><td>${s.twoL||0}</td><td>${s.oneL||0}</td><td>${s.threeQuarterL||0}</td><td>${s.halfL||0}</td><td>${c}</td></tr>`
+          }).join('')}
+        </table>
+      </div>
     `;
-  });
-}
-
-
-function saveMilk(username) {
-
-  if (!date.value) {
-    alert("Please select a date");
-    return;
-  }
-
-  // ✅ FORCE DD/MM/YYYY FROM CALENDAR
-  const parts = date.value.split("-");
-  const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-
-  fetch("/add-sale", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username,
-      sale: {
-        date: formattedDate,   // ✅ ALWAYS DD/MM/YYYY
-        oneL: +l1.value || 0,
-        halfL: +l2.value || 0,
-        quarterL: +l3.value || 0
-      }
-    })
-  })
-  .then(data => {
-  if (data.error) {
-    alert(data.error);
+    renderDashboardShell(u, html, 'progress');
   } else {
-    alert("Milk details saved successfully ✅");
-    editUser(username);
-  }
-});
-
-}
-
-
-
-function deleteSale(username,date) {
-  if(!confirm("Delete entry?")) return;
-  fetch("/delete-sale",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,date})})
-  .then(()=>editUser(username));
-}
-
-function removeUser(username) {
-  if(!confirm("⚠️ Delete user permanently?")) return;
-
-  fetch("/delete-user", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ username })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.error) alert(data.error);
-    else {
-      alert("User removed successfully");
-      adminDashboard();
-    }
-  });
-}
-
-function drawPieChart(sales) {
-  let oneL = 0, halfL = 0, quarterL = 0;
-
-  sales.forEach(s => {
-    oneL += s.oneL;
-    halfL += s.halfL;
-    quarterL += s.quarterL;
-  });
-
-  const canvas = document.getElementById("pieChart");
-  if (!canvas) return;
-
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const total = oneL + halfL + quarterL;
-  if (total === 0) {
-    ctx.font = "16px Arial";
-    ctx.fillText("No data available", 80, 150);
-    return;
-  }
-
-  const data = [
-    { label: "1 Litre", value: oneL, color: "#FF5722" },
-    { label: "½ Litre", value: halfL, color: "#2196F3" },
-    { label: "¼ Litre", value: quarterL, color: "#4CAF50" }
-  ];
-
-  let startAngle = 0;
-
-  data.forEach(d => {
-    const slice = (d.value / total) * Math.PI * 2;
-
-    ctx.beginPath();
-    ctx.moveTo(150, 150);
-    ctx.arc(150, 150, 120, startAngle, startAngle + slice);
-    ctx.closePath();
-    ctx.fillStyle = d.color;
-    ctx.fill();
-
-    startAngle += slice;
-  });
-
-  // Legend
-  ctx.font = "14px Arial";
-  data.forEach((d, i) => {
-    ctx.fillStyle = d.color;
-    ctx.fillRect(10, 10 + i * 20, 12, 12);
-    ctx.fillStyle = "#000";
-    ctx.fillText(`${d.label}: ${d.value}`, 30, 20 + i * 20);
-  });
-}
-
-function drawBarChart(sales) {
-
-  const monthTotals = {};
-
-  sales.forEach(s => {
-    const [day, month, year] = s.date.split("/");
-    const key = `${month}/${year}`;
-
-    const amt =
-      (s.oneL * 70) +
-      (s.halfL * 35) +
-      (s.quarterL * 18);
-
-    monthTotals[key] = (monthTotals[key] || 0) + amt;
-  });
-
-  const canvas = document.getElementById("barChart");
-  if (!canvas) return;
-
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const keys = Object.keys(monthTotals);
-  if (keys.length === 0) {
-    ctx.fillText("No data available", 180, 150);
-    return;
-  }
-
-  const max = Math.max(...Object.values(monthTotals));
-  const barWidth = 40;
-  const gap = 30;
-  const baseY = 260;
-
-  keys.forEach((key, i) => {
-    const value = monthTotals[key];
-    const barHeight = (value / max) * 200;
-
-    const x = 50 + i * (barWidth + gap);
-    const y = baseY - barHeight;
-
-    ctx.fillStyle = "#2196F3";
-    ctx.fillRect(x, y, barWidth, barHeight);
-
-    // Label
-    const [m, y2] = key.split("/");
-    const monthName = new Date(y2, m - 1).toLocaleString("default", { month: "short" });
-
-    ctx.fillStyle = "#000";
-    ctx.fillText(`${monthName} ${y2}`, x - 5, baseY + 15);
-    ctx.fillText(`₹${value}`, x - 5, y - 5);
-  });
-}
-
-function logout() {
-  localStorage.clear();
-  landing();
-}
-
-function toggleTheme() {
-  const currentTheme = localStorage.getItem('theme') || 'light';
-  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  localStorage.setItem('theme', newTheme);
-  if (newTheme === 'light') {
-    document.documentElement.classList.add('light-mode');
-  } else {
-    document.documentElement.classList.remove('light-mode');
-  }
-  updateThemeIcon();
-}
-
-function updateThemeIcon() {
-  const theme = localStorage.getItem('theme') || 'light';
-  const toggleBtn = document.querySelector('.theme-toggle');
-  if (toggleBtn) {
-    toggleBtn.textContent = theme === 'light' ? '🌙' : '☀️';
+    const keys = Object.keys(grouped).sort().reverse();
+    const html = `
+      <h2>${t('progress')}</h2>
+      ${keys.length === 0 ? '<p>No data available</p>' : ''}
+      <div class="stats-grid">
+        ${keys.map(k => {
+          const [m, y] = k.split('-');
+          return `<div class="month-card" onclick="currentMonthView='${k}'; userProgress()">📅 ${getMonthName(m)} ${y}</div>`;
+        }).join('')}
+      </div>
+    `;
+    renderDashboardShell(u, html, 'progress');
   }
 }
 
-// Set initial theme on load
-const initialTheme = localStorage.getItem('theme') || 'light';
-if (initialTheme === 'light') {
-  document.documentElement.classList.add('light-mode');
-} else {
-  document.documentElement.classList.remove('light-mode');
+// --- STANDARD USER HOME ---
+async function userHome() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch(`/user/${u.username}`); const data = await res.json();
+  
+  let mData={};
+  data.sales.forEach(s => { let m = s.date.split('/')[1]; mData[m] = (mData[m]||0) + (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35); });
+  
+  renderDashboardShell(u, `<h1>${t('welcome')}</h1>`, 'home');
+  
+  const container = document.querySelector('.main-content');
+  const chartDiv = document.createElement('div');
+  chartDiv.className = 'grid-2';
+  chartDiv.innerHTML = `<div class="card"><h3>Overview</h3><canvas id="pie"></canvas></div><div class="card"><h3>Monthly Revenue</h3><canvas id="bar"></canvas></div>`;
+  container.appendChild(chartDiv);
+  
+  const ctx = document.getElementById('bar').getContext('2d');
+  const grad = ctx.createLinearGradient(0,0,0,400); grad.addColorStop(0,'rgba(67, 160, 71, 0.6)'); grad.addColorStop(1,'rgba(67, 160, 71, 0.1)');
+  new Chart(ctx, {type:'bar', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Cost', data:Object.values(mData), backgroundColor:grad, borderRadius:5}]}, options:{scales:{y:{beginAtZero:true}}}});
+  
+  let t2=0,t1=0,t34=0,t12=0; data.sales.forEach(s=>{t2+=s.twoL||0;t1+=s.oneL||0;t34+=s.threeQuarterL||0;t12+=s.halfL||0;});
+  new Chart(document.getElementById('pie'), {type:'doughnut', data:{labels:[t('q2'),t('q1'),t('q34'),t('q12')], datasets:[{data:[t2,t1,t34,t12], backgroundColor:['#43a047','#1976D2','#F57C00','#7B1FA2']}]}});
 }
 
-landing();
+function userFeedback() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  renderDashboardShell(u, `<h2>${t('feedbackTitle')}</h2><div class="card"><textarea style="width:100%; height:150px" placeholder="${t('feedbackPlace')}"></textarea><button>${t('submitBtn')}</button></div>`, 'feedback');
+}
+
+// --- ACTIONS ---
+function tog(b,t){b.classList.toggle('active');selectedMilk[t]=selectedMilk[t]?0:1;}
+async function save(n){const d=document.getElementById('d').value;if(!d)return;const[y,m,day]=d.split('-');await fetch('/add-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,sale:{date:`${day}/${m}/${y}`,...selectedMilk}})});selectedMilk={twoL:0,oneL:0,threeQuarterL:0,halfL:0};showToast(t('save')+" ✅");editUser(n);}
+async function del(n,d){await fetch('/delete-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,date:d})});showToast(t('delete')+" ✅");editUser(n);}
+async function changePass(u){const o=document.getElementById('oldP').value,n=document.getElementById('newP').value;const r=await fetch('/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,oldPassword:o,newPassword:n})});const d=await r.json();d.success?(showToast('Success'),userProfile()):alert(d.error);}
+async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});showToast('Order Placed');userOrders();}
+function downloadPDF(title){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.text(title,14,20);doc.autoTable({html:'#monthTable',startY:30});doc.save(title+'.pdf');}
+async function login(){const u=document.getElementById('u').value,p=document.getElementById('p').value;const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(!d)return alert('Invalid');localStorage.setItem('user',JSON.stringify({username:u,role:d.role}));d.role==='admin'?adminSummary():userHome();}
+async function register(){const u=document.getElementById('ru').value,p=document.getElementById('rp').value;await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});alert('Registered');location.reload();}
+function logout(){localStorage.clear();renderAuth();}
+function toggleAuth(v){document.getElementById('loginForm').style.display=v==='login'?'block':'none';document.getElementById('regForm').style.display=v==='reg'?'block':'none';}
+function togglePass(id){const x=document.getElementById(id);x.type=x.type==='password'?'text':'password';}
+
+// --- AUTH RENDER ---
+function renderAuth(){app.innerHTML=`<div class="auth-container">${renderControls()}<div class="auth-box"><h1 style="color:#43a047">🌾 రైతు పాలు</h1><div id="loginForm"><h2>${t('login')}</h2><input id="u" placeholder="${t('username')}"><div class="pass-wrapper"><input id="p" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('p')">👁️</span></div><button onclick="login()">${t('login')}</button><p onclick="toggleAuth('reg')" style="cursor:pointer;color:blue;margin-top:10px">${t('register')}</p></div><div id="regForm" style="display:none"><h2>${t('register')}</h2><input id="ru" placeholder="${t('username')}"><div class="pass-wrapper"><input id="rp" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('rp')">👁️</span></div><button onclick="register()">${t('register')}</button><p onclick="toggleAuth('login')" style="cursor:pointer;color:blue;margin-top:10px">${t('login')}</p></div></div></div>`;}
+
+// INIT
+const saved=JSON.parse(localStorage.getItem('user'));
+if(saved) saved.role==='admin'?adminSummary():userHome(); else renderAuth();
 </script>
 </body>
 </html>
