@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>రైతు పాలు</title>
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -30,12 +30,13 @@
       --shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
 
-    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background 0.3s, color 0.3s; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
+    
     body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
     /* --- SIDEBAR --- */
     .dashboard-container { display: flex; width: 100%; height: 100%; }
-    .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); }
+    .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10; }
     
     .logo { font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center; letter-spacing: 0.5px; }
     .logo span { background: #fff; color: var(--sidebar-bg); padding: 2px 8px; border-radius: 4px; }
@@ -51,12 +52,14 @@
     
     /* --- MAIN AREA --- */
     .main-content { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
+    
+    /* Top Controls (Theme/Lang) */
     .top-controls { position: absolute; top: 20px; right: 30px; display: flex; gap: 15px; align-items: center; z-index: 100; }
-    select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; background: var(--card-bg); color: var(--text); }
-    .theme-btn { font-size: 24px; cursor: pointer; background: none; border: none; }
+    select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; background: var(--card-bg); color: var(--text); cursor: pointer; }
+    .theme-btn { font-size: 24px; cursor: pointer; background: none; border: none; padding: 0; }
 
     /* --- CARDS & LAYOUTS --- */
-    h2 { color: var(--primary); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; }
+    h2 { color: var(--primary); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; font-size: 1.5rem; }
     
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
     
@@ -66,82 +69,111 @@
       border-radius: 12px;
       box-shadow: var(--shadow);
       height: 100%;
+      overflow: hidden; /* Contain children */
     }
 
-    /* Stats Grid (General) */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    
-    /* Users Grid (Small Cards) */
-    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
     
     .stat-box {
-      padding: 20px; border-radius: 12px; color: white; text-align: center;
+      padding: 15px; border-radius: 12px; color: white; text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s;
     }
+    .stat-box h3 { margin: 0 0 5px 0; opacity: 0.9; font-size: 0.9rem; }
+    .stat-box h1 { margin: 0; font-size: 1.8rem; }
+
+    /* Tables - Critical for Mobile */
+    .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; min-width: 400px; } /* Min width ensures scroll on mobile */
+    th { background: var(--primary); color: white; padding: 12px; text-align: center; font-size: 14px; white-space: nowrap; }
+    td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: var(--card-bg); font-size: 14px; white-space: nowrap; }
     
-    /* Small User Card Style */
-    .user-box {
-      background: #424242; color: white;
-      padding: 15px; border-radius: 8px; text-align: center;
-      cursor: pointer; transition: transform 0.2s;
-      box-shadow: var(--shadow);
-    }
-    .user-box:hover { transform: scale(1.05); background: #616161; }
-    .user-box h3 { margin: 0; font-size: 0.9rem; opacity: 0.8; color: #ccc; }
-    .user-box h1 { margin: 5px 0 0 0; font-size: 1.1rem; word-break: break-word; }
-
-    .stat-box:hover { transform: translateY(-5px); }
-    .stat-box h3 { margin: 0 0 10px 0; opacity: 0.9; font-size: 1rem; color: white; }
-    .stat-box h1 { margin: 0; font-size: 2rem; }
-
-    /* Month Card */
-    .month-card {
-      background: linear-gradient(135deg, #4CAF50, #2E7D32);
-      color: white; padding: 20px; border-radius: 12px; text-align: center;
-      cursor: pointer; font-size: 1.1em; font-weight: bold; margin-bottom: 15px;
-      box-shadow: var(--shadow); transition: transform 0.2s;
-    }
-    .month-card:hover { transform: scale(1.02); }
-
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th { background: var(--primary); color: white; padding: 15px; text-align: center; font-size: 14px; }
-    td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: var(--card-bg); font-size: 14px; }
-    tr:hover td { background-color: rgba(0,0,0,0.02); }
-
     /* Breakdown List */
-    .breakdown-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 14px; }
+    .breakdown-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 14px; }
     .breakdown-item:last-child { border: none; font-weight: bold; color: var(--primary); font-size: 16px; margin-top: 5px; }
 
     /* Buttons */
-    button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    button:hover { filter: brightness(1.1); }
-    .btn-red { background: #e53935; padding: 5px 10px; font-size: 12px; }
+    button { padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+    button:active { transform: scale(0.98); }
+    .btn-red { background: #e53935; padding: 6px 12px; font-size: 12px; }
     .btn-blue { background: #1e88e5; }
-    .milk-btn { display: inline-block; width: auto; margin: 5px; background: transparent; color: var(--text); border: 2px solid var(--primary); }
+    
+    .milk-btn { display: inline-block; width: 45%; margin: 2%; background: transparent; color: var(--text); border: 2px solid var(--primary); padding: 10px; }
     .milk-btn.active { background: var(--primary); color: white; }
 
     /* Inputs */
-    input, select, textarea { width: 100%; padding: 12px; margin: 8px 0 20px 0; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; }
+    input, select, textarea { width: 100%; padding: 12px; margin: 8px 0 20px 0; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; font-size: 16px; } /* 16px prevents iOS zoom */
     .pass-wrapper { position: relative; width: 100%; }
     .pass-icon { position: absolute; right: 12px; top: 40%; transform: translateY(-50%); cursor: pointer; font-size: 18px; color: #666; }
 
-    /* Auth */
-    .auth-container { width: 100%; display: flex; justify-content: center; align-items: center; background: #e8f5e9; height: 100vh; }
-    .auth-box { background: white; padding: 40px; border-radius: 20px; width: 400px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+    /* Users Grid */
+    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+    .user-box { background: #424242; color: white; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; }
 
+    /* Month Card */
+    .month-card {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white;
+      padding: 15px; border-radius: 12px; text-align: center; cursor: pointer;
+      font-weight: bold; margin-bottom: 10px;
+    }
+
+    /* Auth */
+    .auth-container { width: 100%; display: flex; justify-content: center; align-items: center; background: #e8f5e9; height: 100vh; padding: 20px; }
+    .auth-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+
+    /* --- MOBILE RESPONSIVE CSS --- */
     @media(max-width: 768px) { 
-        .dashboard-container { flex-direction: column; } 
-        .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 10px; }
-        .grid-2 { grid-template-columns: 1fr; }
-        .users-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+        body { overflow-y: auto; position: relative; } /* Enable scroll on body */
+        .dashboard-container { flex-direction: column; height: auto; min-height: 100vh; } 
+        
+        /* Mobile Header / Sidebar */
+        .sidebar { 
+            width: 100%; 
+            height: auto; 
+            flex-direction: row; 
+            flex-wrap: nowrap;
+            overflow-x: auto; 
+            padding: 10px;
+            gap: 10px;
+            position: sticky; top: 0; /* Sticks to top */
+            align-items: center;
+        }
+        
+        .logo { font-size: 18px; margin: 0; margin-right: 15px; white-space: nowrap; }
+        .greeting { display: none; } /* Hide greeting on mobile to save space */
+        
+        .sidebar-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+            margin: 0;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Main Content Fixes */
+        .main-content { padding: 15px; padding-top: 20px; overflow: visible; }
+        .top-controls { 
+            position: relative; 
+            top: 0; right: 0; 
+            justify-content: flex-end; 
+            margin-bottom: 15px; 
+            width: 100%; 
+        }
+
+        /* Cards & Grid */
+        .grid-2 { grid-template-columns: 1fr; gap: 15px; }
+        .card { padding: 20px; }
+        h2 { font-size: 1.3rem; }
+
+        /* Auth Mobile */
+        .auth-box { padding: 20px; }
     }
   </style>
 </head>
 <body>
 
 <div id="app" style="width:100%; height:100%"></div>
-<div id="toast" style="visibility:hidden; min-width:250px; background:#333; color:#fff; text-align:center; border-radius:50px; padding:16px; position:fixed; z-index:9999; left:50%; bottom:30px; transform:translateX(-50%);"></div>
+<div id="toast" style="visibility:hidden; min-width:250px; background:#333; color:#fff; text-align:center; border-radius:50px; padding:16px; position:fixed; z-index:9999; left:50%; bottom:30px; transform:translateX(-50%); box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></div>
 
 <script>
 // --- CONFIG & STATE ---
@@ -158,42 +190,42 @@ const T = {
   en: {
     welcome: "Welcome to రైతు పాలు",
     login: "Login", register: "Register", username: "Username", password: "Password",
-    home: "🏠 Home", profile: "👤 Your Profile", progress: "📊 My Progress", orders: "📦 Orders", feedback: "💬 Feedback", logout: "🚪 Logout",
+    home: "🏠 Home", profile: "👤 Profile", progress: "📊 Progress", orders: "📦 Orders", feedback: "💬 Feedback", logout: "🚪 Logout",
     summary: "📊 Summary", users: "👥 Users", hello: "Hello",
     placeOrderTitle: "Place New Order", yourOrders: "Your Orders", history: "Order History",
     placeBtn: "Place Order", 
     feedbackTitle: "Feedback", feedbackPlace: "Share your feedback...", submitBtn: "Submit Feedback",
-    back: "⬅ Back", downloadPdf: "📄 Download PDF",
+    back: "⬅ Back", downloadPdf: "📄 PDF",
     q1: "1 Litre", q2: "2 Litre", q34: "3/4 Litre", q12: "1/2 Litre",
     overview: "Overview", totalDays: "Total Days", grandTotal: "Grand Total",
     cost: "Cost", date: "Date", action: "Action", save: "Save Entry", delete: "Delete",
     changePassBtn: "Change Password", oldPass: "Old Password", newPass: "New Password",
-    totalRev: "Total Revenue", newOrders: "New Orders", pastOrders: "Past Orders", accept: "Accept", statusSuccess: "Success", statusPending: "Pending"
+    totalRev: "Revenue", newOrders: "New Orders", pastOrders: "Past Orders", accept: "Accept", statusSuccess: "Success", statusPending: "Pending"
   },
   te: {
     welcome: "రైతు పాలుకు స్వాగతం",
     login: "లాగిన్", register: "నమోదు", username: "పేరు", password: "పాస్‌వర్డ్",
-    home: "🏠 హోమ్", profile: "👤 మీ ప్రొఫైల్", progress: "📊 నా పురోగతి", orders: "📦 ఆర్డర్లు", feedback: "💬 అభిప్రాయం", logout: "🚪 నిష్క్రమించు",
+    home: "🏠 హోమ్", profile: "👤 ప్రొఫైల్", progress: "📊 పురోగతి", orders: "📦 ఆర్డర్లు", feedback: "💬 అభిప్రాయం", logout: "🚪 వెళ్లు",
     summary: "📊 సారాంశం", users: "👥 వినియోగదారులు", hello: "హలో",
-    placeOrderTitle: "కొత్త ఆర్డర్ చేయండి", yourOrders: "మీ ఆర్డర్లు", history: "మీ ఆర్డర్ చరిత్ర",
+    placeOrderTitle: "కొత్త ఆర్డర్ చేయండి", yourOrders: "మీ ఆర్డర్లు", history: "చరిత్ర",
     placeBtn: "ఆర్డర్ చేయండి",
     feedbackTitle: "అభిప్రాయం", feedbackPlace: "మీ అభిప్రాయాన్ని వ్రాయండి...", submitBtn: "సమర్పించు",
-    back: "⬅ వెనుకకు", downloadPdf: "📄 PDF డౌన్‌లోడ్",
+    back: "⬅ వెనుకకు", downloadPdf: "📄 PDF",
     q1: "1 లీటరు", q2: "2 లీటర్లు", q34: "3/4 లీటరు", q12: "1/2 లీటరు",
     overview: "అవలోకనం", totalDays: "మొత్తం రోజులు", grandTotal: "మొత్తం",
     cost: "ధర", date: "తేదీ", action: "చర్య", save: "భద్రపరచు", delete: "తొలగించు",
     changePassBtn: "పాస్‌వర్డ్ మార్చండి", oldPass: "పాత పాస్‌వర్డ్", newPass: "కొత్త పాస్‌వర్డ్",
-    totalRev: "మొత్తం ఆదాయం", newOrders: "కొత్త ఆర్డర్లు", pastOrders: "పాత ఆర్డర్లు", accept: "ఆమోదించండి", statusSuccess: "విజయవంతమైంది", statusPending: "పెండింగ్"
+    totalRev: "ఆదాయం", newOrders: "కొత్త ఆర్డర్లు", pastOrders: "పాత ఆర్డర్లు", accept: "ఆమోదించండి", statusSuccess: "విజయవంతం", statusPending: "పెండింగ్"
   },
   hi: {
     welcome: "రైతు పాలు में आपका स्वागत है",
     login: "लॉग इन", register: "पंजीकरण", username: "नाम", password: "पासवर्ड",
-    home: "🏠 होम", profile: "👤 प्रोफाइल", progress: "📊 प्रगति", orders: "📦 आर्डर", feedback: "💬 प्रतिक्रिया", logout: "🚪 लॉग आउट",
+    home: "🏠 होम", profile: "👤 प्रोफाइल", progress: "📊 प्रगति", orders: "📦 आर्डर", feedback: "💬 प्रतिक्रिया", logout: "🚪 बाहर",
     summary: "📊 सारांश", users: "👥 उपयोगकर्ता", hello: "नमस्ते",
-    placeOrderTitle: "नया ऑर्डर दें", yourOrders: "आपके ऑर्डर", history: "ऑर्डर इतिहास",
+    placeOrderTitle: "नया ऑर्डर दें", yourOrders: "आपके ऑर्डर", history: "इतिहास",
     placeBtn: "ऑर्डर दें",
     feedbackTitle: "प्रतिक्रिया", feedbackPlace: "अपनी प्रतिक्रिया लिखें...", submitBtn: "जमा करें",
-    back: "⬅ पीछे", downloadPdf: "📄 पीडीएफ डाउनलोड",
+    back: "⬅ पीछे", downloadPdf: "📄 पीडीएफ",
     q1: "1 लीटर", q2: "2 लीटर", q34: "3/4 लीटर", q12: "1/2 लीटर",
     overview: "अवलोकन", totalDays: "कुल दिन", grandTotal: "कुल योग",
     cost: "लागत", date: "तारीख", action: "कार्रवाई", save: "सहेजें", delete: "हटाएं",
@@ -215,7 +247,7 @@ function showToast(msg) {
   const x = document.getElementById("toast"); x.style.visibility = "visible"; x.innerText = msg;
   setTimeout(() => x.style.visibility = "hidden", 3000);
 }
-function getMonthName(m) { return ["January","February","March","April","May","June","July","August","September","October","November","December"][parseInt(m)-1]; }
+function getMonthName(m) { return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(m)-1]; }
 function sortSalesByDate(sales) {
   return sales.sort((a, b) => {
     const [d1, m1, y1] = a.date.split('/'); const [d2, m2, y2] = b.date.split('/');
@@ -315,14 +347,14 @@ async function adminOrders() {
         ${pending.length === 0 ? '<p>No pending orders</p>' : ''}
         ${pending.map(o => `
           <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #eee;">
-            <div><b>${o.username}</b> - ${o.quantity}L <br> <small>${new Date(o.timestamp).toLocaleString()}</small></div>
-            <button class="btn-green" style="background:#4CAF50" onclick="acceptOrder('${o.id}')">${t('accept')}</button>
+            <div><b>${o.username}</b> - ${o.quantity}L <br> <small>${new Date(o.timestamp).toLocaleDateString()}</small></div>
+            <button class="btn-green" style="background:#4CAF50; padding:5px 10px" onclick="acceptOrder('${o.id}')">${t('accept')}</button>
           </div>`).join('')}
       </div>
 
       <div class="card">
         <h3>${t('pastOrders')}</h3>
-        <div style="max-height:400px; overflow-y:auto">
+        <div class="table-container" style="max-height:400px; overflow-y:auto">
           <table>
             <tr><th>User</th><th>Qty</th><th>Status</th><th>Date</th></tr>
             ${past.map(o => `<tr><td>${o.username}</td><td>${o.quantity}L</td><td style="color:green">${o.status}</td><td>${new Date(o.timestamp).toLocaleDateString()}</td></tr>`).join('')}
@@ -363,7 +395,6 @@ async function editUser(name) {
   const u = users.find(x => x.username === name);
   const sales = sortSalesByDate(u.sales);
   
-  // Calculate Totals for this specific user
   let st = { t2:0, t1:0, t34:0, t12:0, c2:0, c1:0, c34:0, c12:0, total:0 };
   u.sales.forEach(s => {
     st.t2 += s.twoL||0; st.c2 += (s.twoL||0)*PRICES.twoL;
@@ -381,18 +412,20 @@ async function editUser(name) {
       <div>
         <div class="card">
           <h3>Add Daily Entry</h3>
-          <input type="date" id="d" style="width:200px">
+          <input type="date" id="d" style="width:100%">
           <br>
-          <button class="milk-btn" onclick="tog(this,'twoL')">2L</button>
-          <button class="milk-btn" onclick="tog(this,'oneL')">1L</button>
-          <button class="milk-btn" onclick="tog(this,'threeQuarterL')">3/4L</button>
-          <button class="milk-btn" onclick="tog(this,'halfL')">1/2L</button>
-          <br><br>
-          <button onclick="save('${name}')">${t('save')}</button>
+          <div style="display:flex; flex-wrap:wrap; justify-content:center">
+             <button class="milk-btn" onclick="tog(this,'twoL')">2L</button>
+             <button class="milk-btn" onclick="tog(this,'oneL')">1L</button>
+             <button class="milk-btn" onclick="tog(this,'threeQuarterL')">3/4L</button>
+             <button class="milk-btn" onclick="tog(this,'halfL')">1/2L</button>
+          </div>
+          <br>
+          <button style="width:100%" onclick="save('${name}')">${t('save')}</button>
         </div>
 
         <div class="card" style="margin-top:20px;">
-          <h3>User Totals Summary</h3>
+          <h3>Summary</h3>
           <div class="breakdown-item"><span>${t('q2')} (${st.t2})</span><span>₹${st.c2}</span></div>
           <div class="breakdown-item"><span>${t('q1')} (${st.t1})</span><span>₹${st.c1}</span></div>
           <div class="breakdown-item"><span>${t('q34')} (${st.t34})</span><span>₹${st.c34}</span></div>
@@ -403,20 +436,20 @@ async function editUser(name) {
 
       <div class="card">
         <h3>Records</h3>
-        <div style="max-height:400px; overflow-y:auto;">
+        <div class="table-container" style="max-height:400px; overflow-y:auto;">
           <table>
-            <tr><th>Date</th><th>2L</th><th>1L</th><th>3/4L</th><th>1/2L</th><th>₹</th><th>Act</th></tr>
+            <tr><th>Date</th><th>2L</th><th>1L</th><th>3/4</th><th>1/2</th><th>₹</th><th>Act</th></tr>
             ${sales.slice().reverse().map(s => {
                const cost = (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
                return `
               <tr>
-                <td>${s.date}</td>
+                <td>${s.date.split('/')[0]}/${s.date.split('/')[1]}</td>
                 <td>${s.twoL||0}</td>
                 <td>${s.oneL||0}</td>
                 <td>${s.threeQuarterL||0}</td>
                 <td>${s.halfL||0}</td>
                 <td>${cost}</td>
-                <td><button class="btn-red" onclick="del('${name}','${s.date}')">Del</button></td>
+                <td><button class="btn-red" onclick="del('${name}','${s.date}')">X</button></td>
               </tr>`}).join('')}
           </table>
         </div>
@@ -426,7 +459,7 @@ async function editUser(name) {
   renderDashboardShell(currUser, html, 'users');
 }
 
-// --- USER VIEWS (SIDE-BY-SIDE RESTORED) ---
+// --- USER VIEWS ---
 
 async function userProfile() {
   const u = JSON.parse(localStorage.getItem('user'));
@@ -444,7 +477,7 @@ async function userProfile() {
         <h3>${t('changePassBtn')}</h3>
         <div class="pass-wrapper"><input id="oldP" type="password" placeholder="${t('oldPass')}"><span class="pass-icon" onclick="togglePass('oldP')">👁️</span></div>
         <div class="pass-wrapper"><input id="newP" type="password" placeholder="${t('newPass')}"><span class="pass-icon" onclick="togglePass('newP')">👁️</span></div>
-        <button onclick="changePass('${u.username}')">${t('save')}</button>
+        <button style="width:100%" onclick="changePass('${u.username}')">${t('save')}</button>
       </div>
     </div>
   `;
@@ -467,7 +500,7 @@ async function userOrders() {
           <option value="0.75">3/4 Litre</option>
           <option value="0.5">1/2 Litre</option>
         </select>
-        <button onclick="placeOrder('${u.username}')">${t('placeBtn')}</button>
+        <button style="width:100%" onclick="placeOrder('${u.username}')">${t('placeBtn')}</button>
       </div>
 
       <div class="card">
@@ -476,7 +509,7 @@ async function userOrders() {
         <div style="max-height:400px; overflow-y:auto">
           ${orders.map(o => `
             <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-               <span><b>${o.quantity}L</b> - ${new Date(o.timestamp).toLocaleDateString()}</span>
+               <span><b>${o.quantity}L</b> <br><small>${new Date(o.timestamp).toLocaleDateString()}</small></span>
                <span style="color:${o.status==='Pending'?'orange':'green'}; font-weight:bold">${o.status}</span>
             </div>`).join('')}
         </div>
@@ -499,7 +532,7 @@ async function userProgress() {
     const title = `${getMonthName(m)} ${y}`;
 
     const html = `
-      <div style="display:flex; gap:10px; margin-bottom:15px;">
+      <div style="display:flex; gap:10px; margin-bottom:15px; justify-content:space-between">
         <button class="btn-blue" onclick="currentMonthView=null; userProgress()">${t('back')}</button>
         <button style="background:#FF5722" onclick="downloadPDF('${title}')">${t('downloadPdf')}</button>
       </div>
@@ -508,23 +541,25 @@ async function userProgress() {
       <div class="card">
         <h3>${t('overview')}</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-           <p><b>${t('q2')}:</b> ${st.t2}</p> <p><b>${t('cost')}:</b> ₹${st.cost2}</p>
-           <p><b>${t('q1')}:</b> ${st.t1}</p> <p><b>${t('cost')}:</b> ₹${st.cost1}</p>
-           <p><b>${t('q34')}:</b> ${st.t34}</p> <p><b>${t('cost')}:</b> ₹${st.cost34}</p>
-           <p><b>${t('q12')}:</b> ${st.t12}</p> <p><b>${t('cost')}:</b> ₹${st.cost12}</p>
+           <p><b>${t('q2')}:</b> ${st.t2}</p> <p><b>₹:</b> ${st.cost2}</p>
+           <p><b>${t('q1')}:</b> ${st.t1}</p> <p><b>₹:</b> ${st.cost1}</p>
+           <p><b>${t('q34')}:</b> ${st.t34}</p> <p><b>₹:</b> ${st.cost34}</p>
+           <p><b>${t('q12')}:</b> ${st.t12}</p> <p><b>₹:</b> ${st.cost12}</p>
         </div>
         <hr>
         <h3 style="color:var(--primary); text-align:right">${t('grandTotal')}: ₹${st.totalCost}</h3>
       </div>
 
-      <div class="card">
-        <table>
-          <tr><th>${t('date')}</th><th>2L</th><th>1L</th><th>3/4L</th><th>1/2L</th><th>₹</th></tr>
-          ${sorted.map(s => {
-             const c=(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
-             return `<tr><td>${s.date}</td><td>${s.twoL||0}</td><td>${s.oneL||0}</td><td>${s.threeQuarterL||0}</td><td>${s.halfL||0}</td><td>${c}</td></tr>`
-          }).join('')}
-        </table>
+      <div class="card" style="margin-top:20px">
+        <div class="table-container">
+            <table id="monthTable">
+            <tr><th>${t('date')}</th><th>2L</th><th>1L</th><th>3/4</th><th>1/2</th><th>₹</th></tr>
+            ${sorted.map(s => {
+                const c=(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+                return `<tr><td>${s.date}</td><td>${s.twoL||0}</td><td>${s.oneL||0}</td><td>${s.threeQuarterL||0}</td><td>${s.halfL||0}</td><td>${c}</td></tr>`
+            }).join('')}
+            </table>
+        </div>
       </div>
     `;
     renderDashboardShell(u, html, 'progress');
@@ -557,20 +592,20 @@ async function userHome() {
   const container = document.querySelector('.main-content');
   const chartDiv = document.createElement('div');
   chartDiv.className = 'grid-2';
-  chartDiv.innerHTML = `<div class="card"><h3>Overview</h3><canvas id="pie"></canvas></div><div class="card"><h3>Monthly Revenue</h3><canvas id="bar"></canvas></div>`;
+  chartDiv.innerHTML = `<div class="card"><h3>Overview</h3><div style="position:relative; height:250px"><canvas id="pie"></canvas></div></div><div class="card"><h3>Monthly Revenue</h3><div style="position:relative; height:250px"><canvas id="bar"></canvas></div></div>`;
   container.appendChild(chartDiv);
   
   const ctx = document.getElementById('bar').getContext('2d');
   const grad = ctx.createLinearGradient(0,0,0,400); grad.addColorStop(0,'rgba(67, 160, 71, 0.6)'); grad.addColorStop(1,'rgba(67, 160, 71, 0.1)');
-  new Chart(ctx, {type:'bar', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Cost', data:Object.values(mData), backgroundColor:grad, borderRadius:5}]}, options:{scales:{y:{beginAtZero:true}}}});
+  new Chart(ctx, {type:'bar', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Cost', data:Object.values(mData), backgroundColor:grad, borderRadius:5}]}, options:{maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}});
   
   let t2=0,t1=0,t34=0,t12=0; data.sales.forEach(s=>{t2+=s.twoL||0;t1+=s.oneL||0;t34+=s.threeQuarterL||0;t12+=s.halfL||0;});
-  new Chart(document.getElementById('pie'), {type:'doughnut', data:{labels:[t('q2'),t('q1'),t('q34'),t('q12')], datasets:[{data:[t2,t1,t34,t12], backgroundColor:['#43a047','#1976D2','#F57C00','#7B1FA2']}]}});
+  new Chart(document.getElementById('pie'), {type:'doughnut', data:{labels:[t('q2'),t('q1'),t('q34'),t('q12')], datasets:[{data:[t2,t1,t34,t12], backgroundColor:['#43a047','#1976D2','#F57C00','#7B1FA2']}]}, options:{maintainAspectRatio:false}});
 }
 
 function userFeedback() {
   const u = JSON.parse(localStorage.getItem('user'));
-  renderDashboardShell(u, `<h2>${t('feedbackTitle')}</h2><div class="card"><textarea style="width:100%; height:150px" placeholder="${t('feedbackPlace')}"></textarea><button>${t('submitBtn')}</button></div>`, 'feedback');
+  renderDashboardShell(u, `<h2>${t('feedbackTitle')}</h2><div class="card"><textarea style="width:100%; height:150px" placeholder="${t('feedbackPlace')}"></textarea><button style="width:100%">${t('submitBtn')}</button></div>`, 'feedback');
 }
 
 // --- ACTIONS ---
@@ -585,9 +620,9 @@ async function register(){const u=document.getElementById('ru').value,p=document
 function logout(){localStorage.clear();renderAuth();}
 function toggleAuth(v){document.getElementById('loginForm').style.display=v==='login'?'block':'none';document.getElementById('regForm').style.display=v==='reg'?'block':'none';}
 function togglePass(id){const x=document.getElementById(id);x.type=x.type==='password'?'text':'password';}
-
+    
 // --- AUTH RENDER ---
-function renderAuth(){app.innerHTML=`<div class="auth-container">${renderControls()}<div class="auth-box"><h1 style="color:#43a047">🌾 రైతు పాలు</h1><div id="loginForm"><h2>${t('login')}</h2><input id="u" placeholder="${t('username')}"><div class="pass-wrapper"><input id="p" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('p')">👁️</span></div><button onclick="login()">${t('login')}</button><p onclick="toggleAuth('reg')" style="cursor:pointer;color:blue;margin-top:10px">${t('register')}</p></div><div id="regForm" style="display:none"><h2>${t('register')}</h2><input id="ru" placeholder="${t('username')}"><div class="pass-wrapper"><input id="rp" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('rp')">👁️</span></div><button onclick="register()">${t('register')}</button><p onclick="toggleAuth('login')" style="cursor:pointer;color:blue;margin-top:10px">${t('login')}</p></div></div></div>`;}
+function renderAuth(){app.innerHTML=`<div class="auth-container">${renderControls()}<div class="auth-box"><h1 style="color:#43a047">🌾 రైతు పాలు</h1><div id="loginForm"><h2>${t('login')}</h2><input id="u" placeholder="${t('username')}"><div class="pass-wrapper"><input id="p" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('p')">👁️</span></div><button style="width:100%" onclick="login()">${t('login')}</button><p onclick="toggleAuth('reg')" style="cursor:pointer;color:blue;margin-top:10px">${t('register')}</p></div><div id="regForm" style="display:none"><h2>${t('register')}</h2><input id="ru" placeholder="${t('username')}"><div class="pass-wrapper"><input id="rp" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('rp')">👁️</span></div><button style="width:100%" onclick="register()">${t('register')}</button><p onclick="toggleAuth('login')" style="cursor:pointer;color:blue;margin-top:10px">${t('login')}</p></div></div></div>`;}
 
 // INIT
 const saved=JSON.parse(localStorage.getItem('user'));
