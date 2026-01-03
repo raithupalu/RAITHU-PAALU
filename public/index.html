@@ -58,6 +58,49 @@
     select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; background: var(--card-bg); color: var(--text); cursor: pointer; }
     .theme-btn { font-size: 24px; cursor: pointer; background: none; border: none; padding: 0; }
 
+    /* --- AUTH / LANDING PAGE STYLES --- */
+    .auth-container { 
+      width: 100%; 
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column; /* Stack items vertically */
+      align-items: center; 
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
+      position: relative;
+    }
+
+    /* The Bar at the top for Language/Theme */
+    .landing-header {
+      width: 100%;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: flex-end; 
+      align-items: center;
+      position: absolute; /* Stick to top */
+      top: 0;
+      z-index: 10;
+    }
+
+    /* The Login Card */
+    .auth-box { 
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px; 
+      border-radius: 20px; 
+      width: 90%; 
+      max-width: 400px; 
+      text-align: center; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
+      margin: auto; /* Centers it vertically and horizontally */
+      backdrop-filter: blur(5px);
+    }
+    
+    /* Overwrite top-controls style specifically for landing page */
+    .landing-header .top-controls {
+      position: static; 
+      display: flex;
+      gap: 15px;
+    }
+
     /* --- CARDS & LAYOUTS --- */
     h2 { color: var(--primary); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; font-size: 1.5rem; }
     
@@ -69,7 +112,7 @@
       border-radius: 12px;
       box-shadow: var(--shadow);
       height: 100%;
-      overflow: hidden; /* Contain children */
+      overflow: hidden; 
     }
 
     /* Stats Grid */
@@ -82,13 +125,12 @@
     .stat-box h3 { margin: 0 0 5px 0; opacity: 0.9; font-size: 0.9rem; }
     .stat-box h1 { margin: 0; font-size: 1.8rem; }
 
-    /* Tables - Critical for Mobile */
+    /* Tables - Mobile Scroll */
     .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; min-width: 400px; } /* Min width ensures scroll on mobile */
+    table { width: 100%; border-collapse: collapse; min-width: 400px; } 
     th { background: var(--primary); color: white; padding: 12px; text-align: center; font-size: 14px; white-space: nowrap; }
     td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: var(--card-bg); font-size: 14px; white-space: nowrap; }
     
-    /* Breakdown List */
     .breakdown-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 14px; }
     .breakdown-item:last-child { border: none; font-weight: bold; color: var(--primary); font-size: 16px; margin-top: 5px; }
 
@@ -102,7 +144,7 @@
     .milk-btn.active { background: var(--primary); color: white; }
 
     /* Inputs */
-    input, select, textarea { width: 100%; padding: 12px; margin: 8px 0 20px 0; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; font-size: 16px; } /* 16px prevents iOS zoom */
+    input, select, textarea { width: 100%; padding: 12px; margin: 8px 0 20px 0; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; font-size: 16px; }
     .pass-wrapper { position: relative; width: 100%; }
     .pass-icon { position: absolute; right: 12px; top: 40%; transform: translateY(-50%); cursor: pointer; font-size: 18px; color: #666; }
 
@@ -110,20 +152,15 @@
     .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
     .user-box { background: #424242; color: white; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; }
 
-    /* Month Card */
     .month-card {
       background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white;
       padding: 15px; border-radius: 12px; text-align: center; cursor: pointer;
       font-weight: bold; margin-bottom: 10px;
     }
 
-    /* Auth */
-    .auth-container { width: 100%; display: flex; justify-content: center; align-items: center; background: #e8f5e9; height: 100vh; padding: 20px; }
-    .auth-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-
     /* --- MOBILE RESPONSIVE CSS --- */
     @media(max-width: 768px) { 
-        body { overflow-y: auto; position: relative; } /* Enable scroll on body */
+        body { overflow-y: auto; position: relative; } 
         .dashboard-container { flex-direction: column; height: auto; min-height: 100vh; } 
         
         /* Mobile Header / Sidebar */
@@ -135,38 +172,25 @@
             overflow-x: auto; 
             padding: 10px;
             gap: 10px;
-            position: sticky; top: 0; /* Sticks to top */
+            position: sticky; top: 0; 
             align-items: center;
         }
         
         .logo { font-size: 18px; margin: 0; margin-right: 15px; white-space: nowrap; }
-        .greeting { display: none; } /* Hide greeting on mobile to save space */
+        .greeting { display: none; }
         
-        .sidebar-btn {
-            padding: 8px 12px;
-            font-size: 12px;
-            margin: 0;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
+        .sidebar-btn { padding: 8px 12px; font-size: 12px; margin: 0; white-space: nowrap; flex-shrink: 0; }
 
-        /* Main Content Fixes */
         .main-content { padding: 15px; padding-top: 20px; overflow: visible; }
-        .top-controls { 
-            position: relative; 
-            top: 0; right: 0; 
-            justify-content: flex-end; 
-            margin-bottom: 15px; 
-            width: 100%; 
-        }
+        .top-controls { position: relative; top: 0; right: 0; justify-content: flex-end; margin-bottom: 15px; width: 100%; }
 
-        /* Cards & Grid */
         .grid-2 { grid-template-columns: 1fr; gap: 15px; }
         .card { padding: 20px; }
         h2 { font-size: 1.3rem; }
 
-        /* Auth Mobile */
-        .auth-box { padding: 20px; }
+        /* Auth Mobile specific */
+        .landing-header { justify-content: center; position: relative; padding-top: 40px; }
+        .auth-box { margin-top: 20px; margin-bottom: auto; padding: 20px; }
     }
   </style>
 </head>
@@ -608,6 +632,49 @@ function userFeedback() {
   renderDashboardShell(u, `<h2>${t('feedbackTitle')}</h2><div class="card"><textarea style="width:100%; height:150px" placeholder="${t('feedbackPlace')}"></textarea><button style="width:100%">${t('submitBtn')}</button></div>`, 'feedback');
 }
 
+// --- AUTH RENDER ---
+function renderAuth(){
+  app.innerHTML = `
+    <div class="auth-container">
+      
+      <!-- Top Header for Controls -->
+      <div class="landing-header">
+        ${renderControls().replace('class="top-controls"', 'class="top-controls" style="position:static"')} 
+      </div>
+
+      <!-- Login/Register Box -->
+      <div class="auth-box">
+        <h1 style="color:var(--primary); margin-top:0; font-size: 2.2rem;">🌾 రైతు పాలు</h1>
+        <p style="color:#666; margin-bottom:25px; font-size:0.9rem">Farm fresh milk management</p>
+        
+        <!-- Login Form -->
+        <div id="loginForm">
+          <h2 style="border:none; color:#333">${t('login')}</h2>
+          <input id="u" placeholder="${t('username')}">
+          <div class="pass-wrapper">
+            <input id="p" type="password" placeholder="${t('password')}">
+            <span class="pass-icon" onclick="togglePass('p')">👁️</span>
+          </div>
+          <button style="width:100%; margin-top:10px; padding: 14px; font-size:16px" onclick="login()">${t('login')}</button>
+          <p onclick="toggleAuth('reg')" style="cursor:pointer; color:var(--primary); margin-top:20px; font-weight:500">${t('register')}</p>
+        </div>
+
+        <!-- Register Form -->
+        <div id="regForm" style="display:none">
+          <h2 style="border:none; color:#333">${t('register')}</h2>
+          <input id="ru" placeholder="${t('username')}">
+          <div class="pass-wrapper">
+            <input id="rp" type="password" placeholder="${t('password')}">
+            <span class="pass-icon" onclick="togglePass('rp')">👁️</span>
+          </div>
+          <button style="width:100%; margin-top:10px; padding: 14px; font-size:16px" onclick="register()">${t('register')}</button>
+          <p onclick="toggleAuth('login')" style="cursor:pointer; color:var(--primary); margin-top:20px; font-weight:500">${t('login')}</p>
+        </div>
+
+      </div>
+    </div>`;
+}
+
 // --- ACTIONS ---
 function tog(b,t){b.classList.toggle('active');selectedMilk[t]=selectedMilk[t]?0:1;}
 async function save(n){const d=document.getElementById('d').value;if(!d)return;const[y,m,day]=d.split('-');await fetch('/add-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,sale:{date:`${day}/${m}/${y}`,...selectedMilk}})});selectedMilk={twoL:0,oneL:0,threeQuarterL:0,halfL:0};showToast(t('save')+" ✅");editUser(n);}
@@ -620,9 +687,6 @@ async function register(){const u=document.getElementById('ru').value,p=document
 function logout(){localStorage.clear();renderAuth();}
 function toggleAuth(v){document.getElementById('loginForm').style.display=v==='login'?'block':'none';document.getElementById('regForm').style.display=v==='reg'?'block':'none';}
 function togglePass(id){const x=document.getElementById(id);x.type=x.type==='password'?'text':'password';}
-    
-// --- AUTH RENDER ---
-function renderAuth(){app.innerHTML=`<div class="auth-container">${renderControls()}<div class="auth-box"><h1 style="color:#43a047">🌾 రైతు పాలు</h1><div id="loginForm"><h2>${t('login')}</h2><input id="u" placeholder="${t('username')}"><div class="pass-wrapper"><input id="p" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('p')">👁️</span></div><button style="width:100%" onclick="login()">${t('login')}</button><p onclick="toggleAuth('reg')" style="cursor:pointer;color:blue;margin-top:10px">${t('register')}</p></div><div id="regForm" style="display:none"><h2>${t('register')}</h2><input id="ru" placeholder="${t('username')}"><div class="pass-wrapper"><input id="rp" type="password" placeholder="${t('password')}"><span class="pass-icon" onclick="togglePass('rp')">👁️</span></div><button style="width:100%" onclick="register()">${t('register')}</button><p onclick="toggleAuth('login')" style="cursor:pointer;color:blue;margin-top:10px">${t('login')}</p></div></div></div>`;}
 
 // INIT
 const saved=JSON.parse(localStorage.getItem('user'));

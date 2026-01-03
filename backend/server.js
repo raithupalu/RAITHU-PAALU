@@ -10,18 +10,16 @@ const app = express();
 // --- MIDDLEWARE ---
 app.use(express.json());
 app.use(cors());
-// Serve static files from the 'public' folder (relative to root)
+// Serve static files from the 'public' folder (one level up)
 app.use(express.static(path.join(__dirname, "../public")));
 
 // --- DATABASE CONNECTION ---
-// 1. Try to get URI from .env
-// 2. If that fails, use this HARDCODED string as a backup
-const db_connection_string = process.env.MONGO_URI || "mongodb+srv://raithupalu_db_user:Raithu123@raithu.gcctfct.mongodb.net/raithupaalu?appName=raithu";
+// PASTE YOUR MONGODB STRING BELOW inside the quotes if .env fails
+const db_connection_string = process.env.MONGO_URI || "mongodb+srv://admin:admin123@cluster0.p7q8s.mongodb.net/raithu-palu?retryWrites=true&w=majority&appName=Cluster0";
 
 const connectDB = async () => {
   try {
     console.log("Attempting to connect to MongoDB...");
-    // Use the variable defined above
     await mongoose.connect(db_connection_string);
     console.log("✅ MongoDB Connected Successfully");
   } catch (err) {
@@ -82,6 +80,7 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
+    // Hardcoded Admin
     if (username === "admin" && password === "admin123") {
       return res.json({ role: "admin" });
     }
@@ -95,7 +94,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Get User
+// Get User Data
 app.get("/user/:username", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username }).lean();
@@ -112,8 +111,10 @@ app.post("/change-password", async (req, res) => {
     const { username, oldPassword, newPassword } = req.body;
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ error: "User not found" });
+
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) return res.status(400).json({ error: "Incorrect old password" });
+
     const hashedNew = await bcrypt.hash(newPassword, 10);
     user.password = hashedNew;
     await user.save();
@@ -129,6 +130,7 @@ app.post("/add-sale", async (req, res) => {
     const { username, sale } = req.body;
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ error: "User not found" });
+
     const existing = user.sales.find(s => s.date === sale.date);
     if (existing) {
       existing.twoL = sale.twoL;
@@ -151,7 +153,19 @@ app.post("/delete-sale", async (req, res) => {
     const { username, date } = req.body;
     await User.updateOne({ username }, { $pull: { sales: { date } } });
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: "Error deleting sale" }); }
+  } catch (err) { 
+    res.status(500).json({ error: "Error deleting sale" }); 
+  }
+});
+
+// Admin: Get All Users
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find().lean();
+    res.json(users);
+  } catch (e) {
+    res.status(500).json({ error: "Error fetching users" });
+  }
 });
 
 // Place Order
@@ -159,39 +173,43 @@ app.post("/place-order", async (req, res) => {
   try {
     await Order.create({ ...req.body, id: Date.now().toString(), status: "Pending", timestamp: new Date() });
     res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: "Error placing order" }); }
+  } catch (e) {
+    res.status(500).json({ error: "Error placing order" });
+  }
 });
 
-// Get Orders
+// Get All Orders
 app.get("/orders", async (req, res) => { 
   try {
     const orders = await Order.find().sort({ timestamp: -1 }).lean();
     res.json(orders);
-  } catch (e) { res.status(500).json({ error: "Error fetching orders" }); }
+  } catch (e) {
+    res.status(500).json({ error: "Error fetching orders" });
+  }
 });
 
+// Get User Orders
 app.get("/orders/:username", async (req, res) => { 
   try {
     const orders = await Order.find({ username: req.params.username }).sort({ timestamp: -1 }).lean();
     res.json(orders);
-  } catch (e) { res.status(500).json({ error: "Error fetching user orders" }); }
+  } catch (e) {
+    res.status(500).json({ error: "Error fetching user orders" });
+  }
 });
 
+// Update Order Status
 app.post("/update-order", async (req, res) => {
   try {
     const { id, status } = req.body;
     await Order.findOneAndUpdate({ id }, { status });
     res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: "Error updating order" }); }
+  } catch (e) {
+    res.status(500).json({ error: "Error updating order" });
+  }
 });
 
-app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find().lean();
-    res.json(users);
-  } catch (e) { res.status(500).json({ error: "Error fetching users" }); }
-});
-
+// --- SERVER START ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
