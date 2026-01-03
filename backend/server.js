@@ -1,27 +1,70 @@
 require("dotenv").config();
-require("./db");
-const User = require("./models/User");
-const Order = require("./models/Order");
 const express = require("express");
+const mongoose = require("mongoose");
 const path = require("path");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 
-
 const app = express();
+
+// --- MIDDLEWARE ---
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, "..", "public")));
+// Serve static files from the 'public' folder (relative to root)
+app.use(express.static(path.join(__dirname, "../public")));
 
-const PORT = process.env.PORT || 3000;
+// --- DATABASE CONNECTION ---
+// 1. Try to get URI from .env
+// 2. If that fails, use this HARDCODED string as a backup
+const db_connection_string = process.env.MONGO_URI || "mongodb+srv://raithupalu_db_user:Raithu123@raithu.gcctfct.mongodb.net/raithupaalu?appName=raithu";
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const connectDB = async () => {
+  try {
+    console.log("Attempting to connect to MongoDB...");
+    // Use the variable defined above
+    await mongoose.connect(db_connection_string);
+    console.log("✅ MongoDB Connected Successfully");
+  } catch (err) {
+    console.error("❌ MongoDB Connection Error:", err.message);
+    process.exit(1); 
+  }
+};
+connectDB();
+
+// --- MODELS ---
+const saleSchema = new mongoose.Schema({
+  date: String,
+  twoL: Number,
+  oneL: Number,
+  threeQuarterL: Number,
+  halfL: Number
 });
 
-// ROUTES
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "index.html")));
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  sales: [saleSchema]
+});
 
+const orderSchema = new mongoose.Schema({
+  id: String,
+  username: String,
+  quantity: String,
+  status: String,
+  timestamp: Date
+});
+
+const User = mongoose.model("User", userSchema);
+const Order = mongoose.model("Order", orderSchema);
+
+// --- ROUTES ---
+
+// Serve Frontend
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public", "index.html"));
+});
+
+// Register
 app.post("/register", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -30,87 +73,126 @@ app.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ username, password: hashedPassword, sales: [] });
     res.json(user);
-  } catch (e) { res.status(500).json({ error: "Error" }); }
+  } catch (e) {
+    res.status(500).json({ error: "Error registering user" });
+  }
 });
 
+// Login
 app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  if (username === "admin" && password === "admin123") return res.json({ role: "admin" });
-  const user = await User.findOne({ username });
-  if (!user || !(await bcrypt.compare(password, user.password))) return res.status(400).json(null);
-  res.json({ username: user.username, role: "user" });
+  try {
+    const { username, password } = req.body;
+    if (username === "admin" && password === "admin123") {
+      return res.json({ role: "admin" });
+    }
+    const user = await User.findOne({ username });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(400).json(null);
+    }
+    res.json({ username: user.username, role: "user" });
+  } catch (e) {
+    res.status(500).json({ error: "Login error" });
+  }
 });
 
-// ✅ NEW: Change Password Route
-app.post("/change-password", async (req, res) => {
-  const { username, oldPassword, newPassword } = req.body;
-  const user = await User.findOne({ username });
-  if (!user) return res.status(400).json({ error: "User not found" });
-
-  const isMatch = await bcrypt.compare(oldPassword, user.password);
-  if (!isMatch) return res.status(400).json({ error: "Incorrect old password" });
-
-  const hashedNew = await bcrypt.hash(newPassword, 10);
-  user.password = hashedNew;
-  await user.save();
-  res.json({ success: true });
-});
-
+// Get User
 app.get("/user/:username", async (req, res) => {
-  const user = await User.findOne({ username: req.params.username }).lean();
-  res.json(user);
+  try {
+    const user = await User.findOne({ username: req.params.username }).lean();
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (e) {
+    res.status(500).json({ error: "Error fetching user" });
+  }
 });
-// Serve static files from public folder
-app.use(express.static(path.join(__dirname, "../public")));
-app.get("/users", async (req, res) => {
-  const users = await User.find().lean();
-  res.json(users);
-});
-// Serve static files from public folder
-app.use(express.static(path.join(__dirname, "../public")));
 
+// Change Password
+app.post("/change-password", async (req, res) => {
+  try {
+    const { username, oldPassword, newPassword } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ error: "User not found" });
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(400).json({ error: "Incorrect old password" });
+    const hashedNew = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNew;
+    await user.save();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: "Error changing password" });
+  }
+});
+
+// Add Sale
 app.post("/add-sale", async (req, res) => {
-  const { username, sale } = req.body;
-  const user = await User.findOne({ username });
-  const existing = user.sales.find(s => s.date === sale.date);
-  if (existing) {
-    existing.twoL = sale.twoL; existing.oneL = sale.oneL; 
-    existing.threeQuarterL = sale.threeQuarterL; existing.halfL = sale.halfL;
-  } else { user.sales.push(sale); }
-  await user.save();
-  res.json({ success: true });
-});
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
+  try {
+    const { username, sale } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    const existing = user.sales.find(s => s.date === sale.date);
+    if (existing) {
+      existing.twoL = sale.twoL;
+      existing.oneL = sale.oneL;
+      existing.threeQuarterL = sale.threeQuarterL;
+      existing.halfL = sale.halfL;
+    } else {
+      user.sales.push(sale);
+    }
+    await user.save();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: "Error adding sale" });
+  }
 });
 
+// Delete Sale
 app.post("/delete-sale", async (req, res) => {
   try {
     const { username, date } = req.body;
     await User.updateOne({ username }, { $pull: { sales: { date } } });
     res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: "Error" }); }
+  } catch (err) { res.status(500).json({ error: "Error deleting sale" }); }
 });
 
+// Place Order
 app.post("/place-order", async (req, res) => {
-  await Order.create({ ...req.body, id: Date.now().toString(), status: "Pending", timestamp: new Date() });
-  res.json({ success: true });
+  try {
+    await Order.create({ ...req.body, id: Date.now().toString(), status: "Pending", timestamp: new Date() });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: "Error placing order" }); }
 });
 
+// Get Orders
 app.get("/orders", async (req, res) => { 
-  const orders = await Order.find().sort({ timestamp: -1 }).lean();
-  res.json(orders);
+  try {
+    const orders = await Order.find().sort({ timestamp: -1 }).lean();
+    res.json(orders);
+  } catch (e) { res.status(500).json({ error: "Error fetching orders" }); }
 });
 
 app.get("/orders/:username", async (req, res) => { 
-  const orders = await Order.find({ username: req.params.username }).sort({ timestamp: -1 }).lean();
-  res.json(orders);
+  try {
+    const orders = await Order.find({ username: req.params.username }).sort({ timestamp: -1 }).lean();
+    res.json(orders);
+  } catch (e) { res.status(500).json({ error: "Error fetching user orders" }); }
 });
 
 app.post("/update-order", async (req, res) => {
-  const { id, status } = req.body;
-  await Order.findOneAndUpdate({ id }, { status });
-  res.json({ success: true });
+  try {
+    const { id, status } = req.body;
+    await Order.findOneAndUpdate({ id }, { status });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: "Error updating order" }); }
 });
 
-app.listen(PORT, () => console.log(`Running on ${PORT}`));
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find().lean();
+    res.json(users);
+  } catch (e) { res.status(500).json({ error: "Error fetching users" }); }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
