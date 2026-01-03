@@ -6,7 +6,6 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const path = require("path");
 // Serve static files from public folder
 app.use(express.static(path.join(__dirname, "../public")));
 
