@@ -6,6 +6,9 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
+const path = require("path");
+// Serve static files from public folder
+app.use(express.static(path.join(__dirname, "../public")));
 
 const app = express();
 app.use(express.json());
@@ -13,6 +16,10 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // ROUTES
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "..", "public", "index.html")));
@@ -71,6 +78,9 @@ app.post("/add-sale", async (req, res) => {
   } else { user.sales.push(sale); }
   await user.save();
   res.json({ success: true });
+});
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
 app.post("/delete-sale", async (req, res) => {
