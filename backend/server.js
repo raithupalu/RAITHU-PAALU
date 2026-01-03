@@ -6,8 +6,7 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-// Serve static files from public folder
-app.use(express.static(path.join(__dirname, "../public")));
+
 
 const app = express();
 app.use(express.json());
@@ -61,11 +60,14 @@ app.get("/user/:username", async (req, res) => {
   const user = await User.findOne({ username: req.params.username }).lean();
   res.json(user);
 });
-
+// Serve static files from public folder
+app.use(express.static(path.join(__dirname, "../public")));
 app.get("/users", async (req, res) => {
   const users = await User.find().lean();
   res.json(users);
 });
+// Serve static files from public folder
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.post("/add-sale", async (req, res) => {
   const { username, sale } = req.body;
