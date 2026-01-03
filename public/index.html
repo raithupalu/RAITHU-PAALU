@@ -2,202 +2,217 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>రైతు పాలు</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>రైతు పాలు | Premium Farm App</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <style>
     :root {
-      --primary: #43a047; 
-      --primary-dark: #2e7d32;
-      --sidebar-bg: #43a047; 
-      --bg: #f8f9fa;
-      --text: #333;
-      --card-bg: #fff;
-      --shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --primary: #10b981;
+      --primary-dark: #047857;
+      --accent: #34d399;
+      --surface: rgba(255, 255, 255, 0.75);
+      --surface-border: rgba(255, 255, 255, 0.6);
+      --blur: 24px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      --text-main: #111827;
+      --text-sub: #6b7280;
+      --radius: 24px;
     }
 
     .dark-mode {
-      --primary: #66bb6a;
-      --primary-dark: #2e7d32;
-      --sidebar-bg: #1b5e20;
-      --bg: #121212;
-      --text: #e0e0e0;
-      --card-bg: #1e1e1e;
-      --shadow: 0 4px 15px rgba(0,0,0,0.5);
+      --primary: #34d399;
+      --primary-dark: #059669;
+      --surface: rgba(15, 23, 42, 0.75);
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --text-main: #f9fafb;
+      --text-sub: #9ca3af;
     }
 
-    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background 0.3s, color 0.3s; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
     
-    body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+    body { 
+      margin: 0; font-family: 'Manrope', sans-serif; 
+      color: var(--text-main); height: 100vh; overflow: hidden; 
+      background: #f0fdf4;
+      transition: background 0.5s;
+    }
+    .dark-mode body { background: #020617; }
 
-    /* --- SIDEBAR --- */
+    /* --- LIVING BACKGROUND --- */
+    .blob {
+      position: absolute; filter: blur(80px); opacity: 0.6; z-index: -1;
+      animation: float 20s infinite ease-in-out alternate;
+    }
+    .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #86efac; border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+    .blob-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: #6ee7b7; border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation-delay: -5s; }
+    .dark-mode .blob-1 { background: #064e3b; opacity: 0.4; }
+    .dark-mode .blob-2 { background: #065f46; opacity: 0.4; }
+
+    @keyframes float { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(50px, 50px) rotate(20deg); } }
+
+    /* --- LAYOUT --- */
     .dashboard-container { display: flex; width: 100%; height: 100%; }
-    .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10; }
     
-    .logo { font-size: 24px; font-weight: bold; margin-bottom: 20px; text-align: center; letter-spacing: 0.5px; }
-    .logo span { background: #fff; color: var(--sidebar-bg); padding: 2px 8px; border-radius: 4px; }
-    .greeting { font-size: 16px; font-weight: 500; margin-bottom: 30px; opacity: 0.95; padding-left: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 15px; }
+    /* GLASS SIDEBAR */
+    .sidebar { 
+      width: 280px; padding: 40px 25px; 
+      display: flex; flex-direction: column; 
+      background: var(--surface); backdrop-filter: blur(var(--blur));
+      border-right: 1px solid var(--surface-border);
+      z-index: 50; transition: 0.3s;
+    }
+    
+    .logo { 
+      font-size: 28px; font-weight: 800; margin-bottom: 50px; 
+      background: linear-gradient(135deg, var(--primary), #059669);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: flex; align-items: center; gap: 10px;
+    }
     
     .sidebar-btn {
-      background: rgba(255,255,255,0.1); color: white; padding: 12px 20px;
-      margin-bottom: 12px; border-radius: 8px; cursor: pointer; display: flex;
-      align-items: center; gap: 12px; font-weight: 500; transition: all 0.2s;
+      padding: 16px 20px; margin-bottom: 12px; border-radius: 18px; 
+      cursor: pointer; display: flex; align-items: center; gap: 16px; 
+      font-weight: 600; font-size: 15px; color: var(--text-sub);
+      transition: all 0.3s;
     }
-    .sidebar-btn:hover { background: rgba(255,255,255,0.25); transform: translateX(5px); }
-    .sidebar-btn.active { background: #fff; color: var(--sidebar-bg); font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    
-    /* --- MAIN AREA --- */
-    .main-content { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
-    
-    /* Top Controls (Theme/Lang) */
-    .top-controls { position: absolute; top: 20px; right: 30px; display: flex; gap: 15px; align-items: center; z-index: 100; }
-    select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; background: var(--card-bg); color: var(--text); cursor: pointer; }
-    .theme-btn { font-size: 24px; cursor: pointer; background: none; border: none; padding: 0; }
+    .sidebar-btn:hover { background: rgba(16, 185, 129, 0.08); color: var(--primary); transform: translateX(5px); }
+    .sidebar-btn.active { 
+      background: var(--primary); color: white; 
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+    }
+    .sidebar-btn span { font-size: 20px; }
 
-    /* --- AUTH / LANDING PAGE STYLES --- */
-    .auth-container { 
-      width: 100%; 
-      height: 100vh; 
-      display: flex; 
-      flex-direction: column; /* Stack items vertically */
-      align-items: center; 
-      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); 
-      position: relative;
-    }
-
-    /* The Bar at the top for Language/Theme */
-    .landing-header {
-      width: 100%;
-      padding: 20px 30px;
-      display: flex;
-      justify-content: flex-end; 
-      align-items: center;
-      position: absolute; /* Stick to top */
-      top: 0;
-      z-index: 10;
-    }
-
-    /* The Login Card */
-    .auth-box { 
-      background: rgba(255, 255, 255, 0.95);
-      padding: 40px; 
-      border-radius: 20px; 
-      width: 90%; 
-      max-width: 400px; 
-      text-align: center; 
-      box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
-      margin: auto; /* Centers it vertically and horizontally */
-      backdrop-filter: blur(5px);
-    }
+    /* MAIN CONTENT */
+    .main-content { flex: 1; padding: 40px; overflow-y: auto; position: relative; scroll-behavior: smooth; }
     
-    /* Overwrite top-controls style specifically for landing page */
-    .landing-header .top-controls {
-      position: static; 
-      display: flex;
-      gap: 15px;
-    }
-
-    /* --- CARDS & LAYOUTS --- */
-    h2 { color: var(--primary); margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; font-size: 1.5rem; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .greeting-box h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+    .greeting-box p { margin: 5px 0 0 0; color: var(--text-sub); font-weight: 500; }
     
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px; }
+    .controls { display: flex; gap: 12px; }
+    .control-btn {
+      width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--surface-border);
+      background: var(--surface); display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; transition: 0.2s;
+    }
+    .control-btn:hover { transform: scale(1.1); background: white; }
+
+    /* BENTO GRID */
+    .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; padding-bottom: 40px; }
+    .col-12 { grid-column: span 12; }
+    .col-8 { grid-column: span 8; }
+    .col-6 { grid-column: span 6; }
+    .col-4 { grid-column: span 4; }
+    .col-3 { grid-column: span 3; }
     
     .card {
-      background: var(--card-bg);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      height: 100%;
-      overflow: hidden; 
+      background: var(--surface); border: 1px solid var(--surface-border);
+      backdrop-filter: blur(var(--blur)); border-radius: var(--radius);
+      padding: 24px; box-shadow: var(--shadow);
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
     }
-
-    /* Stats Grid */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); }
     
-    .stat-box {
-      padding: 15px; border-radius: 12px; color: white; text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s;
+    /* Typography within Cards */
+    .card h3 { margin: 0 0 15px 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+    .stat-val { font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin: 5px 0; }
+    .stat-label { color: var(--text-sub); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-badge { font-size: 0.8rem; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 20px; display: inline-block; font-weight: 700; margin-bottom: 5px; }
+
+    /* Month Card */
+    .month-box {
+      cursor: pointer; text-align: center; padding: 20px;
+      transition: 0.2s; border: 2px solid transparent;
+      background: rgba(255,255,255,0.4); border-radius: 20px;
     }
-    .stat-box h3 { margin: 0 0 5px 0; opacity: 0.9; font-size: 0.9rem; }
-    .stat-box h1 { margin: 0; font-size: 1.8rem; }
-
-    /* Tables - Mobile Scroll */
-    .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; min-width: 400px; } 
-    th { background: var(--primary); color: white; padding: 12px; text-align: center; font-size: 14px; white-space: nowrap; }
-    td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; background: var(--card-bg); font-size: 14px; white-space: nowrap; }
+    .month-box:hover { background: white; border-color: var(--primary); transform: scale(1.05); }
     
-    .breakdown-item { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 14px; }
-    .breakdown-item:last-child { border: none; font-weight: bold; color: var(--primary); font-size: 16px; margin-top: 5px; }
+    /* Interactive Elements */
+    .milk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: auto; }
+    .milk-btn {
+      background: rgba(255,255,255,0.5); border: 2px solid transparent; padding: 12px;
+      border-radius: 16px; cursor: pointer; text-align: center; transition: 0.2s;
+      font-weight: 700; color: var(--text-main); font-size: 0.9rem;
+    }
+    .milk-btn.active { background: var(--primary); color: white; transform: scale(0.96); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
 
+    /* Tables */
+    .table-wrapper { width: 100%; overflow-x: auto; border-radius: 16px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 500px; }
+    th { text-align: left; padding: 16px; color: var(--text-sub); font-size: 12px; text-transform: uppercase; border-bottom: 2px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.02); }
+    td { padding: 16px; border-bottom: 1px solid rgba(0,0,0,0.03); font-weight: 600; }
+    tr:last-child td { border: none; }
+    
     /* Buttons */
-    button { padding: 12px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
-    button:active { transform: scale(0.98); }
-    .btn-red { background: #e53935; padding: 6px 12px; font-size: 12px; }
-    .btn-blue { background: #1e88e5; }
+    .btn-main {
+      width: 100%; padding: 16px; border: none; border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), #059669);
+      color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+      transition: 0.3s;
+    }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.5); }
+    .btn-sec {
+      background: transparent; border: 2px solid var(--text-sub); color: var(--text-main);
+      padding: 8px 16px; border-radius: 12px; cursor: pointer; font-weight: 600;
+    }
+
+    /* --- MOBILE DOCK --- */
+    @media (max-width: 1000px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } .col-12, .col-8, .col-6, .col-4, .col-3 { grid-column: span 2; } }
+
+    @media (max-width: 768px) {
+      .dashboard-container { flex-direction: column; }
+      .sidebar { display: none; }
+      
+      .mobile-nav {
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        width: 90%; max-width: 400px; height: 70px;
+        background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.5); border-radius: 35px;
+        display: flex; justify-content: space-around; align-items: center;
+        z-index: 999; box-shadow: 0 15px 40px -10px rgba(0,0,0,0.2);
+      }
+      .dark-mode .mobile-nav { background: rgba(15, 23, 42, 0.9); border-color: rgba(255,255,255,0.1); }
+      
+      .nav-icon { font-size: 24px; padding: 12px; border-radius: 50%; color: var(--text-sub); transition: 0.3s; }
+      .nav-icon.active { background: var(--primary); color: white; transform: translateY(-10px); box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.5); }
+      
+      .main-content { padding: 20px; padding-bottom: 100px; }
+      .header-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+      .controls { width: 100%; justify-content: flex-end; }
+      
+      .bento-grid { display: flex; flex-direction: column; gap: 20px; }
+      .col-12, .col-8, .col-6, .col-4, .col-3 { grid-column: span 1; }
+    }
     
-    .milk-btn { display: inline-block; width: 45%; margin: 2%; background: transparent; color: var(--text); border: 2px solid var(--primary); padding: 10px; }
-    .milk-btn.active { background: var(--primary); color: white; }
+    /* AUTH */
+    .auth-wrap { width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; background: url('https://images.unsplash.com/photo-1595414088017-d2e825e37894?q=80&w=2070&auto=format&fit=crop') center/cover; }
+    .auth-glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); padding: 40px; border-radius: 32px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.5); }
+    input { width: 100%; padding: 16px; margin-bottom: 16px; border-radius: 16px; border: 2px solid transparent; background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); }
+    input:focus { background: white; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
 
-    /* Inputs */
-    input, select, textarea { width: 100%; padding: 12px; margin: 8px 0 20px 0; border: 1px solid #ddd; border-radius: 6px; background: #fafafa; font-size: 16px; }
-    .pass-wrapper { position: relative; width: 100%; }
-    .pass-icon { position: absolute; right: 12px; top: 40%; transform: translateY(-50%); cursor: pointer; font-size: 18px; color: #666; }
-
-    /* Users Grid */
-    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
-    .user-box { background: #424242; color: white; padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; }
-
-    .month-card {
-      background: linear-gradient(135deg, #4CAF50, #2E7D32); color: white;
-      padding: 15px; border-radius: 12px; text-align: center; cursor: pointer;
-      font-weight: bold; margin-bottom: 10px;
-    }
-
-    /* --- MOBILE RESPONSIVE CSS --- */
-    @media(max-width: 768px) { 
-        body { overflow-y: auto; position: relative; } 
-        .dashboard-container { flex-direction: column; height: auto; min-height: 100vh; } 
-        
-        /* Mobile Header / Sidebar */
-        .sidebar { 
-            width: 100%; 
-            height: auto; 
-            flex-direction: row; 
-            flex-wrap: nowrap;
-            overflow-x: auto; 
-            padding: 10px;
-            gap: 10px;
-            position: sticky; top: 0; 
-            align-items: center;
-        }
-        
-        .logo { font-size: 18px; margin: 0; margin-right: 15px; white-space: nowrap; }
-        .greeting { display: none; }
-        
-        .sidebar-btn { padding: 8px 12px; font-size: 12px; margin: 0; white-space: nowrap; flex-shrink: 0; }
-
-        .main-content { padding: 15px; padding-top: 20px; overflow: visible; }
-        .top-controls { position: relative; top: 0; right: 0; justify-content: flex-end; margin-bottom: 15px; width: 100%; }
-
-        .grid-2 { grid-template-columns: 1fr; gap: 15px; }
-        .card { padding: 20px; }
-        h2 { font-size: 1.3rem; }
-
-        /* Auth Mobile specific */
-        .landing-header { justify-content: center; position: relative; padding-top: 40px; }
-        .auth-box { margin-top: 20px; margin-bottom: auto; padding: 20px; }
-    }
   </style>
 </head>
 <body>
 
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
 <div id="app" style="width:100%; height:100%"></div>
-<div id="toast" style="visibility:hidden; min-width:250px; background:#333; color:#fff; text-align:center; border-radius:50px; padding:16px; position:fixed; z-index:9999; left:50%; bottom:30px; transform:translateX(-50%); box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></div>
+<div id="toast" style="visibility:hidden; min-width:200px; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); color:white; text-align:center; border-radius:50px; padding:12px 24px; position:fixed; z-index:9999; left:50%; top:20px; transform:translateX(-50%); font-weight:600; box-shadow: 0 10px 30px rgba(0,0,0,0.2);"></div>
 
 <script>
 // --- CONFIG & STATE ---
@@ -205,488 +220,312 @@ const PRICES = { twoL: 140, oneL: 70, threeQuarterL: 55, halfL: 35 };
 let currentLang = localStorage.getItem('lang') || 'en';
 let currentTheme = localStorage.getItem('theme') || 'light';
 let selectedMilk = { twoL: 0, oneL: 0, threeQuarterL: 0, halfL: 0 };
-let currentMonthView = null; 
-
+let currentMonthView = null;
 if(currentTheme === 'dark') document.body.classList.add('dark-mode');
 
-// --- TRANSLATIONS ---
 const T = {
-  en: {
-    welcome: "Welcome to రైతు పాలు",
-    login: "Login", register: "Register", username: "Username", password: "Password",
-    home: "🏠 Home", profile: "👤 Profile", progress: "📊 Progress", orders: "📦 Orders", feedback: "💬 Feedback", logout: "🚪 Logout",
-    summary: "📊 Summary", users: "👥 Users", hello: "Hello",
-    placeOrderTitle: "Place New Order", yourOrders: "Your Orders", history: "Order History",
-    placeBtn: "Place Order", 
-    feedbackTitle: "Feedback", feedbackPlace: "Share your feedback...", submitBtn: "Submit Feedback",
-    back: "⬅ Back", downloadPdf: "📄 PDF",
-    q1: "1 Litre", q2: "2 Litre", q34: "3/4 Litre", q12: "1/2 Litre",
-    overview: "Overview", totalDays: "Total Days", grandTotal: "Grand Total",
-    cost: "Cost", date: "Date", action: "Action", save: "Save Entry", delete: "Delete",
-    changePassBtn: "Change Password", oldPass: "Old Password", newPass: "New Password",
-    totalRev: "Revenue", newOrders: "New Orders", pastOrders: "Past Orders", accept: "Accept", statusSuccess: "Success", statusPending: "Pending"
-  },
-  te: {
-    welcome: "రైతు పాలుకు స్వాగతం",
-    login: "లాగిన్", register: "నమోదు", username: "పేరు", password: "పాస్‌వర్డ్",
-    home: "🏠 హోమ్", profile: "👤 ప్రొఫైల్", progress: "📊 పురోగతి", orders: "📦 ఆర్డర్లు", feedback: "💬 అభిప్రాయం", logout: "🚪 వెళ్లు",
-    summary: "📊 సారాంశం", users: "👥 వినియోగదారులు", hello: "హలో",
-    placeOrderTitle: "కొత్త ఆర్డర్ చేయండి", yourOrders: "మీ ఆర్డర్లు", history: "చరిత్ర",
-    placeBtn: "ఆర్డర్ చేయండి",
-    feedbackTitle: "అభిప్రాయం", feedbackPlace: "మీ అభిప్రాయాన్ని వ్రాయండి...", submitBtn: "సమర్పించు",
-    back: "⬅ వెనుకకు", downloadPdf: "📄 PDF",
-    q1: "1 లీటరు", q2: "2 లీటర్లు", q34: "3/4 లీటరు", q12: "1/2 లీటరు",
-    overview: "అవలోకనం", totalDays: "మొత్తం రోజులు", grandTotal: "మొత్తం",
-    cost: "ధర", date: "తేదీ", action: "చర్య", save: "భద్రపరచు", delete: "తొలగించు",
-    changePassBtn: "పాస్‌వర్డ్ మార్చండి", oldPass: "పాత పాస్‌వర్డ్", newPass: "కొత్త పాస్‌వర్డ్",
-    totalRev: "ఆదాయం", newOrders: "కొత్త ఆర్డర్లు", pastOrders: "పాత ఆర్డర్లు", accept: "ఆమోదించండి", statusSuccess: "విజయవంతం", statusPending: "పెండింగ్"
-  },
-  hi: {
-    welcome: "రైతు పాలు में आपका स्वागत है",
-    login: "लॉग इन", register: "पंजीकरण", username: "नाम", password: "पासवर्ड",
-    home: "🏠 होम", profile: "👤 प्रोफाइल", progress: "📊 प्रगति", orders: "📦 आर्डर", feedback: "💬 प्रतिक्रिया", logout: "🚪 बाहर",
-    summary: "📊 सारांश", users: "👥 उपयोगकर्ता", hello: "नमस्ते",
-    placeOrderTitle: "नया ऑर्डर दें", yourOrders: "आपके ऑर्डर", history: "इतिहास",
-    placeBtn: "ऑर्डर दें",
-    feedbackTitle: "प्रतिक्रिया", feedbackPlace: "अपनी प्रतिक्रिया लिखें...", submitBtn: "जमा करें",
-    back: "⬅ पीछे", downloadPdf: "📄 पीडीएफ",
-    q1: "1 लीटर", q2: "2 लीटर", q34: "3/4 लीटर", q12: "1/2 लीटर",
-    overview: "अवलोकन", totalDays: "कुल दिन", grandTotal: "कुल योग",
-    cost: "लागत", date: "तारीख", action: "कार्रवाई", save: "सहेजें", delete: "हटाएं",
-    changePassBtn: "पासवर्ड बदलें", oldPass: "पुराना पासवर्ड", newPass: "नया पासवर्ड",
-    totalRev: "कुल राजस्व", newOrders: "नए ऑर्डर", pastOrders: "पिछले ऑर्डर", accept: "स्वीकार करें", statusSuccess: "सफल", statusPending: "लंबित"
-  }
+  en: { greet: "Good", dash: "Overview", orders: "Orders", progress: "Progress", profile: "Profile", logout: "Logout", total: "Total Bill", active: "Active Days", req: "Request Milk", sub: "Submit Order", back: "Back", download: "Download PDF", revenue: "Total Revenue", farmers: "Farmers", manage: "Manage" },
+  te: { greet: "నమస్కారం", dash: "హోమ్", orders: "ఆర్డర్లు", progress: "పురోగతి", profile: "ప్రొఫైల్", logout: "వెళ్లు", total: "మొత్తం", active: "రోజులు", req: "ఆర్డర్ చేయండి", sub: "పంపండి", back: "వెనుకకు", download: "రిపోర్ట్", revenue: "ఆదాయం", farmers: "రైతులు", manage: "నిర్వహించు" },
+  hi: { greet: "नमस्ते", dash: "होम", orders: "आर्डर", progress: "प्रगति", profile: "प्रोफाइल", logout: "बाहर", total: "कुल", active: "दिन", req: "ऑर्डर दें", sub: "जमा करें", back: "पीछे", download: "रिपोर्ट", revenue: "राजस्व", farmers: "किसान", manage: "प्रबंधन" }
 };
-const t = (key) => T[currentLang][key] || key;
+const t = (k) => T[currentLang][k] || k;
 const app = document.getElementById("app");
 
 // --- UTILS ---
-function setLang(lang) { currentLang = lang; localStorage.setItem('lang', lang); location.reload(); }
-function toggleTheme() {
-  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-  localStorage.setItem('theme', currentTheme); document.body.classList.toggle('dark-mode');
-  const btn = document.getElementById('themeIcon'); if(btn) btn.innerText = currentTheme === 'light' ? '🌙' : '☀️';
-}
-function showToast(msg) {
-  const x = document.getElementById("toast"); x.style.visibility = "visible"; x.innerText = msg;
-  setTimeout(() => x.style.visibility = "hidden", 3000);
-}
+function getGreeting() { const h = new Date().getHours(); const time = h < 12 ? "Morning ☀️" : h < 18 ? "Afternoon 🌤️" : "Evening 🌙"; return `${t('greet')} ${currentLang==='en'?time:''}`; }
+function setLang(l) { localStorage.setItem('lang', l); location.reload(); }
+function toggleTheme() { currentTheme = currentTheme==='light'?'dark':'light'; localStorage.setItem('theme', currentTheme); document.body.classList.toggle('dark-mode'); document.getElementById('themeIcon').innerText = currentTheme==='light'?'🌙':'☀️'; }
+function showToast(m) { const x=document.getElementById("toast"); x.style.visibility="visible"; x.innerText=m; setTimeout(()=>x.style.visibility="hidden",3000); }
+function fireConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#ffffff'] }); }
 function getMonthName(m) { return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(m)-1]; }
-function sortSalesByDate(sales) {
-  return sales.sort((a, b) => {
-    const [d1, m1, y1] = a.date.split('/'); const [d2, m2, y2] = b.date.split('/');
-    return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
-  });
-}
-function calculateStats(sales) {
-  let stats = { t2:0, t1:0, t34:0, t12:0, days: sales.length, cost2:0, cost1:0, cost34:0, cost12:0, totalCost:0 };
-  sales.forEach(s => {
-    stats.t2 += s.twoL||0; stats.cost2 += (s.twoL||0)*PRICES.twoL;
-    stats.t1 += s.oneL||0; stats.cost1 += (s.oneL||0)*PRICES.oneL;
-    stats.t34 += s.threeQuarterL||0; stats.cost34 += (s.threeQuarterL||0)*PRICES.threeQuarterL;
-    stats.t12 += s.halfL||0; stats.cost12 += (s.halfL||0)*PRICES.halfL;
-  });
-  stats.totalCost = stats.cost2 + stats.cost1 + stats.cost34 + stats.cost12;
-  return stats;
-}
+function sortSalesByDate(sales) { return sales.sort((a, b) => { const [d1, m1, y1] = a.date.split('/'); const [d2, m2, y2] = b.date.split('/'); return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2); }); }
+function calculateStats(sales) { let s={t2:0, t1:0, t34:0, t12:0, days:sales.length, total:0}; sales.forEach(x => { s.t2+=x.twoL||0; s.t1+=x.oneL||0; s.t34+=x.threeQuarterL||0; s.t12+=x.halfL||0; s.total += (x.twoL*PRICES.twoL)+(x.oneL*PRICES.oneL)+(x.threeQuarterL*PRICES.threeQuarterL)+(x.halfL*PRICES.halfL); }); return s; }
 
-// --- RENDERERS ---
-function renderControls() {
-  return `<div class="top-controls"><select onchange="setLang(this.value)">
-    <option value="en" ${currentLang==='en'?'selected':''}>English</option>
-    <option value="te" ${currentLang==='te'?'selected':''}>తెలుగు</option>
-    <option value="hi" ${currentLang==='hi'?'selected':''}>हिंदी</option>
-  </select><button class="theme-btn" onclick="toggleTheme()" id="themeIcon">${currentTheme==='light'?'🌙':'☀️'}</button></div>`;
-}
-
-function renderDashboardShell(user, contentHTML, activeTab) {
+// --- SHELL ---
+function renderShell(user, content, tab) {
   const role = user.role;
-  const greeting = `${t('hello')} ${user.username} 👋`;
-  
   const menu = role === 'admin' 
-    ? [{key:'summary', label:t('summary'), func:'adminSummary()'}, {key:'orders', label:t('orders'), func:'adminOrders()'}, {key:'users', label:t('users'), func:'adminUsers()'}]
-    : [{key:'home', label:t('home'), func:'userHome()'}, {key:'profile', label:t('profile'), func:'userProfile()'}, {key:'progress', label:t('progress'), func:'userProgress()'}, {key:'orders', label:t('orders'), func:'userOrders()'}, {key:'feedback', label:t('feedback'), func:'userFeedback()'}];
+    ? [{k:'summary', i:'📊', l:t('dash'), f:'adminSummary()'}, {k:'orders', i:'📦', l:t('orders'), f:'adminOrders()'}, {k:'users', i:'👥', l:t('farmers'), f:'adminUsers()'}]
+    : [{k:'home', i:'🏠', l:t('dash'), f:'userHome()'}, {k:'progress', i:'📈', l:t('progress'), f:'userProgress()'}, {k:'orders', i:'🛒', l:t('orders'), f:'userOrders()'}, {k:'profile', i:'👤', l:t('profile'), f:'userProfile()'}];
 
-  const sidebarHTML = menu.map(item => `
-    <div class="sidebar-btn ${activeTab===item.key?'active':''}" onclick="${item.func}">
-      ${item.label}
-    </div>
-  `).join('');
+  const sidebar = menu.map(m => `<div class="sidebar-btn ${tab===m.k?'active':''}" onclick="${m.f}"><span>${m.i}</span>${m.l}</div>`).join('');
+  const mobileNav = menu.map(m => `<div class="nav-icon ${tab===m.k?'active':''}" onclick="${m.f}">${m.i}</div>`).join('') + `<div class="nav-icon" style="color:#ef4444" onclick="logout()">🛑</div>`;
 
   app.innerHTML = `
     <div class="dashboard-container">
       <div class="sidebar">
-        <div class="logo">🌾 రైతు <span>పాలు</span></div>
-        <div class="greeting">${greeting}</div>
-        ${sidebarHTML}
-        <div class="sidebar-btn" style="margin-top:auto; background:#d32f2f; justify-content:center" onclick="logout()">
-          ${t('logout')}
-        </div>
+        <div class="logo">🌾 <span>రైతు పాలు</span></div>
+        ${sidebar}
+        <div class="sidebar-btn" style="margin-top:auto; color:#ef4444" onclick="logout()"><span>🛑</span> ${t('logout')}</div>
       </div>
       <div class="main-content">
-        ${renderControls()}
-        ${contentHTML}
+        <div class="header-bar">
+          <div class="greeting-box"><h1>${getGreeting()}</h1><p>${user.username}</p></div>
+          <div class="controls">
+            <button class="control-btn" onclick="toggleTheme()" id="themeIcon">${currentTheme==='light'?'🌙':'☀️'}</button>
+            <select style="width:auto; margin:0; padding:10px; border-radius:20px; border:none; background:var(--surface)" onchange="setLang(this.value)"><option value="en" ${currentLang==='en'?'selected':''}>EN</option><option value="te" ${currentLang==='te'?'selected':''}>TE</option><option value="hi" ${currentLang==='hi'?'selected':''}>HI</option></select>
+          </div>
+        </div>
+        ${content}
       </div>
+      <div class="mobile-nav display-none-desktop">${mobileNav}</div>
+      <style>@media(min-width:769px){.display-none-desktop{display:none}}</style>
     </div>`;
 }
 
-// --- ADMIN FUNCTIONALITY ---
-async function adminSummary() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  const res = await fetch('/users'); 
-  const users = await res.json();
-  
-  let totalRev=0, t2=0, t1=0, t34=0, t12=0;
-  users.forEach(u => u.sales.forEach(s => {
-    t2 += s.twoL||0; t1 += s.oneL||0; t34 += s.threeQuarterL||0; t12 += s.halfL||0;
-    totalRev += (s.twoL*PRICES.twoL)+(s.oneL*PRICES.oneL)+(s.threeQuarterL*PRICES.threeQuarterL)+(s.halfL*PRICES.halfL);
-  }));
+// --- USER DASHBOARD (HOME) ---
+async function userHome() {
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/user/${u.username}`); const data = await res.json();
+  const st = calculateStats(data.sales);
+  let mData={}; data.sales.forEach(s => { let m=s.date.split('/')[1]; mData[m]=(mData[m]||0)+(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35); });
 
-  const html = `
-    <h2>${t('summary')}</h2>
-    <div class="stats-grid">
-      <div class="stat-box" style="background:#2e7d32"><h3>${t('totalRev')}</h3><h1>₹${totalRev.toLocaleString()}</h1></div>
-      <div class="stat-box" style="background:#1565C0"><h3>${t('q2')}</h3><h1>${t2}</h1></div>
-      <div class="stat-box" style="background:#E65100"><h3>${t('q1')}</h3><h1>${t1}</h1></div>
-      <div class="stat-box" style="background:#6A1B9A"><h3>${t('q34')}</h3><h1>${t34}</h1></div>
-      <div class="stat-box" style="background:#455A64"><h3>${t('q12')}</h3><h1>${t12}</h1></div>
-    </div>
-  `;
-  renderDashboardShell(u, html, 'summary');
-}
-
-async function adminOrders() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  const res = await fetch('/orders'); 
-  const orders = await res.json();
-  const pending = orders.filter(o => o.status === 'Pending');
-  const past = orders.filter(o => o.status !== 'Pending');
-
-  const html = `
-    <h2>${t('orders')}</h2>
-    
-    <div class="grid-2">
-      <div class="card">
-        <h3 style="color:#e53935">${t('newOrders')}</h3>
-        ${pending.length === 0 ? '<p>No pending orders</p>' : ''}
-        ${pending.map(o => `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #eee;">
-            <div><b>${o.username}</b> - ${o.quantity}L <br> <small>${new Date(o.timestamp).toLocaleDateString()}</small></div>
-            <button class="btn-green" style="background:#4CAF50; padding:5px 10px" onclick="acceptOrder('${o.id}')">${t('accept')}</button>
-          </div>`).join('')}
+  renderShell(u, `
+    <div class="bento-grid">
+      <div class="card col-4">
+        <div class="stat-badge">Overview</div>
+        <div class="stat-val">₹${st.total.toLocaleString()}</div>
+        <div class="stat-label">${t('total')}</div>
       </div>
-
-      <div class="card">
-        <h3>${t('pastOrders')}</h3>
-        <div class="table-container" style="max-height:400px; overflow-y:auto">
-          <table>
-            <tr><th>User</th><th>Qty</th><th>Status</th><th>Date</th></tr>
-            ${past.map(o => `<tr><td>${o.username}</td><td>${o.quantity}L</td><td style="color:green">${o.status}</td><td>${new Date(o.timestamp).toLocaleDateString()}</td></tr>`).join('')}
-          </table>
-        </div>
+      <div class="card col-4">
+        <div class="stat-badge">Activity</div>
+        <div class="stat-val">${st.days}</div>
+        <div class="stat-label">${t('active')}</div>
+      </div>
+      <div class="card col-4" style="background:linear-gradient(135deg, var(--primary), #059669); color:white">
+         <div style="font-size:2rem; margin-bottom:5px">🥛</div>
+         <div style="font-weight:700;">Need Milk?</div>
+         <button class="btn-main" style="background:white; color:var(--primary); margin-top:auto; padding:10px" onclick="userOrders()">${t('req')} ➔</button>
+      </div>
+      <div class="card col-8">
+        <h3>Monthly Spend</h3>
+        <div style="height:250px"><canvas id="mainChart"></canvas></div>
+      </div>
+      <div class="card col-4">
+         <h3>Consumption</h3>
+         <div style="height:200px; display:flex; justify-content:center"><canvas id="pieChart"></canvas></div>
       </div>
     </div>
-  `;
-  renderDashboardShell(u, html, 'orders');
+  `, 'home');
+
+  new Chart(document.getElementById('mainChart'), {type:'line', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Spend', data:Object.values(mData), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4, pointRadius:5}]}, options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{display:false}}}}});
+  new Chart(document.getElementById('pieChart'), {type:'doughnut', data:{labels:['2L','1L','3/4L','1/2L'], datasets:[{data:[st.t2, st.t1, st.t34, st.t12], backgroundColor:['#064e3b','#065f46','#10b981','#6ee7b7'], borderWidth:0}]}});
 }
 
-async function acceptOrder(id) {
-  await fetch('/update-order', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, status:'Success'})});
-  showToast("Order Accepted ✅"); adminOrders();
-}
-
-async function adminUsers() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  const res = await fetch('/users'); 
-  const users = await res.json();
-  
-  const html = `
-    <h2>${t('users')}</h2>
-    <div class="users-grid">
-      ${users.map(usr => `
-        <div class="user-box" onclick="editUser('${usr.username}')">
-          <h3>User</h3>
-          <h1>${usr.username}</h1>
-        </div>`).join('')}
-    </div>
-  `;
-  renderDashboardShell(u, html, 'users');
-}
-
-async function editUser(name) {
-  const currUser = JSON.parse(localStorage.getItem('user'));
-  const res = await fetch('/users'); const users = await res.json();
-  const u = users.find(x => x.username === name);
-  const sales = sortSalesByDate(u.sales);
-  
-  let st = { t2:0, t1:0, t34:0, t12:0, c2:0, c1:0, c34:0, c12:0, total:0 };
-  u.sales.forEach(s => {
-    st.t2 += s.twoL||0; st.c2 += (s.twoL||0)*PRICES.twoL;
-    st.t1 += s.oneL||0; st.c1 += (s.oneL||0)*PRICES.oneL;
-    st.t34 += s.threeQuarterL||0; st.c34 += (s.threeQuarterL||0)*PRICES.threeQuarterL;
-    st.t12 += s.halfL||0; st.c12 += (s.halfL||0)*PRICES.halfL;
-  });
-  st.total = st.c2 + st.c1 + st.c34 + st.c12;
-
-  const html = `
-    <button class="btn-blue" onclick="adminUsers()" style="margin-bottom:15px">${t('back')}</button>
-    <h2>Editing: ${name}</h2>
-    
-    <div class="grid-2">
-      <div>
-        <div class="card">
-          <h3>Add Daily Entry</h3>
-          <input type="date" id="d" style="width:100%">
-          <br>
-          <div style="display:flex; flex-wrap:wrap; justify-content:center">
-             <button class="milk-btn" onclick="tog(this,'twoL')">2L</button>
-             <button class="milk-btn" onclick="tog(this,'oneL')">1L</button>
-             <button class="milk-btn" onclick="tog(this,'threeQuarterL')">3/4L</button>
-             <button class="milk-btn" onclick="tog(this,'halfL')">1/2L</button>
-          </div>
-          <br>
-          <button style="width:100%" onclick="save('${name}')">${t('save')}</button>
-        </div>
-
-        <div class="card" style="margin-top:20px;">
-          <h3>Summary</h3>
-          <div class="breakdown-item"><span>${t('q2')} (${st.t2})</span><span>₹${st.c2}</span></div>
-          <div class="breakdown-item"><span>${t('q1')} (${st.t1})</span><span>₹${st.c1}</span></div>
-          <div class="breakdown-item"><span>${t('q34')} (${st.t34})</span><span>₹${st.c34}</span></div>
-          <div class="breakdown-item"><span>${t('q12')} (${st.t12})</span><span>₹${st.c12}</span></div>
-          <div class="breakdown-item"><span>${t('grandTotal')}</span><span>₹${st.total}</span></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Records</h3>
-        <div class="table-container" style="max-height:400px; overflow-y:auto;">
-          <table>
-            <tr><th>Date</th><th>2L</th><th>1L</th><th>3/4</th><th>1/2</th><th>₹</th><th>Act</th></tr>
-            ${sales.slice().reverse().map(s => {
-               const cost = (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
-               return `
-              <tr>
-                <td>${s.date.split('/')[0]}/${s.date.split('/')[1]}</td>
-                <td>${s.twoL||0}</td>
-                <td>${s.oneL||0}</td>
-                <td>${s.threeQuarterL||0}</td>
-                <td>${s.halfL||0}</td>
-                <td>${cost}</td>
-                <td><button class="btn-red" onclick="del('${name}','${s.date}')">X</button></td>
-              </tr>`}).join('')}
-          </table>
-        </div>
-      </div>
-    </div>
-  `;
-  renderDashboardShell(currUser, html, 'users');
-}
-
-// --- USER VIEWS ---
-
-async function userProfile() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  const html = `
-    <h2>${t('profile')}</h2>
-    
-    <div class="grid-2">
-      <div class="card">
-        <h3 style="color:#555">${t('username')}</h3>
-        <p style="font-size:1.5em; font-weight:bold; color:var(--primary)">${u.username}</p>
-        <p style="color:#777">Role: User</p>
-      </div>
-
-      <div class="card">
-        <h3>${t('changePassBtn')}</h3>
-        <div class="pass-wrapper"><input id="oldP" type="password" placeholder="${t('oldPass')}"><span class="pass-icon" onclick="togglePass('oldP')">👁️</span></div>
-        <div class="pass-wrapper"><input id="newP" type="password" placeholder="${t('newPass')}"><span class="pass-icon" onclick="togglePass('newP')">👁️</span></div>
-        <button style="width:100%" onclick="changePass('${u.username}')">${t('save')}</button>
-      </div>
-    </div>
-  `;
-  renderDashboardShell(u, html, 'profile');
-}
-
-async function userOrders() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  const res = await fetch(`/orders/${u.username}`); const orders = await res.json();
-  
-  const html = `
-    <h2>${t('yourOrders')}</h2>
-    
-    <div class="grid-2">
-      <div class="card">
-        <h3>${t('placeOrderTitle')}</h3>
-        <select id="oq" style="width:100%; padding:10px; margin-bottom:20px;">
-          <option value="1">1 Litre</option>
-          <option value="2">2 Litre</option>
-          <option value="0.75">3/4 Litre</option>
-          <option value="0.5">1/2 Litre</option>
-        </select>
-        <button style="width:100%" onclick="placeOrder('${u.username}')">${t('placeBtn')}</button>
-      </div>
-
-      <div class="card">
-        <h3>${t('history')}</h3>
-        ${orders.length === 0 ? '<p>No orders found.</p>' : ''}
-        <div style="max-height:400px; overflow-y:auto">
-          ${orders.map(o => `
-            <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-               <span><b>${o.quantity}L</b> <br><small>${new Date(o.timestamp).toLocaleDateString()}</small></span>
-               <span style="color:${o.status==='Pending'?'orange':'green'}; font-weight:bold">${o.status}</span>
-            </div>`).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-  renderDashboardShell(u, html, 'orders');
-}
-
+// --- USER PROGRESS (RESTORED) ---
 async function userProgress() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  const res = await fetch(`/user/${u.username}`); const data = await res.json();
-  const grouped = {};
-  data.sales.forEach(s => { const [d,m,y] = s.date.split('/'); const key = `${m}-${y}`; if(!grouped[key]) grouped[key] = []; grouped[key].push(s); });
-
-  if(currentMonthView) {
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/user/${u.username}`); const data = await res.json();
+  const grouped = {}; data.sales.forEach(s => { const [d,m,y] = s.date.split('/'); const key = `${m}-${y}`; if(!grouped[key]) grouped[key] = []; grouped[key].push(s); });
+  
+  if (currentMonthView) {
     const sorted = sortSalesByDate(grouped[currentMonthView]);
     const st = calculateStats(sorted);
     const [m, y] = currentMonthView.split('-');
-    const title = `${getMonthName(m)} ${y}`;
-
-    const html = `
-      <div style="display:flex; gap:10px; margin-bottom:15px; justify-content:space-between">
-        <button class="btn-blue" onclick="currentMonthView=null; userProgress()">${t('back')}</button>
-        <button style="background:#FF5722" onclick="downloadPDF('${title}')">${t('downloadPdf')}</button>
+    
+    renderShell(u, `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+        <button class="btn-sec" onclick="currentMonthView=null; userProgress()">⬅ ${t('back')}</button>
+        <button class="btn-main" style="width:auto; padding:10px 20px" onclick="downloadPDF('${getMonthName(m)} ${y}')">${t('download')}</button>
       </div>
-      <h2>${title}</h2>
-
-      <div class="card">
-        <h3>${t('overview')}</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-           <p><b>${t('q2')}:</b> ${st.t2}</p> <p><b>₹:</b> ${st.cost2}</p>
-           <p><b>${t('q1')}:</b> ${st.t1}</p> <p><b>₹:</b> ${st.cost1}</p>
-           <p><b>${t('q34')}:</b> ${st.t34}</p> <p><b>₹:</b> ${st.cost34}</p>
-           <p><b>${t('q12')}:</b> ${st.t12}</p> <p><b>₹:</b> ${st.cost12}</p>
-        </div>
-        <hr>
-        <h3 style="color:var(--primary); text-align:right">${t('grandTotal')}: ₹${st.totalCost}</h3>
+      <div class="bento-grid">
+         <div class="card col-4" style="text-align:center">
+            <h3>${getMonthName(m)} ${y}</h3>
+            <div class="stat-val" style="color:var(--primary)">₹${st.total}</div>
+            <p style="color:var(--text-sub)">${st.days} Days Active</p>
+         </div>
+         <div class="card col-8">
+            <div class="table-wrapper">
+               <table id="pdfTable">
+                 <tr><th>Date</th><th>Qty</th><th>Cost</th></tr>
+                 ${sorted.map(s => `<tr><td>${s.date}</td><td>${s.twoL?'2L ':''}${s.oneL?'1L ':''}${s.threeQuarterL?'3/4L ':''}${s.halfL?'1/2L':''}</td><td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td></tr>`).join('')}
+               </table>
+            </div>
+         </div>
       </div>
-
-      <div class="card" style="margin-top:20px">
-        <div class="table-container">
-            <table id="monthTable">
-            <tr><th>${t('date')}</th><th>2L</th><th>1L</th><th>3/4</th><th>1/2</th><th>₹</th></tr>
-            ${sorted.map(s => {
-                const c=(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
-                return `<tr><td>${s.date}</td><td>${s.twoL||0}</td><td>${s.oneL||0}</td><td>${s.threeQuarterL||0}</td><td>${s.halfL||0}</td><td>${c}</td></tr>`
-            }).join('')}
-            </table>
-        </div>
-      </div>
-    `;
-    renderDashboardShell(u, html, 'progress');
+    `, 'progress');
   } else {
-    const keys = Object.keys(grouped).sort().reverse();
-    const html = `
-      <h2>${t('progress')}</h2>
-      ${keys.length === 0 ? '<p>No data available</p>' : ''}
-      <div class="stats-grid">
-        ${keys.map(k => {
-          const [m, y] = k.split('-');
-          return `<div class="month-card" onclick="currentMonthView='${k}'; userProgress()">📅 ${getMonthName(m)} ${y}</div>`;
-        }).join('')}
-      </div>
-    `;
-    renderDashboardShell(u, html, 'progress');
+    renderShell(u, `
+       <div class="bento-grid">
+         <div class="card col-12"><h3>Select a Month</h3><p style="color:var(--text-sub)">Tap to view details</p></div>
+         ${Object.keys(grouped).length === 0 ? '<div class="card col-12">No records found.</div>' : ''}
+         ${Object.keys(grouped).reverse().map(k => `
+            <div class="card col-3 month-box" onclick="currentMonthView='${k}'; userProgress()">
+               <div style="font-size:30px; margin-bottom:10px">📅</div>
+               <div style="font-weight:700; font-size:1.1rem">${getMonthName(k.split('-')[0])}</div>
+               <div style="color:var(--text-sub)">${k.split('-')[1]}</div>
+            </div>
+         `).join('')}
+       </div>
+    `, 'progress');
   }
 }
 
-// --- STANDARD USER HOME ---
-async function userHome() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  const res = await fetch(`/user/${u.username}`); const data = await res.json();
+// --- ADMIN SUMMARY (RESTORED TOTALS) ---
+async function adminSummary() {
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
+  let rev=0, sold={t2:0,t1:0,t34:0,t12:0};
+  users.forEach(u=>u.sales.forEach(s=> {
+     rev+=(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+     sold.t2+=s.twoL||0; sold.t1+=s.oneL||0; sold.t34+=s.threeQuarterL||0; sold.t12+=s.halfL||0;
+  }));
   
-  let mData={};
-  data.sales.forEach(s => { let m = s.date.split('/')[1]; mData[m] = (mData[m]||0) + (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35); });
-  
-  renderDashboardShell(u, `<h1>${t('welcome')}</h1>`, 'home');
-  
-  const container = document.querySelector('.main-content');
-  const chartDiv = document.createElement('div');
-  chartDiv.className = 'grid-2';
-  chartDiv.innerHTML = `<div class="card"><h3>Overview</h3><div style="position:relative; height:250px"><canvas id="pie"></canvas></div></div><div class="card"><h3>Monthly Revenue</h3><div style="position:relative; height:250px"><canvas id="bar"></canvas></div></div>`;
-  container.appendChild(chartDiv);
-  
-  const ctx = document.getElementById('bar').getContext('2d');
-  const grad = ctx.createLinearGradient(0,0,0,400); grad.addColorStop(0,'rgba(67, 160, 71, 0.6)'); grad.addColorStop(1,'rgba(67, 160, 71, 0.1)');
-  new Chart(ctx, {type:'bar', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Cost', data:Object.values(mData), backgroundColor:grad, borderRadius:5}]}, options:{maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}});
-  
-  let t2=0,t1=0,t34=0,t12=0; data.sales.forEach(s=>{t2+=s.twoL||0;t1+=s.oneL||0;t34+=s.threeQuarterL||0;t12+=s.halfL||0;});
-  new Chart(document.getElementById('pie'), {type:'doughnut', data:{labels:[t('q2'),t('q1'),t('q34'),t('q12')], datasets:[{data:[t2,t1,t34,t12], backgroundColor:['#43a047','#1976D2','#F57C00','#7B1FA2']}]}, options:{maintainAspectRatio:false}});
-}
-
-function userFeedback() {
-  const u = JSON.parse(localStorage.getItem('user'));
-  renderDashboardShell(u, `<h2>${t('feedbackTitle')}</h2><div class="card"><textarea style="width:100%; height:150px" placeholder="${t('feedbackPlace')}"></textarea><button style="width:100%">${t('submitBtn')}</button></div>`, 'feedback');
-}
-
-// --- AUTH RENDER ---
-function renderAuth(){
-  app.innerHTML = `
-    <div class="auth-container">
-      
-      <!-- Top Header for Controls -->
-      <div class="landing-header">
-        ${renderControls().replace('class="top-controls"', 'class="top-controls" style="position:static"')} 
+  renderShell(u, `
+    <div class="bento-grid">
+      <div class="card col-6">
+        <div class="stat-badge">Total Revenue</div>
+        <div class="stat-val">₹${rev.toLocaleString()}</div>
       </div>
-
-      <!-- Login/Register Box -->
-      <div class="auth-box">
-        <h1 style="color:var(--primary); margin-top:0; font-size: 2.2rem;">🌾 రైతు పాలు</h1>
-        <p style="color:#666; margin-bottom:25px; font-size:0.9rem">Farm fresh milk management</p>
-        
-        <!-- Login Form -->
-        <div id="loginForm">
-          <h2 style="border:none; color:#333">${t('login')}</h2>
-          <input id="u" placeholder="${t('username')}">
-          <div class="pass-wrapper">
-            <input id="p" type="password" placeholder="${t('password')}">
-            <span class="pass-icon" onclick="togglePass('p')">👁️</span>
-          </div>
-          <button style="width:100%; margin-top:10px; padding: 14px; font-size:16px" onclick="login()">${t('login')}</button>
-          <p onclick="toggleAuth('reg')" style="cursor:pointer; color:var(--primary); margin-top:20px; font-weight:500">${t('register')}</p>
-        </div>
-
-        <!-- Register Form -->
-        <div id="regForm" style="display:none">
-          <h2 style="border:none; color:#333">${t('register')}</h2>
-          <input id="ru" placeholder="${t('username')}">
-          <div class="pass-wrapper">
-            <input id="rp" type="password" placeholder="${t('password')}">
-            <span class="pass-icon" onclick="togglePass('rp')">👁️</span>
-          </div>
-          <button style="width:100%; margin-top:10px; padding: 14px; font-size:16px" onclick="register()">${t('register')}</button>
-          <p onclick="toggleAuth('login')" style="cursor:pointer; color:var(--primary); margin-top:20px; font-weight:500">${t('login')}</p>
-        </div>
-
+      <div class="card col-6">
+        <div class="stat-badge">Farmers</div>
+        <div class="stat-val">${users.length}</div>
       </div>
-    </div>`;
+      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t2}</div><div class="stat-label">2L Packets</div></div>
+      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t1}</div><div class="stat-label">1L Packets</div></div>
+      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t34}</div><div class="stat-label">3/4L Packets</div></div>
+      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t12}</div><div class="stat-label">1/2L Packets</div></div>
+    </div>
+  `, 'summary');
 }
 
-// --- ACTIONS ---
+// --- ADMIN USER MANAGEMENT ---
+async function adminUsers() {
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
+  renderShell(u, `
+    <div class="bento-grid">
+      ${users.map(usr => `
+        <div class="card col-4" onclick="editUser('${usr.username}')" style="cursor:pointer; text-align:center">
+           <div style="font-size:40px; margin-bottom:10px">👨‍🌾</div>
+           <h3>${usr.username}</h3>
+           <p style="color:var(--text-sub); font-size:12px">Tap to Manage</p>
+        </div>
+      `).join('')}
+    </div>
+  `, 'users');
+}
+
+async function editUser(name) {
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
+  const target = users.find(x => x.username === name);
+  const st = calculateStats(target.sales);
+  
+  renderShell(u, `
+    <button class="btn-sec" onclick="adminUsers()" style="margin-bottom:20px">⬅ ${t('back')}</button>
+    <div class="bento-grid">
+      <div class="card col-6">
+        <h3>Add Entry: ${name}</h3>
+        <input type="date" id="d" style="background:var(--surface); border:1px solid var(--surface-border)">
+        <div class="milk-grid">
+           <div class="milk-btn" onclick="tog(this,'twoL')">2 L</div><div class="milk-btn" onclick="tog(this,'oneL')">1 L</div>
+           <div class="milk-btn" onclick="tog(this,'threeQuarterL')">0.75 L</div><div class="milk-btn" onclick="tog(this,'halfL')">0.5 L</div>
+        </div>
+        <button class="btn-main" onclick="save('${name}')">${t('save')}</button>
+      </div>
+      <div class="card col-6">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+           <span>Total: <b>₹${st.total}</b></span><span>Entries: <b>${st.days}</b></span>
+        </div>
+        <div class="table-wrapper" style="max-height:400px; overflow-y:auto">
+           <table>
+             ${target.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td><td style="color:red; cursor:pointer" onclick="del('${name}','${s.date}')">✕</td></tr>`).join('')}
+           </table>
+        </div>
+      </div>
+    </div>
+  `, 'users');
+}
+
+// --- ORDERS ---
+async function userOrders() {
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/orders/${u.username}`); const orders = await res.json();
+  renderShell(u, `
+    <div class="bento-grid">
+      <div class="card col-5">
+        <h3>${t('req')}</h3>
+        <select id="oq" style="width:100%; padding:15px; border-radius:15px; border:1px solid #ddd; margin-bottom:20px">
+           <option value="1">1 Litre</option><option value="2">2 Litres</option><option value="0.5">0.5 Litre</option>
+        </select>
+        <button class="btn-main" onclick="placeOrder('${u.username}')">${t('sub')}</button>
+      </div>
+      <div class="card col-7">
+        <h3>History</h3>
+        <div class="table-wrapper" style="max-height:300px; overflow-y:auto">
+           <table>
+             ${orders.map(o => `<tr><td>${new Date(o.timestamp).toLocaleDateString()}</td><td>${o.quantity}L</td><td><span style="color:${o.status==='Pending'?'orange':'#10b981'}">${o.status}</span></td></tr>`).join('')}
+           </table>
+        </div>
+      </div>
+    </div>
+  `, 'orders');
+}
+
+async function adminOrders() {
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/orders'); const orders = await res.json();
+  const pending = orders.filter(o => o.status === 'Pending');
+  renderShell(u, `
+    <div class="bento-grid">
+       ${pending.map(o => `
+         <div class="card col-4">
+           <h3>${o.username}</h3>
+           <div class="stat-val" style="font-size:1.5rem">${o.quantity}L</div>
+           <p>${new Date(o.timestamp).toLocaleString()}</p>
+           <button class="btn-main" onclick="acceptOrder('${o.id}')">Approve ✅</button>
+         </div>
+       `).join('')}
+       ${pending.length===0 ? '<div class="card col-12"><p style="text-align:center">No pending orders 🎉</p></div>' : ''}
+    </div>
+  `, 'orders');
+}
+
+// --- PROFILE ---
+function userProfile() {
+  const u = JSON.parse(localStorage.getItem('user'));
+  renderShell(u, `
+    <div class="card" style="max-width:500px; margin:0 auto; text-align:center">
+       <div style="width:80px; height:80px; background:#d1fae5; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px; margin:0 auto 20px auto">👤</div>
+       <h2>${u.username}</h2>
+       <input id="oldP" type="password" placeholder="Old Password">
+       <input id="newP" type="password" placeholder="New Password">
+       <button class="btn-main" onclick="changePass('${u.username}')">Update Password</button>
+    </div>
+  `, 'profile');
+}
+
+// --- LOGIC ---
 function tog(b,t){b.classList.toggle('active');selectedMilk[t]=selectedMilk[t]?0:1;}
-async function save(n){const d=document.getElementById('d').value;if(!d)return;const[y,m,day]=d.split('-');await fetch('/add-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,sale:{date:`${day}/${m}/${y}`,...selectedMilk}})});selectedMilk={twoL:0,oneL:0,threeQuarterL:0,halfL:0};showToast(t('save')+" ✅");editUser(n);}
-async function del(n,d){await fetch('/delete-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,date:d})});showToast(t('delete')+" ✅");editUser(n);}
-async function changePass(u){const o=document.getElementById('oldP').value,n=document.getElementById('newP').value;const r=await fetch('/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,oldPassword:o,newPassword:n})});const d=await r.json();d.success?(showToast('Success'),userProfile()):alert(d.error);}
-async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});showToast('Order Placed');userOrders();}
-function downloadPDF(title){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.text(title,14,20);doc.autoTable({html:'#monthTable',startY:30});doc.save(title+'.pdf');}
+async function save(n){const d=document.getElementById('d').value;if(!d)return;const[y,m,day]=d.split('-');await fetch('/add-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,sale:{date:`${day}/${m}/${y}`,...selectedMilk}})});selectedMilk={twoL:0,oneL:0,threeQuarterL:0,halfL:0};fireConfetti();showToast("Entry Added ✨");editUser(n);}
+async function del(n,d){await fetch('/delete-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,date:d})});showToast("Deleted");editUser(n);}
+async function changePass(u){const o=document.getElementById('oldP').value,n=document.getElementById('newP').value;const r=await fetch('/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,oldPassword:o,newPassword:n})});const d=await r.json();d.success?(fireConfetti(),showToast('Success'),userProfile()):alert(d.error);}
+async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});fireConfetti();showToast('Order Sent 🚀');userOrders();}
+async function acceptOrder(id){await fetch('/update-order', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, status:'Success'})}); fireConfetti(); adminOrders();}
+function downloadPDF(title){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.text(title,14,20);doc.autoTable({html:'#pdfTable',startY:30});doc.save(title+'.pdf');}
 async function login(){const u=document.getElementById('u').value,p=document.getElementById('p').value;const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(!d)return alert('Invalid');localStorage.setItem('user',JSON.stringify({username:u,role:d.role}));d.role==='admin'?adminSummary():userHome();}
 async function register(){const u=document.getElementById('ru').value,p=document.getElementById('rp').value;await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});alert('Registered');location.reload();}
 function logout(){localStorage.clear();renderAuth();}
 function toggleAuth(v){document.getElementById('loginForm').style.display=v==='login'?'block':'none';document.getElementById('regForm').style.display=v==='reg'?'block':'none';}
 function togglePass(id){const x=document.getElementById(id);x.type=x.type==='password'?'text':'password';}
+
+// --- LOGIN SCREEN ---
+function renderAuth(){
+  app.innerHTML = `
+    <div class="auth-wrap">
+      <div class="auth-glass">
+        <div style="font-size:50px; margin-bottom:20px">🌾</div>
+        <h1 style="margin:0; color:var(--primary-dark)">${t('welcome')}</h1>
+        <p style="color:#666; margin-bottom:30px">Premium Farm Management</p>
+        <div id="loginForm">
+           <input id="u" placeholder="Username">
+           <div style="position:relative"><input id="p" type="password" placeholder="Password"><span style="position:absolute; right:15px; top:15px; cursor:pointer" onclick="togglePass('p')">👁️</span></div>
+           <button class="btn-main" onclick="login()">Login</button>
+           <p style="margin-top:20px; cursor:pointer; font-weight:700; color:var(--primary)" onclick="toggleAuth('reg')">Create Account</p>
+        </div>
+        <div id="regForm" style="display:none">
+           <input id="ru" placeholder="Username">
+           <div style="position:relative"><input id="rp" type="password" placeholder="Password"><span style="position:absolute; right:15px; top:15px; cursor:pointer" onclick="togglePass('rp')">👁️</span></div>
+           <button class="btn-main" onclick="register()">Sign Up</button>
+           <p style="margin-top:20px; cursor:pointer; font-weight:700; color:var(--primary)" onclick="toggleAuth('login')">Back to Login</p>
+        </div>
+      </div>
+    </div>`;
+}
 
 // INIT
 const saved=JSON.parse(localStorage.getItem('user'));
