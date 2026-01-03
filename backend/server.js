@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, "../public")));
 
 // --- DATABASE CONNECTION ---
 // PASTE YOUR MONGODB STRING BELOW inside the quotes if .env fails
-const db_connection_string = process.env.MONGO_URI || "mongodb+srv://admin:admin123@cluster0.p7q8s.mongodb.net/raithu-palu?retryWrites=true&w=majority&appName=Cluster0";
+const db_connection_string = process.env.MONGO_URI || "mongodb+srv://raithupalu_db_user:Raithu123@raithu.gcctfct.mongodb.net/raithupaalu?appName=raithu";
 
 const connectDB = async () => {
   try {
