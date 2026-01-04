@@ -62,6 +62,32 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"));
 });
 
+app.post('/delete-user', async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.json({ success: false, error: 'Username missing' });
+    }
+
+    const result = await User.deleteOne({ username });
+
+    if (result.deletedCount === 0) {
+      return res.json({ success: false, error: 'User not found' });
+    }
+
+    // OPTIONAL: also delete orders of this user
+    await Order.deleteMany({ username });
+
+    return res.json({ success: true });
+
+  } catch (err) {
+    console.error("DELETE USER ERROR:", err);
+    return res.status(500).json({ success: false });
+  }
+});
+
+
 // Register
 app.post("/register", async (req, res) => {
   try {
