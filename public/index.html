@@ -11,12 +11,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="/favicon.ico" />
   
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  
+ <!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     /* ================================
    ROOT VARIABLES - ENHANCED
@@ -72,7 +71,63 @@
 .notify-panel.active {
   display:block;
 }
+/* 📱 PERFECT MOBILE DOCK */
+.mobile-dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 75px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom); /* Respects iPhone home bar */
+  border-top: 1px solid var(--surface-border);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+  z-index: 10000;
+}
 
+.dock-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-sub);
+  gap: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.dock-item span {
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.dock-item small {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dock-item.active {
+  color: var(--primary);
+}
+
+.dock-item.active span {
+  transform: translateY(-4px) scale(1.1);
+}
+
+/* Hide dock on desktop */
+@media (min-width: 769px) {
+  .mobile-dock { display: none; }
+}
 /* ================================
    GLOBAL RESET
 ================================ */
@@ -1089,8 +1144,9 @@ tr:hover td {
 <div id="app" style="width:100%; height:100%"></div>
 <div id="toast" style="visibility:hidden;"></div>
 
-<script>let adminUsersInterval = null;
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script>
+let adminUsersInterval = null;
   let isEditingUser = false;
 function logAudit(action, meta={}) {
   const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
@@ -1747,6 +1803,7 @@ function showLogoLoader() {
     </div>
   `;
 }
+let charts = {}; // Global variable at the top of your script
 
 async function userHome() {
   saveLastTab('home');
@@ -1755,44 +1812,35 @@ async function userHome() {
   const res = await fetch(`/user/${u.username}`); 
   const data = await res.json();
   updateLastSync();
+  
   const st = calculateStats(data.sales);
-  let mData={}; data.sales.forEach(s => { let m=s.date.split('/')[1]; mData[m]=(mData[m]||0)+(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35); });
-const insightText = generateInsights(data.sales);
+  let mData={}; 
+  data.sales.forEach(s => { 
+    let m=s.date.split('/')[1]; 
+    mData[m]=(mData[m]||0)+(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35); 
+  });
+  
+  const insightText = generateInsights(data.sales);
 
   renderShell(u, `
-  
     <div class="bento-grid">
-      <div class="card col-12 insight-card">
-  <p>${insightText}</p>
-</div>
-
-      <div class="card col-4">
-        <div class="stat-badge">Overview</div>
-        <div class="stat-val">₹${st.total.toLocaleString()}</div>
-        <div class="stat-label">${t('totalBill')}</div>
+      <div class="card col-12 insight-card"><p>${insightText}</p></div>
+      <div class="card col-4"><div class="stat-badge">Overview</div><div class="stat-val">₹${st.total.toLocaleString()}</div><div class="stat-label">${t('totalBill')}</div></div>
+      <div class="card col-4"><div class="stat-badge">Activity</div><div class="stat-val">${st.days}</div><div class="stat-label">${t('activeDays')}</div></div>
+      <div class="card col-4" style="background:var(--gradient-primary); color:white; cursor:pointer" onclick="userOrders()">
+         <div style="font-size:2rem; margin-bottom:5px">🥛</div><div style="font-weight:700;">Need Milk?</div><button class="btn-main" style="background:white; color:var(--primary); padding:8px 15px; margin-top:5px; box-shadow:none">${t('requestMilk')}</button>
       </div>
-      <div class="card col-4">
-        <div class="stat-badge">Activity</div>
-        <div class="stat-val">${st.days}</div>
-        <div class="stat-label">${t('activeDays')}</div>
-      </div>
-      <div class="card col-4" style="background:linear-gradient(135deg, var(--primary), #059669); color:white">
-         <div style="font-size:2rem; margin-bottom:5px">🥛</div>
-         <div style="font-weight:700;">Need Milk?</div>
-<button class="btn-main">${t('requestMilk')} ➔</button>      </div>
-      <div class="card col-8">
-        <h3>Monthly Spend</h3>
-        <div style="height:250px"><canvas id="mainChart"></canvas></div>
-      </div>
-      <div class="card col-4">
-         <h3>Consumption</h3>
-         <div style="height:200px; display:flex; justify-content:center"><canvas id="pieChart"></canvas></div>
-      </div>
+      <div class="card col-8"><h3>Monthly Spend</h3><div style="height:250px"><canvas id="mainChart"></canvas></div></div>
+      <div class="card col-4"><h3>Consumption</h3><div style="height:200px; display:flex; justify-content:center"><canvas id="pieChart"></canvas></div></div>
     </div>
   `, 'home');
 
-  new Chart(document.getElementById('mainChart'), {type:'line', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Spend', data:Object.values(mData), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4, pointRadius:5}]}, options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{display:false}}}}});
-  new Chart(document.getElementById('pieChart'), {type:'doughnut', data:{labels:['2L','1L','3/4L','1/2L'], datasets:[{data:[st.t2, st.t1, st.t34, st.t12], backgroundColor:['#064e3b','#065f46','#10b981','#6ee7b7'], borderWidth:0}]}});
+  // Destroy old charts if they exist
+  if (charts.main) charts.main.destroy();
+  if (charts.pie) charts.pie.destroy();
+
+  charts.main = new Chart(document.getElementById('mainChart'), {type:'line', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Spend', data:Object.values(mData), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4}]}, options:{responsive:true, maintainAspectRatio:false}});
+  charts.pie = new Chart(document.getElementById('pieChart'), {type:'doughnut', data:{labels:['2L','1L','3/4L','1/2L'], datasets:[{data:[st.t2, st.t1, st.t34, st.t12], backgroundColor:['#064e3b','#065f46','#10b981','#6ee7b7'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false}});
 }
 function openMonth(key) {
   currentMonthView = key;
@@ -1838,16 +1886,8 @@ function renderMonthView(sales, month, year) {
     </div>
 
     <button class="btn-main"
-      onclick="
-        const u = JSON.parse(localStorage.getItem('user'));
-        downloadMonthPDF(
-          u.username,
-          ${JSON.stringify(sales)},
-          ${month},
-          ${year}
-        );
-      ">
-      📄 Download PDF
+      onclick="downloadMonthPDF(JSON.parse(localStorage.getItem('user')).username, ${month}, ${year})">
+       Download PDF
     </button>
 
   </div>
@@ -2007,9 +2047,10 @@ showLogoLoader();
     <div class="bento-grid">
 
       <div class="card col-6">
-        <button class="btn-main" onclick="exportAllPDF(${JSON.stringify(users)})">
-          ⬇ Export PDF
-        </button>
+        <button class="btn-main" onclick="exportAllPDF()">
+  ⬇ Export PDF
+</button>
+
         <div class="stat-badge">${t('totalRevenue')}</div>
         <div class="stat-val">₹${rev.toLocaleString()}</div>
       </div>
@@ -2366,97 +2407,73 @@ function getCustomerSince(sales = []) {
   const [d, m, y] = sorted[0].date.split('/');
   return `${getMonthName(m)} ${y}`;
 }
-function downloadMonthPDF(username, sales, month, year) {
+async function downloadMonthPDF(username, month, year) {
+  // 1. Correct way to access jsPDF v2+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-
-  // Filter month data
-  const monthSales = sales.filter(s => {
+  
+  // 2. Fetch fresh data to ensure we have it correctly
+  const res = await fetch(`/user/${username}`);
+  const data = await res.json();
+  
+  // 3. Filter for specific month/year
+  const monthSales = data.sales.filter(s => {
     const [, m, y] = s.date.split('/');
     return Number(m) === Number(month) && Number(y) === Number(year);
   });
 
   if (monthSales.length === 0) {
-    showToast("No data for this month");
+    showToast("No data to download");
     return;
   }
 
-  // ===== HEADER =====
-  doc.addImage(APP_LOGO_URL, "PNG", 85, 10, 40, 40);
-
-  doc.setFontSize(16);
-  doc.text("రైతు పాలు – Monthly Milk Report", 105, 60, { align: "center" });
-
+  // 4. PDF Styling
+  doc.setFontSize(20);
+  doc.setTextColor(16, 185, 129); // Brand Green
+  doc.text("రైతు పాలు", 105, 20, { align: "center" });
+  
   doc.setFontSize(12);
-  doc.text(`User: ${username}`, 14, 72);
-  doc.text(`Month: ${getMonthName(month)} ${year}`, 14, 80);
+  doc.setTextColor(100);
+  doc.text(`Milk Report: ${getMonthName(month)} ${year}`, 105, 30, { align: "center" });
+  doc.text(`Farmer: ${username}`, 14, 45);
 
-  // ===== TABLE =====
-  let y = 90;
-  let total = 0;
-
-  doc.setFontSize(11);
-  doc.setFont(undefined, "bold");
-  doc.text("Date", 14, y);
-  doc.text("Milk Details", 70, y);
-  doc.text("Amount (₹)", 160, y, { align: "right" });
-
-  y += 6;
-  doc.setFont(undefined, "normal");
+  const tableRows = [];
+  let grandTotal = 0;
 
   monthSales.forEach(s => {
-    const qty =
-      `${s.twoL ? '2L ' : ''}` +
-      `${s.oneL ? '1L ' : ''}` +
-      `${s.threeQuarterL ? '3/4L ' : ''}` +
-      `${s.halfL ? '1/2L' : ''}`;
-
-    const cost =
-      (s.twoL * 140) +
-      (s.oneL * 70) +
-      (s.threeQuarterL * 55) +
-      (s.halfL * 35);
-
-    total += cost;
-
-    doc.text(s.date, 14, y);
-    doc.text(qty || "-", 70, y);
-    doc.text(cost.toString(), 160, y, { align: "right" });
-
-    y += 6;
-
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
-    }
+    const cost = (s.twoL*140) + (s.oneL*70) + (s.threeQuarterL*55) + (s.halfL*35);
+    grandTotal += cost;
+    const qty = `${s.twoL?s.twoL+'x2L ':''}${s.oneL?s.oneL+'x1L ':''}${s.threeQuarterL?s.threeQuarterL+'x3/4L ':''}${s.halfL?s.halfL+'x1/2L':''}`;
+    tableRows.push([s.date, qty, `₹${cost}`]);
   });
 
-  // ===== TOTAL =====
-  y += 6;
-  doc.setFont(undefined, "bold");
-  doc.text(`Total Amount: ₹ ${total}`, 14, y);
+  // 5. Generate Table
+  doc.autoTable({
+    startY: 50,
+    head: [['Date', 'Quantity', 'Amount']],
+    body: tableRows,
+    headStyles: { fillColor: [16, 185, 129] },
+    foot: [['', 'Grand Total', `₹${grandTotal}`]],
+    footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+  });
 
-  // ===== SAVE =====
-  doc.save(
-    `${username}-${getMonthName(month)}-${year}-Milk-Report.pdf`
-  );
+  doc.save(`${username}_${getMonthName(month)}_${year}.pdf`);
+  fireConfetti();
 }
 
 function getUserActivityStatus(sales = []) {
-  if (!sales.length) {
-    return { label: 'Inactive', color: '#dc2626', icon: '🔴' };
-  }
+  if (!sales.length) return { label: 'New Member', color: '#6b7280', icon: '✨' };
+  
+  const sorted = sortSalesByDate([...sales]);
+  const lastDate = sorted[sorted.length - 1].date;
+  const [d, m, y] = lastDate.split('/');
+  const last = new Date(y, m - 1, d);
+  const diffDays = (new Date() - last) / (1000 * 60 * 60 * 24);
 
-  const last = sales[sales.length - 1].date;
-  const [d, m, y] = last.split('/');
-  const diffDays = (Date.now() - new Date(y, m - 1, d)) / 86400000;
-
-  if (diffDays <= 2) return { label: 'Active', color: '#16a34a', icon: '🟢' };
-  if (diffDays <= 7) return { label: 'Idle', color: '#f59e0b', icon: '🟡' };
-
-  return { label: 'Inactive', color: '#dc2626', icon: '🔴' };
+  if (diffDays <= 3) return { label: 'Regular', color: '#10b981', icon: '🟢' };
+  if (diffDays <= 10) return { label: 'Occasional', color: '#f59e0b', icon: '🟡' };
+  return { label: 'Inactive', color: '#ef4444', icon: '🔴' };
 }
-
 async function userProfile() {
   saveLastTab('profile');
 showLogoLoader();
@@ -2579,6 +2596,15 @@ window.addEventListener('offline', () => {
   disableActions(true);
 });
 
+function calculateBill(entry) {
+  return (entry.twoL || 0) * PRICES.twoL +
+         (entry.oneL || 0) * PRICES.oneL +
+         (entry.threeQuarterL || 0) * PRICES.threeQuarterL +
+         (entry.halfL || 0) * PRICES.halfL;
+}
+
+// Then update your loops like this:
+// const cost = calculateBill(s);
 window.addEventListener('online', () => {
   isOffline = false;
   showNetStatus('online', '✅ Back online');
@@ -2596,9 +2622,15 @@ function exportAllPDF() {
     .then(r => r.json())
     .then(users => {
       const { jsPDF } = window.jspdf;
+      if (!jsPDF) {
+        alert("PDF library not loaded");
+        return;
+      }
+
       const doc = new jsPDF();
 
-      doc.addImage(APP_LOGO_URL, "PNG", 30, 80, 150, 150, undefined, "FAST");
+      /* ---------- WATERMARK ---------- */
+      doc.addImage(APP_LOGO_URL, "PNG", 30, 90, 150, 150, undefined, "FAST");
       doc.setGState(new doc.GState({ opacity: 0.08 }));
 
       doc.setGState(new doc.GState({ opacity: 1 }));
@@ -2607,25 +2639,35 @@ function exportAllPDF() {
 
       let y = 30;
 
-      users.forEach(u => {
-        doc.text(`Farmer: ${u.username}`, 14, y);
+      users.forEach(user => {
+        doc.setFontSize(12);
+        doc.text(`Farmer: ${user.username}`, 14, y);
         y += 6;
 
-        u.sales.forEach(s => {
+        if (!user.sales.length) {
+          doc.text("No entries", 18, y);
+          y += 6;
+        }
+
+        user.sales.forEach(s => {
           const total =
             (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
-          doc.text(`${s.date} → ₹${total}`, 18, y);
+          doc.text(`${s.date} → ₹ ${total}`, 18, y);
           y += 6;
+
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
         });
 
         y += 10;
-        if (y > 270) { doc.addPage(); y = 20; }
       });
 
-      doc.save('farmers-data.pdf');
-    });
+      doc.save("raithu-palu-farmers-report.pdf");
+    })
+    .catch(() => alert("Failed to export PDF"));
 }
-
 
 function tog(btn, type) {
   btn.classList.toggle('active');
@@ -2668,8 +2710,12 @@ async function save(username) {
   user: username,
   date: date,
   milk: { ...selectedMilk }
+  
 });
-
+  if (Object.values(selectedMilk).every(v => v === 0)) {
+    showToast("Please select at least one milk type!");
+    return;
+}
   fireConfetti();
   showToast("Milk entry updated 🥛");
   editUser(username);
@@ -2691,7 +2737,10 @@ async function del(n, d) {
   showToast("Deleted");
   editUser(n);
 }
-async function changePass(u){const o=document.getElementById('oldP').value,n=document.getElementById('newP').value;const r=await fetch('/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,oldPassword:o,newPassword:n})});const d=await r.json();d.success?(fireConfetti(),showToast('Success'),userProfile()):alert(d.error);}
+async function changePass(u){const o=document.getElementById('oldP').value,n=document.getElementById('newP').value;const r=await fetch('/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,oldPassword:o,newPassword:n})});const d=await r.json();d.success?(fireConfetti(),showToast('Success'),userProfile()):alert(d.error);if(n.length < 6) {
+    showToast("New password must be at least 6 characters");
+    return;
+}}
 async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});fireConfetti();showToast('Order Sent 🚀');userOrders();addNotification("🛒 Order placed successfully");}
 async function acceptOrder(id) {
   // 1. Get order
