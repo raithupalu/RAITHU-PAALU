@@ -1387,15 +1387,20 @@ tr:hover td {
 let cachedView = localStorage.getItem('cachedView');
 let adminUsersInterval = null;
 let charts1= {};
+let ordersCache = [];
+
   let isEditingUser = false;
 const isLowEndDevice =
   navigator.hardwareConcurrency <= 4 ||
   navigator.deviceMemory <= 4 ||
   window.innerWidth <= 768;
 
-if (isLowEndDevice) {
-  document.body.classList.add('low-end');
+if (isLowEndDevice && window.Chart) {
+  Chart.defaults.animation = false;
+  Chart.defaults.transitions.active.animation.duration = 0;
 }
+
+
 let cache = {};
 
 async function fetchCached(url, ttl = 60000) {
@@ -1582,58 +1587,30 @@ const T = {
 };
 
 function setLang(lang) {
+  if (currentLang === lang) return;
+
   currentLang = lang;
   localStorage.setItem('lang', lang);
 
   document.getElementById('langEn')?.classList.toggle('active', lang === 'en');
   document.getElementById('langTe')?.classList.toggle('active', lang === 'te');
 
-  const saved = JSON.parse(localStorage.getItem('user'));
-const cachedView = localStorage.getItem('cachedView');
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) return;
 
-if (saved && cachedView) {
-  // 1️⃣ Show last screen instantly (NO WAIT)
-  app.innerHTML = cachedView;
+  const tab = getLastTab() || (user.role === 'admin' ? 'summary' : 'home');
 
-  // 2️⃣ Mark user as active
-  updateUserActivity();
-
-  // 3️⃣ Refresh data silently after UI is shown
-  setTimeout(() => {
-    if (saved.role === 'admin') {
-      adminSummary();
-    } else {
-      userHome();
-    }
-  }, 300);
-
-} else if (saved) {
-  // First login / no cache
-  saved.role === 'admin' ? adminSummary() : userHome();
-} else {
-  renderAuth();
-}
-
-
-  // Re-render current view safely
-  const lastTab = getLastTab();
-  if (saved.role === 'admin') {
-    if (lastTab === 'users') adminUsers();
-    else if (lastTab === 'orders') adminOrders();
-    else adminSummary();
+  if (user.role === 'admin') {
+    tab === 'orders' ? adminOrders()
+    : tab === 'users' ? adminUsers()
+    : tab === 'audit' ? adminAudit()
+    : adminSummary();
   } else {
-    if (lastTab === 'progress') userProgress();
-    else if (lastTab === 'orders') userOrders();
-    else if (lastTab === 'profile') userProfile();
-    else userHome();
+    tab === 'orders' ? userOrders()
+    : tab === 'progress' ? userProgress()
+    : tab === 'profile' ? userProfile()
+    : userHome();
   }
-}
-
-
-function toggleTheme() {
-  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-  localStorage.setItem('theme', currentTheme);
-  document.body.classList.toggle('dark-mode');
 }
 
 const t = (k) => T[currentLang][k] || k;
@@ -1655,6 +1632,14 @@ function generateInsights(sales) {
 
   return `<span>${prefText}: ${milkMap[favorite]}</span>`;
 }
+async function fetchOrdersCached(force = false) {
+  if (!force && ordersCache.length) return ordersCache;
+
+  const res = await fetch('/orders');
+  ordersCache = await res.json();
+  return ordersCache;
+}
+
 function getMonthTotal(sales = []) {
   return sales.reduce((sum, s) => {
     return sum +
@@ -1910,7 +1895,7 @@ function adminAudit() {
     <div class="card col-12">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
         <h3 style="margin:0">Admin Audit Log</h3>
-        <button class="btn-sec" onclick="clearAuditLogs()" style="border-color:#ef4444; color:#ef4444">
+        <button class="btn-sec" onclick="clearAuditLogs(this)" style="border-color:#ef4444; color:#ef4444">
           🗑️ Clear All Logs
         </button>
       </div>
@@ -1930,26 +1915,38 @@ function adminAudit() {
     </div>
   `, 'audit');
 }
-
-function clearAuditLogs() {
-  const btn = event.target;
+function clearAuditLogs(btn) {
   if (!btn.dataset.confirmed) {
-    btn.dataset.confirmed = "true";
-    btn.innerText = "Sure? Delete all?";
+    btn.dataset.confirmed = "yes";
+    btn.innerText = "Click again to confirm";
     btn.style.background = "#ef4444";
-    btn.style.color = "white";
+    btn.style.color = "#fff";
+
     setTimeout(() => {
       btn.dataset.confirmed = "";
       btn.innerText = "🗑️ Clear All Logs";
-      btn.style.background = ""; btn.style.color = "";
+      btn.style.background = "";
+      btn.style.color = "#ef4444";
     }, 3000);
     return;
   }
 
   localStorage.removeItem('auditLogs');
-  showToast("Audit Logs Purged 🧹");
-  adminAudit();
+
+  const table = document.querySelector('.table-wrapper table');
+  if (table) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="4" style="text-align:center;color:gray">
+          No audit logs available
+        </td>
+      </tr>
+    `;
+  }
+
+  showToast("Audit logs cleared 🧹");
 }
+
 function renderShell(user, content, tab) {
   const role = user.role;
   updateUserActivity();
@@ -2032,8 +2029,13 @@ function renderShell(user, content, tab) {
       ${role === 'admin' ? adminDock(tab) : userDock(tab)}
     </div>
   `;
-  localStorage.setItem('cachedView', app.innerHTML);
 }
+function cacheViewSafe() {
+  if (app.innerHTML.length < 150000) {
+    localStorage.setItem('cachedView', app.innerHTML);
+  }
+}
+
 window.addEventListener('online', () => {
   document.getElementById('logoStatus')?.classList
     .replace('logo-offline', 'logo-online');
@@ -2103,40 +2105,86 @@ async function userHome() {
     if (appCharts.main) appCharts.main.destroy();
     if (appCharts.pie) appCharts.pie.destroy();
 
-    const ctxMain = document.getElementById('mainChart').getContext('2d');
-    appCharts.main = new Chart(ctxMain, {
-      type: 'line',
-      data: {
-        labels: Object.keys(mData).map(m => getMonthName(m)),
-        datasets: [{
-          label: 'Spend',
-          data: Object.values(mData),
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16,185,129,0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
+    setTimeout(() => {
+  const mainCanvas = document.getElementById('mainChart');
+  const pieCanvas = document.getElementById('pieChart');
 
+  if (!mainCanvas || !pieCanvas) return;
+
+  if (appCharts.main) appCharts.main.destroy();
+  if (appCharts.pie) appCharts.pie.destroy();
+
+  appCharts.main = new Chart(mainCanvas, {
+    type: 'line',
+    data: {
+      labels: Object.keys(mData).map(m => getMonthName(m)),
+      datasets: [{
+        data: Object.values(mData),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.1)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  appCharts.pie = new Chart(pieCanvas, {
+    type: 'doughnut',
+    data: {
+      labels: ['2L','1L','3/4L','1/2L'],
+      datasets: [{
+        data: [st.t2, st.t1, st.t34, st.t12],
+        backgroundColor: ['#064e3b','#065f46','#10b981','#6ee7b7']
+      }]
+    },
+    options: { responsive: true }
+  });
+}, isLowEndDevice ? 600 : 0);
     const ctxPie = document.getElementById('pieChart').getContext('2d');
-    appCharts.pie = new Chart(ctxPie, {
-      type: 'doughnut',
-      data: {
-        labels: ['2L','1L','3/4L','1/2L'],
-        datasets: [{
-          data: [st.t2, st.t1, st.t34, st.t12],
-          backgroundColor: ['#064e3b','#065f46','#10b981','#6ee7b7'],
-          borderWidth: 0
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false }
-    });
+    renderUserCharts(mData, st);
+
   } catch (e) {
     showToast("Error loading dashboard data");
   }
 }
+function renderUserCharts(mData, stats) {
+  if (!window.Chart) return;
+
+  const main = document.getElementById('mainChart');
+  const pie = document.getElementById('pieChart');
+  if (!main || !pie) return;
+
+  appCharts.main?.destroy();
+  appCharts.pie?.destroy();
+
+  appCharts.main = new Chart(main, {
+    type: 'line',
+    data: {
+      labels: Object.keys(mData).map(getMonthName),
+      datasets: [{
+        data: Object.values(mData),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.15)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  appCharts.pie = new Chart(pie, {
+    type: 'doughnut',
+    data: {
+      labels: ['2L','1L','3/4L','1/2L'],
+      datasets: [{
+        data: [stats.t2, stats.t1, stats.t34, stats.t12],
+        backgroundColor: ['#064e3b','#065f46','#10b981','#6ee7b7']
+      }]
+    }
+  });
+}
+
 function openMonth(key) {
   currentMonthView = key;
   userProgress();
@@ -2262,6 +2310,10 @@ function renderMonthSelector(grouped) {
 
     </div>
   `;
+}
+if (isLowEndDevice) {
+  Chart.defaults.animation = false;
+  Chart.defaults.transitions.active.animation.duration = 0;
 }
 
 async function userProgress() {
@@ -2420,7 +2472,7 @@ isEditingUser = false;
       ${users.map(usr => {
         const status = getUserLiveStatus(usr.lastActive);
         return `
-          <div class="card col-4 farmer-card" onclick="editUser('${usr.username}')">
+          <div class="card col-4 farmer-card" data-user="${usr.username}" onclick="editUser('${usr.username}')">
             <div style="font-size:38px">👤</div>
             <h3 style="margin:6px 0">${usr.username}</h3>
             <span class="status-badge" style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:800; background:${status.color}20; color:${status.color};">
@@ -2484,106 +2536,122 @@ function startAdminUserRefresh() {
   adminUsersInterval = setInterval(async () => {
     if (getLastTab() !== 'users' || isEditingUser) return;
 
-    const res = await fetch('/users');
-    const users = await res.json();
+    const users = await fetch('/users').then(r => r.json());
 
-    // 🔥 ONLY update cards, not full render
     document.querySelectorAll('.farmer-card').forEach(card => {
-      const name = card.querySelector('h3')?.innerText;
+      const name = card.dataset.user;
       const user = users.find(u => u.username === name);
       if (!user) return;
 
       const status = getUserLiveStatus(user.lastActive);
-      const badge = card.querySelector('span');
+      const badge = card.querySelector('.status-badge');
 
       badge.innerHTML = `${status.icon} ${status.label}`;
       badge.style.color = status.color;
       badge.style.background = `${status.color}20`;
     });
-  }, 300000); // every 2 minutes
-}
-async function editUser(name) {
-  isEditingUser = true;
-  const u = JSON.parse(localStorage.getItem('user'));
-  
-  // 1. Instant Load from Cache
-  const allUsers = cache['/users']?.data || [];
-  let target = allUsers.find(x => x.username === name);
 
-  // 2. Background update (no spinner/lag)
-  if (!target) {
-     const res = await fetch('/users');
-     const users = await res.json();
-     target = users.find(x => x.username === name);
+  }, 120000); // every 2 minutes
+}
+
+async function editUser(username) {
+  isEditingUser = true;
+  const admin = JSON.parse(localStorage.getItem('user'));
+  const userOrders = ordersCache.filter(o => o.username === username);
+  // FAST: get cached users first
+  let users = cache['/users']?.data;
+  if (!users) {
+    users = await fetch('/users').then(r => r.json());
   }
 
-  const st = calculateStats(target.sales);
-  
-  renderShell(u, `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:10px">
-      <button class="btn-sec" onclick="isEditingUser=false; adminUsers()">⬅ ${t('back')}</button>
-      <button id="delUserBtn" class="btn-danger-outline" onclick="removeCustomerInline('${name}')">🗑️ Remove Customer</button>
+  const user = users.find(u => u.username === username);
+  if (!user) return showToast("User not found");
+
+  const stats = calculateStats(user.sales || []);
+  const orders = user.orders || [];
+
+  renderShell(admin, `
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+      <button class="btn-sec" onclick="isEditingUser=false;adminUsers()">⬅ Back</button>
+      <button class="btn-danger-outline" onclick="removeCustomerInline('${username}')">
+        🗑️ Remove Customer
+      </button>
     </div>
 
     <div id="inlineStatus"></div>
 
     <div class="bento-grid">
+
+      <!-- ADD MILK -->
       <div class="card col-6">
-        <h3>${t('addEntry')}: ${name}</h3>
-        <input type="date" id="d" value="${new Date().toISOString().split('T')[0]}" class="auth-input" style="margin:15px 0">
+        <h3>Add Milk Entry</h3>
+        <input type="date" id="d" class="auth-input">
         <div class="milk-grid">
           <div class="milk-btn" onclick="tog(this,'twoL')">2L</div>
           <div class="milk-btn" onclick="tog(this,'oneL')">1L</div>
           <div class="milk-btn" onclick="tog(this,'threeQuarterL')">3/4L</div>
           <div class="milk-btn" onclick="tog(this,'halfL')">1/2L</div>
         </div>
-        <button class="btn-main" style="width:100%" onclick="save('${name}')">${t('save')}</button>
+        <button class="btn-main" onclick="save('${username}')">Save Entry</button>
       </div>
 
+      <!-- SALES -->
       <div class="card col-6">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-          <span>${t('total')}: <b>₹${st.total}</b></span>
-          <span>${t('activeDays')}: <b>${st.days}</b></span>
-        </div>
-        <div class="table-wrapper" style="max-height:300px; overflow-y:auto">
+        <h3>Milk Entries</h3>
+        <div class="table-wrapper" style="max-height:280px">
           <table>
-            <thead>
-               <tr style="background:var(--primary-light)">
-                 <th>${t('date')}</th><th>${t('amount')}</th><th>${t('delete')}</th>
-               </tr>
-            </thead>
-            <tbody>
-              ${target.sales.slice().reverse().map(s => `
-                <tr>
-                  <td>${s.date}</td>
-                  <td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td>
-                  <td><button onclick="confirmInlineDelete('${name}','${s.date}', this)" style="color:#ef4444; border:none; background:none; cursor:pointer">✕</button></td>
-                </tr>
-              `).join('')}
-            </tbody>
+            <tr><th>Date</th><th>Amount</th><th>❌</th></tr>
+            ${(user.sales || []).slice().reverse().map(s => `
+              <tr>
+                <td>${s.date}</td>
+                <td>₹${calculateBill(s)}</td>
+                <td>
+                  <button onclick="confirmInlineDelete('${username}','${s.date}',this)">✕</button>
+                </td>
+              </tr>
+            `).join('') || '<tr><td colspan="3">No entries</td></tr>'}
           </table>
         </div>
       </div>
 
-      <!-- Restored Order History Section -->
+      <!-- ORDER HISTORY -->
       <div class="card col-12">
-        <h3>${name}'s Order History</h3>
-        <div class="table-wrapper">
-          <table>
-            <tr style="background:var(--primary-light)"><th>Date</th><th>Qty</th><th>Status</th></tr>
-            ${(target.orders || []).slice().reverse().map(o => `
-              <tr>
-                <td>${new Date(o.timestamp).toLocaleDateString()}</td>
-                <td>${o.quantity}L</td>
-                <td style="font-weight:bold; color:${o.status==='Rejected'?'#ef4444':(o.status==='Pending'?'#f59e0b':'#10b981')}">${o.status}</td>
-              </tr>
-            `).join('') || '<tr><td colspan="3">No requests yet</td></tr>'}
-          </table>
-        </div>
-      </div>
-    </div>
+  <h3>📦 Order History</h3>
+  <div class="table-wrapper" style="max-height:300px">
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Qty</th>
+        <th>Status</th>
+      </tr>
+      ${
+        userOrders.length
+        ? userOrders.slice().reverse().map(o => `
+          <tr>
+            <td>${new Date(o.timestamp).toLocaleString()}</td>
+            <td>${o.quantity} L</td>
+            <td style="font-weight:700;color:${
+              o.status === 'Rejected' ? '#ef4444'
+              : o.status === 'Pending' ? '#f59e0b'
+              : '#10b981'
+            }">${o.status}</td>
+          </tr>
+        `).join('')
+        : `<tr><td colspan="3">No orders</td></tr>`
+      }
+    </table>
+  </div>
+</div>
   `, 'users');
+  await fetchOrdersCached(true);
+
 }
+function updateOrderCache(order) {
+  const index = ordersCache.findIndex(o => o.id === order.id);
+  if (index !== -1) ordersCache[index] = order;
+  else ordersCache.push(order);
+}
+
 // Function to show inline status messages
 function setInlineStatus(msg, type = 'success') {
   const el = document.getElementById('inlineStatus');
@@ -2592,6 +2660,8 @@ function setInlineStatus(msg, type = 'success') {
   setTimeout(() => el.innerHTML = '', 4000);
 }
 async function removeCustomerInline(username) {
+  if (!confirm(`Delete ${username}?`)) return;
+
   try {
     const res = await fetch('/delete-user', {
       method: 'POST',
@@ -2600,30 +2670,27 @@ async function removeCustomerInline(username) {
     });
 
     const data = await res.json();
+    if (!data.success) throw new Error();
 
-    if (res.ok && data.success === true) {
+    logAudit("USER_REMOVED", { username });
 
-      showToast(`Customer ${username} removed 🗑️`);
+    // ⚡ REMOVE CARD INSTANTLY (NO reload)
+    document
+      .querySelectorAll('.farmer-card')
+      .forEach(c => {
+        if (c.innerText.includes(username)) c.remove();
+      });
 
-      logAudit("USER_REMOVED", { username });
+    isEditingUser = false;
+    localStorage.removeItem('editingUser');
 
-      // 🔥 IMPORTANT FIXES
-      isEditingUser = false;
-      localStorage.removeItem('editingUser');
+    showToast(`User ${username} removed`);
 
-      // 🔄 FORCE UI REFRESH
-      app.innerHTML = "";          // clear stale DOM
-      await adminUsers();          // re-fetch users from backend
-
-    } else {
-      showToast("❌ Failed to remove customer");
-    }
-
-  } catch (err) {
-    console.error(err);
-    showToast("❌ Server error");
+  } catch {
+    showToast("Failed to remove user ❌");
   }
 }
+
 
 // 2. Inline Row Delete Confirmation
 function confirmInlineDelete(name, date, btn) {
@@ -2653,25 +2720,17 @@ async function register() {
     body: JSON.stringify({ username: u, password: p })
   });
 
-  const regForm = document.getElementById('regForm');
-  regForm.innerHTML = `
+  const box = document.getElementById('regForm');
+  box.innerHTML = `
     <div class="inline-status status-success">
-      User <b>${u}</b> registered successfully! <br> You can now login.
+      User <b>${u}</b> created successfully
     </div>
-    <button class="auth-btn" onclick="toggleAuth('login')">Go to Login</button>
+    <button class="auth-btn" onclick="toggleAuth('login')">
+      Go to Login
+    </button>
   `;
 }
 
-// 4. Enhanced Save Feedback
-async function save(username) {
-  const dateInput = document.getElementById('d').value;
-  if (!dateInput) { setInlineStatus("Please select a date", "error"); return; }
-  
-  // Existing save logic...
-  // After successful fetch:
-  setInlineStatus("Work is done! Entry saved successfully 🥛", "success");
-  editUser(username); // Refresh UI
-}
 async function userOrders() {
   saveLastTab('orders');
   const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/orders/${u.username}`); const orders = await res.json();
@@ -2747,26 +2806,67 @@ function throttledActivity() {
 });
 async function adminOrders() {
   saveLastTab('orders');
-  const u = JSON.parse(localStorage.getItem('user')); 
-  const res = await fetch('/orders'); 
-  const orders = await res.json();
-  const pending = orders.filter(o => o.status === 'Pending');
+  const admin = JSON.parse(localStorage.getItem('user'));
 
-  renderShell(u, `
+  const orders = await fetchOrdersCached(true);
+
+  const pending = orders.filter(o => o.status === 'Pending');
+  const history = orders.filter(o => o.status !== 'Pending');
+
+  renderShell(admin, `
     <div class="bento-grid">
-      <div class="card col-12"><h3>Pending Requests</h3></div>
-      ${pending.length === 0 ? '<div class="card col-12"><p>All caught up! 🎉</p></div>' : 
-        pending.map(o => `
-          <div class="card col-4">
-            <h3 style="display:flex; align-items:center; gap:8px">👤 ${o.username}</h3>
-            <div class="stat-val" style="font-size:1.5rem">${o.quantity}L</div>
-            <p style="margin-bottom:15px">${new Date(o.timestamp).toLocaleString()}</p>
+
+      <!-- PENDING -->
+      <div class="card col-12">
+        <h3>🟡 Pending Orders</h3>
+      </div>
+
+      ${pending.length
+        ? pending.map(o => `
+          <div class="card col-4" id="order-${o.id}">
+            <h3>👤 ${o.username}</h3>
+            <div class="stat-val" style="font-size:1.5rem">${o.quantity} L</div>
+            <p>${new Date(o.timestamp).toLocaleString()}</p>
+
             <div style="display:flex; gap:10px">
-              <button class="btn-main" style="flex:1" onclick="acceptOrder('${o.id}')">Approve</button>
-              <button class="btn-sec" style="flex:1; border-color:#ef4444; color:#ef4444" onclick="rejectOrder('${o.id}')">Reject</button>
+              <button class="btn-main" onclick="acceptOrder('${o.id}')">Approve</button>
+              <button class="btn-sec"
+                style="border-color:#ef4444;color:#ef4444"
+                onclick="rejectOrder('${o.id}')">Reject</button>
             </div>
           </div>
-        `).join('')}
+        `).join('')
+        : `<div class="card col-12">No pending orders 🎉</div>`
+      }
+
+      <!-- HISTORY -->
+      <div class="card col-12">
+        <h3>📜 Order History</h3>
+        <div class="table-wrapper" style="max-height:350px">
+          <table>
+            <tr>
+              <th>User</th>
+              <th>Date</th>
+              <th>Qty</th>
+              <th>Status</th>
+            </tr>
+            ${history.slice().reverse().map(o => `
+              <tr>
+                <td>${o.username}</td>
+                <td>${new Date(o.timestamp).toLocaleString()}</td>
+                <td>${o.quantity} L</td>
+                <td style="font-weight:700;color:${
+                  o.status === 'Rejected' ? '#ef4444'
+                  : '#10b981'
+                }">
+                  ${o.status}
+                </td>
+              </tr>
+            `).join('')}
+          </table>
+        </div>
+      </div>
+
     </div>
   `, 'orders');
 }
@@ -2777,6 +2877,11 @@ async function rejectOrder(id) {
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({ id, status:'Rejected' })
   });
+
+  ordersCache = ordersCache.map(o =>
+    o.id === id ? { ...o, status: 'Rejected' } : o
+  );
+
   showToast("Order Rejected ❌");
   adminOrders();
 }
@@ -2841,25 +2946,6 @@ async function downloadMonthPDF(username, month, year) {
   doc.save(`${username}_${getMonthName(month)}_${year}.pdf`);
   fireConfetti();
 }
-
-function getUserLiveStatus(lastActive) {
-  if (!lastActive) {
-    return { label: 'Offline', color: '#dc2626', icon: '🔴' };
-  }
-
-  const diff = Date.now() - lastActive;
-
-  if (diff < 2 * 60 * 1000) {
-    return { label: 'Active', color: '#16a34a', icon: '🟢' };
-  }
-
-  if (diff < 10 * 60 * 1000) {
-    return { label: 'Idle', color: '#f59e0b', icon: '🟡' };
-  }
-
-  return { label: 'Offline', color: '#dc2626', icon: '🔴' };
-}
-
 // Helper function to bridge the naming gap
 function getUserActivityStatus(sales) {
   return getFarmerStatus(sales); 
@@ -2945,51 +3031,36 @@ function exportAllPDF() {
     .then(r => r.json())
     .then(users => {
       const { jsPDF } = window.jspdf;
-      if (!jsPDF) {
-        alert("PDF library not loaded");
-        return;
-      }
-
       const doc = new jsPDF();
 
-      /* ---------- WATERMARK ---------- */
-      doc.addImage(APP_LOGO_URL, "PNG", 30, 90, 150, 150, undefined, "FAST");
-      doc.setGState(new doc.GState({ opacity: 0.08 }));
+      doc.setFontSize(18);
+      doc.text("రైతు పాలు – Customers Report", 105, 15, { align: "center" });
 
-      doc.setGState(new doc.GState({ opacity: 1 }));
-      doc.setFontSize(16);
-      doc.text("రైతు పాలు – Farmers Report", 105, 20, { align: "center" });
+      let y = 25;
 
-      let y = 30;
-
-      users.forEach(user => {
+      users.forEach(u => {
         doc.setFontSize(12);
-        doc.text(`Farmer: ${user.username}`, 14, y);
+        doc.text(`Customer: ${u.username}`, 14, y);
         y += 6;
 
-        if (!user.sales.length) {
-          doc.text("No entries", 18, y);
+        if (!u.sales.length) {
+          doc.text("No milk entries", 18, y);
           y += 6;
         }
 
-        user.sales.forEach(s => {
-          const total =
-            (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
-          doc.text(`${s.date} → ₹ ${total}`, 18, y);
+        u.sales.forEach(s => {
+          const total = calculateBill(s);
+          doc.text(`${s.date} → ₹${total}`, 18, y);
           y += 6;
-
-          if (y > 270) {
-            doc.addPage();
-            y = 20;
-          }
+          if (y > 270) { doc.addPage(); y = 20; }
         });
 
         y += 10;
       });
 
-      doc.save("raithu-palu-farmers-report.pdf");
+      doc.save("raithu-palu-report.pdf");
     })
-    .catch(() => alert("Failed to export PDF"));
+    .catch(() => showToast("PDF export failed"));
 }
 
 function tog(btn, type) {
@@ -2997,52 +3068,56 @@ function tog(btn, type) {
   selectedMilk[type] = selectedMilk[type] ? 0 : 1;
 }
 async function save(username) {
-  const dateInput = document.getElementById('d').value;
-  if (!dateInput) {
-    showToast("Select date");
-    return;
-  }
+  const dateInput = document.getElementById('d')?.value;
+  if (!dateInput) return showToast("Select date");
 
   if (Object.values(selectedMilk).every(v => v === 0)) {
-    showToast("Please select at least one milk type!");
-    return;
+    return showToast("Select milk type");
   }
 
   const [y, m, d] = dateInput.split('-');
   const date = `${d}/${m}/${y}`;
 
   try {
-    const res = await fetch('/user/' + username);
-    const data = await res.json();
-
-    const existing = data.sales.find(s => s.date === date);
-
-    const finalSale = {
-      date,
-      twoL: (existing?.twoL || 0) + (selectedMilk.twoL || 0),
-      oneL: (existing?.oneL || 0) + (selectedMilk.oneL || 0),
-      threeQuarterL: (existing?.threeQuarterL || 0) + (selectedMilk.threeQuarterL || 0),
-      halfL: (existing?.halfL || 0) + (selectedMilk.halfL || 0),
-    };
-
     await fetch('/add-sale', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, sale: finalSale })
+      body: JSON.stringify({
+        username,
+        sale: { date, ...selectedMilk }
+      })
     });
 
-    // RESET UI STATE
-    selectedMilk = { twoL: 0, oneL: 0, threeQuarterL: 0, halfL: 0 };
+    selectedMilk = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
     document.querySelectorAll('.milk-btn').forEach(b => b.classList.remove('active'));
 
-    logAudit("ADD_MILK_ENTRY", { user: username, date });
-    fireConfetti();
-    showToast("Milk entry saved successfully 🥛");
-    editUser(username);
-  } catch (e) {
-    showToast("Failed to save entry");
+    setInlineStatus("Entry saved 🥛");
+
+    // ⚡ PARTIAL REFRESH ONLY
+    refreshEditedUser(username);
+
+  } catch {
+    showToast("Save failed ❌");
   }
 }
+async function refreshEditedUser(username) {
+  const res = await fetch(`/user/${username}`);
+  const data = await res.json();
+
+  const tbody = document.querySelector('.table-wrapper tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = data.sales.slice().reverse().map(s => `
+    <tr>
+      <td>${s.date}</td>
+      <td>₹${calculateBill(s)}</td>
+      <td>
+        <button onclick="confirmInlineDelete('${username}','${s.date}',this)">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
 async function del(n, d) {
   if (!confirm("Delete this entry?")) return;
 
@@ -3066,62 +3141,24 @@ async function changePass(u){const o=document.getElementById('oldP').value,n=doc
 }}
 async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});fireConfetti();showToast('Order Sent 🚀');userOrders();addNotification("🛒 Order placed successfully");}
 async function acceptOrder(id) {
-  // 1. Get order
-  const res = await fetch('/orders');
-  const orders = await res.json();
+  const orders = await fetchOrdersCached(true);
   const order = orders.find(o => o.id === id);
   if (!order) return;
 
-  const username = order.username;
-  const qty = order.quantity; // 1, 2, 0.5
-  const today = new Date();
-  const date = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
-
-  // 2. Fetch user data
-  const uRes = await fetch(`/user/${username}`);
-  const uData = await uRes.json();
-
-  const existing = uData.sales.find(s => s.date === date);
-
-  // 3. Map quantity to milk type
-  const add = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
-  if (qty == 2) add.twoL = 1;
-  if (qty == 1) add.oneL = 1;
-  if (qty == 0.75) add.threeQuarterL = 1;
-  if (qty == 0.5) add.halfL = 1;
-
-  const finalSale = {
-    date,
-    twoL: (existing?.twoL || 0) + add.twoL,
-    oneL: (existing?.oneL || 0) + add.oneL,
-    threeQuarterL: (existing?.threeQuarterL || 0) + add.threeQuarterL,
-    halfL: (existing?.halfL || 0) + add.halfL,
-  };
-
-  // 4. Save sale
-  await fetch('/add-sale', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ username, sale: finalSale })
-  });
-
-  // 5. Approve order
   await fetch('/update-order', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ id, status:'Success' })
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, status: 'Success' })
   });
 
-  fireConfetti();
-  showToast("Order approved & added to milk entry 🥛");
-  logAudit("ORDER_APPROVED", {
-  orderId: id,
-  username: username,
-  quantity: qty
-});
+  ordersCache = ordersCache.map(o =>
+    o.id === id ? { ...o, status: 'Success' } : o
+  );
 
-  adminOrders();
+  showToast("Order Approved 🥛");
+  adminOrders(); // soft refresh
 }
+
 function downloadPDF(title){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.text(title,14,20);doc.autoTable({html:'#pdfTable',startY:30});doc.save(title+'.pdf');}
 async function login() {
   const u = document.getElementById('u').value;
@@ -3146,7 +3183,6 @@ async function login() {
   d.role === 'admin' ? adminSummary() : userHome();
 }
 
-async function register(){const u=document.getElementById('ru').value,p=document.getElementById('rp').value;await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});alert('Registered');location.reload();}
 function logout(){
   localStorage.removeItem('user');
   localStorage.removeItem('lastTab');
