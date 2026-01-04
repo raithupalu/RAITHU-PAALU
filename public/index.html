@@ -9,7 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
+  <link rel="icon" href="/favicon.ico" />
+  
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -17,205 +18,1063 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
   <style>
-    :root {
-      --primary: #10b981;
-      --primary-dark: #047857;
-      --accent: #34d399;
-      --surface: rgba(255, 255, 255, 0.75);
-      --surface-border: rgba(255, 255, 255, 0.6);
-      --blur: 24px;
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-      --text-main: #111827;
-      --text-sub: #6b7280;
-      --radius: 24px;
-    }
+    /* ================================
+   ROOT VARIABLES - ENHANCED
+================================ */
+:root {
+  --primary: #10b981;
+  --primary-dark: #047857;
+  --primary-light: #d1fae5;
+  --accent: #34d399;
+  --accent-glow: rgba(52, 211, 153, 0.3);
+  --surface: rgba(255,255,255,0.85);
+  --surface-border: rgba(16,185,129,0.15);
+  --text-main: #111827;
+  --text-sub: #6b7280;
+  --radius: 20px;
+  --shadow: 0 8px 32px rgba(16,185,129,0.12);
+  --shadow-hover: 0 12px 40px rgba(16,185,129,0.2);
+  --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-soft: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+.main-content > *:first-child {
+  margin-top: 0;
+}
+@media (max-width: 900px) {
+  .header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
 
-    .dark-mode {
-      --primary: #34d399;
-      --primary-dark: #059669;
-      --surface: rgba(15, 23, 42, 0.75);
-      --surface-border: rgba(255, 255, 255, 0.08);
-      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      --text-main: #f9fafb;
-      --text-sub: #9ca3af;
-    }
+.dark-mode {
+  --surface: rgba(15,23,42,0.85);
+  --surface-border: rgba(255,255,255,0.1);
+  --text-main: #f9fafb;
+  --text-sub: #9ca3af;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.notify-panel {
+  position:absolute;
+  top:56px;
+  right:0;
+  width:280px;
+  background:var(--surface);
+  border:1px solid var(--surface-border);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  display:none;
+  padding:12px;
+  z-index:9999;
+}
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-    
-    body { 
-      margin: 0; font-family: 'Manrope', sans-serif; 
-      color: var(--text-main); height: 100vh; overflow: hidden; 
-      background: #f0fdf4;
-      transition: background 0.5s;
-    }
-    .dark-mode body { background: #020617; }
+.notify-panel.active {
+  display:block;
+}
 
-    /* --- LIVING BACKGROUND --- */
-    .blob {
-      position: absolute; filter: blur(80px); opacity: 0.6; z-index: -1;
-      animation: float 20s infinite ease-in-out alternate;
-    }
-    .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #86efac; border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-    .blob-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: #6ee7b7; border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation-delay: -5s; }
-    .dark-mode .blob-1 { background: #064e3b; opacity: 0.4; }
-    .dark-mode .blob-2 { background: #065f46; opacity: 0.4; }
+/* ================================
+   GLOBAL RESET
+================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+/* 🌐 Language Toggle */
+.lang-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow);
+}
 
-    @keyframes float { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(50px, 50px) rotate(20deg); } }
+.lang-toggle button {
+  padding: 6px 10px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 12px;
+  background: transparent;
+  color: var(--text-sub);
+}
 
-    /* --- LAYOUT --- */
-    .dashboard-container { display: flex; width: 100%; height: 100%; }
-    
-    /* GLASS SIDEBAR */
-    .sidebar { 
-      width: 280px; padding: 40px 25px; 
-      display: flex; flex-direction: column; 
-      background: var(--surface); backdrop-filter: blur(var(--blur));
-      border-right: 1px solid var(--surface-border);
-      z-index: 50; transition: 0.3s;
-    }
-    
-    .logo { 
-      font-size: 28px; font-weight: 800; margin-bottom: 50px; 
-      background: linear-gradient(135deg, var(--primary), #059669);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      display: flex; align-items: center; gap: 10px;
-    }
-    
-    .sidebar-btn {
-      padding: 16px 20px; margin-bottom: 12px; border-radius: 18px; 
-      cursor: pointer; display: flex; align-items: center; gap: 16px; 
-      font-weight: 600; font-size: 15px; color: var(--text-sub);
-      transition: all 0.3s;
-    }
-    .sidebar-btn:hover { background: rgba(16, 185, 129, 0.08); color: var(--primary); transform: translateX(5px); }
-    .sidebar-btn.active { 
-      background: var(--primary); color: white; 
-      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
-    }
-    .sidebar-btn span { font-size: 20px; }
+.lang-toggle button.active {
+  background: var(--gradient-primary);
+  color: white;
+}
 
-    /* MAIN CONTENT */
-    .main-content { flex: 1; padding: 40px; overflow-y: auto; position: relative; scroll-behavior: smooth; }
-    
-    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .greeting-box h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
-    .greeting-box p { margin: 5px 0 0 0; color: var(--text-sub); font-weight: 500; }
-    
-    .controls { display: flex; gap: 12px; }
-    .control-btn {
-      width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--surface-border);
-      background: var(--surface); display: flex; align-items: center; justify-content: center;
-      font-size: 18px; cursor: pointer; transition: 0.2s;
-    }
-    .control-btn:hover { transform: scale(1.1); background: white; }
+body {
+  font-family: 'Manrope', sans-serif;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
 
-    /* BENTO GRID */
-    .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; padding-bottom: 40px; }
-    .col-12 { grid-column: span 12; }
-    .col-8 { grid-column: span 8; }
-    .col-6 { grid-column: span 6; }
-    .col-4 { grid-column: span 4; }
-    .col-3 { grid-column: span 3; }
-    
-    .card {
-      background: var(--surface); border: 1px solid var(--surface-border);
-      backdrop-filter: blur(var(--blur)); border-radius: var(--radius);
-      padding: 24px; box-shadow: var(--shadow);
-      transition: transform 0.3s, box-shadow 0.3s;
-      position: relative; overflow: hidden; display: flex; flex-direction: column;
-    }
-    .card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); }
-    
-    /* Typography within Cards */
-    .card h3 { margin: 0 0 15px 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
-    .stat-val { font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin: 5px 0; }
-    .stat-label { color: var(--text-sub); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-badge { font-size: 0.8rem; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 20px; display: inline-block; font-weight: 700; margin-bottom: 5px; }
+.logo-glow {
+  border-radius: 50%;
+  animation: glowPulse 2.5s infinite ease-in-out;
+}
 
-    /* Month Card */
-    .month-box {
-      cursor: pointer; text-align: center; padding: 20px;
-      transition: 0.2s; border: 2px solid transparent;
-      background: rgba(255,255,255,0.4); border-radius: 20px;
-    }
-    .month-box:hover { background: white; border-color: var(--primary); transform: scale(1.05); }
-    
-    /* Interactive Elements */
-    .milk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: auto; }
-    .milk-btn {
-      background: rgba(255,255,255,0.5); border: 2px solid transparent; padding: 12px;
-      border-radius: 16px; cursor: pointer; text-align: center; transition: 0.2s;
-      font-weight: 700; color: var(--text-main); font-size: 0.9rem;
-    }
-    .milk-btn.active { background: var(--primary); color: white; transform: scale(0.96); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 0 rgba(16,185,129,0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(16,185,129,0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(16,185,129,0.4);
+  }
+}
 
-    /* Tables */
-    .table-wrapper { width: 100%; overflow-x: auto; border-radius: 16px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 500px; }
-    th { text-align: left; padding: 16px; color: var(--text-sub); font-size: 12px; text-transform: uppercase; border-bottom: 2px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.02); }
-    td { padding: 16px; border-bottom: 1px solid rgba(0,0,0,0.03); font-weight: 600; }
-    tr:last-child td { border: none; }
-    
-    /* Buttons */
-    .btn-main {
-      width: 100%; padding: 16px; border: none; border-radius: 16px;
-      background: linear-gradient(135deg, var(--primary), #059669);
-      color: white; font-size: 15px; font-weight: 700; cursor: pointer;
-      box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
-      transition: 0.3s;
-    }
-    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.5); }
-    .btn-sec {
-      background: transparent; border: 2px solid var(--text-sub); color: var(--text-main);
-      padding: 8px 16px; border-radius: 12px; cursor: pointer; font-weight: 600;
-    }
+/* ✨ ANIMATED BACKGROUND ORBS */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  animation: float 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
 
-    /* --- MOBILE DOCK --- */
-    @media (max-width: 1000px) { .bento-grid { grid-template-columns: repeat(2, 1fr); } .col-12, .col-8, .col-6, .col-4, .col-3 { grid-column: span 2; } }
+body::before {
+  width: 500px;
+  height: 500px;
+  background: var(--primary);
+  top: -200px;
+  left: -200px;
+  animation-delay: -5s;
+}
 
-    @media (max-width: 768px) {
-      .dashboard-container { flex-direction: column; }
-      .sidebar { display: none; }
-      
-      .mobile-nav {
-        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-        width: 90%; max-width: 400px; height: 70px;
-        background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
-        border: 1px solid rgba(255,255,255,0.5); border-radius: 35px;
-        display: flex; justify-content: space-around; align-items: center;
-        z-index: 999; box-shadow: 0 15px 40px -10px rgba(0,0,0,0.2);
-      }
-      .dark-mode .mobile-nav { background: rgba(15, 23, 42, 0.9); border-color: rgba(255,255,255,0.1); }
-      
-      .nav-icon { font-size: 24px; padding: 12px; border-radius: 50%; color: var(--text-sub); transition: 0.3s; }
-      .nav-icon.active { background: var(--primary); color: white; transform: translateY(-10px); box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.5); }
-      
-      .main-content { padding: 20px; padding-bottom: 100px; }
-      .header-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
-      .controls { width: 100%; justify-content: flex-end; }
-      
-      .bento-grid { display: flex; flex-direction: column; gap: 20px; }
-      .col-12, .col-8, .col-6, .col-4, .col-3 { grid-column: span 1; }
-    }
-    
-    /* AUTH */
-    .auth-wrap { width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; background: url('https://images.unsplash.com/photo-1595414088017-d2e825e37894?q=80&w=2070&auto=format&fit=crop') center/cover; }
-    .auth-glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); padding: 40px; border-radius: 32px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.5); }
-    input { width: 100%; padding: 16px; margin-bottom: 16px; border-radius: 16px; border: 2px solid transparent; background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); }
-    input:focus { background: white; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+body::after {
+  width: 400px;
+  height: 400px;
+  background: var(--accent);
+  bottom: -150px;
+  right: -150px;
+}
 
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(50px, -50px) scale(1.1); }
+  66% { transform: translate(-30px, 30px) scale(0.9); }
+}
+
+/* ================================
+   LAYOUT
+================================ */
+.dashboard-container {
+  display: flex;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* ✨ ENHANCED SIDEBAR */
+.sidebar {
+  width: 280px;
+  padding: 36px 24px;
+  background: var(--surface);
+  border-right: 1px solid var(--surface-border);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--gradient-primary);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 40px;
+  line-height: 1.2;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideInLeft 0.6s ease;
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ✨ SIDEBAR BUTTONS */
+.sidebar-btn {
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--text-sub);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-soft);
+  transition: left 0.4s ease;
+  z-index: -1;
+}
+
+.sidebar-btn:hover::before {
+  left: 0;
+}
+
+.sidebar-btn:hover {
+  transform: translateX(4px);
+  color: var(--primary-dark);
+}
+
+.sidebar-btn.active {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 8px 20px var(--accent-glow);
+  transform: scale(1.02);
+}
+
+.sidebar-btn span {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-btn:hover span {
+  transform: scale(1.15) rotate(5deg);
+}
+
+/* ================================
+   MAIN CONTENT
+================================ */
+.main-content {
+  flex: 1;
+  padding: 32px 40px;
+  overflow-y: auto;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ✨ ENHANCED HEADER */
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 110px;          /* 🔑 reserves space */
+  padding: 24px 32px;
+  margin-bottom: 32px;
+
+  background: transparent;
+}
+
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.greeting-box h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 4px;
+}
+
+.greeting-box p {
+  font-size: 15px;
+  color: var(--text-sub);
+  font-weight: 500;
+}
+
+/* ✨ HEADER CONTROLS */
+.controls {
+  display: flex;
+  gap: 14px;
+}
+
+.control-btn,
+.notify-bell {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.control-btn:hover,
+.notify-bell:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+.control-btn:active,
+.notify-bell:active {
+  transform: scale(0.95);
+}
+
+/* ================================
+   GRID & CARDS - ENHANCED
+================================ */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
+  animation: fadeInUp 0.7s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.col-12 { grid-column: span 12; }
+.col-8  { grid-column: span 8; }
+.col-6  { grid-column: span 6; }
+.col-4  { grid-column: span 4; }
+.col-3  { grid-column: span 3; }
+
+/* ✨ PREMIUM CARD DESIGN */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px) saturate(180%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+.card:hover::before {
+  transform: scaleX(1);
+}
+
+/* ✨ INSIGHT CARD */
+.insight-card {
+  background: var(--gradient-soft);
+  border: 2px solid var(--primary-light);
+  padding: 20px 24px;
+}
+
+.insight-card p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--primary-dark);
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.insight-card span {
+  display: block;
+}
+
+/* ✨ STAT CARDS */
+.stat-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-val {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 8px 0;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-sub);
+  font-weight: 600;
+}
+
+/* ===== MILK BUTTON GRID - ENHANCED ===== */
+.milk-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.milk-btn {
+  position: relative;
+  padding: 20px 18px;
+  border-radius: 16px;
+  border: 2px solid var(--surface-border);
+  background: var(--surface);
+  font-weight: 800;
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.milk-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(16,185,129,0.2);
+  border-color: var(--primary);
+}
+
+.milk-btn.active {
+  border-color: var(--primary);
+  background: var(--gradient-soft);
+  box-shadow: 0 8px 24px var(--accent-glow);
+  transform: scale(1.05);
+}
+
+.milk-btn.active::after {
+  content: "✓";
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 14px;
+  font-weight: 900;
+  color: white;
+  background: var(--gradient-primary);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px var(--accent-glow);
+  animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ================================
+   TABLE - ENHANCED
+================================ */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-sub);
+  padding: 14px 12px;
+  background: var(--primary-light);
+  border-bottom: 2px solid var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 14px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.2s ease;
+}
+
+tr:hover td {
+  background: var(--primary-light);
+}
+
+/* ================================
+   CALENDAR - ENHANCED
+================================ */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.calendar-day {
+  padding: 12px 6px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.7);
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.calendar-day:hover {
+  transform: scale(1.05);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.calendar-day.active {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 6px 16px var(--accent-glow);
+  transform: scale(1.08);
+}
+
+.calendar-day small {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+/* ================================
+   BUTTONS - ENHANCED
+================================ */
+.btn-main {
+  padding: 16px 24px;
+  border-radius: 16px;
+  background: var(--gradient-primary);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px var(--accent-glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-main::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.5s, height 0.5s;
+}
+
+.btn-main:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-main:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px var(--accent-glow);
+}
+
+.btn-main:active {
+  transform: scale(0.98);
+}
+
+.btn-sec {
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-sec:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+
+/* ===== SEARCH BAR - ENHANCED ===== */
+.search-wrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 28px;
+  animation: slideInRight 0.6s ease;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.search-wrap span {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: var(--text-sub);
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.search-input {
+  width: 100%;
+  padding: 18px 24px 18px 54px;
+  border-radius: 20px;
+  border: 2px solid var(--surface-border);
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.search-input::placeholder {
+  color: var(--text-sub);
+  font-weight: 500;
+}
+
+.search-input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--accent-glow), var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.search-input:focus + span {
+  color: var(--primary);
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ===== AUTH SCREEN - ENHANCED ===== */
+.auth-wrap {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #bbf7d0 0%, #d1fae5 50%, #ecfdf5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-wrap::before,
+.auth-wrap::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.2;
+  animation: float 15s ease-in-out infinite;
+}
+
+.auth-wrap::before {
+  width: 600px;
+  height: 600px;
+  background: var(--primary);
+  top: -250px;
+  right: -200px;
+}
+
+.auth-wrap::after {
+  width: 500px;
+  height: 500px;
+  background: var(--accent);
+  bottom: -200px;
+  left: -150px;
+  animation-delay: -7s;
+}
+
+.auth-glass {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 32px;
+  padding: 48px 40px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.15);
+  text-align: center;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.5);
+  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.auth-logo {
+  font-size: 56px;
+  margin-bottom: 12px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.auth-title {
+  font-size: 32px;
+  font-weight: 800;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 8px;
+  text-transform: lowercase;
+}
+
+.auth-sub {
+  font-size: 15px;
+  color: var(--text-sub);
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 18px 22px;
+  border-radius: 16px;
+  border: 2px solid rgba(16,185,129,0.2);
+  background: #f9fafb;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.auth-input:focus {
+  box-shadow: 0 0 0 4px var(--accent-glow);
+  background: #ffffff;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.auth-pass {
+  position: relative;
+}
+
+.auth-pass span {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.auth-pass span:hover {
+  transform: translateY(-50%) scale(1.2);
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 18px;
+  border-radius: 18px;
+  border: none;
+  background: var(--gradient-primary);
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.auth-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px var(--accent-glow);
+}
+
+.auth-btn:active {
+  transform: scale(0.98);
+}
+
+.auth-link {
+  margin-top: 24px;
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.auth-link:hover {
+  color: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+/* ✨ FARMER CARDS - ENHANCED */
+.farmer-card {
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.farmer-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(16,185,129,0.25);
+}
+
+.farmer-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+/* ✨ MONTH BOX - ENHANCED */
+.month-box {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.month-box:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 12px 32px var(--accent-glow);
+  border-color: var(--primary);
+}
+
+/* ================================
+   MOBILE (RESPONSIVE)
+================================ */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .main-content {
+    padding: 20px;
+    padding-bottom: 100px;
+  }
+
+  .bento-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .greeting-box h1 {
+    font-size: 1.5rem;
+  }
+
+  .stat-val {
+    font-size: 2rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-nav,
+  .mobile-dock,
+  .top-nav,
+  .breadcrumb-nav {
+    display: none !important;
+  }
+}
+
+/* ✨ TOAST NOTIFICATION - ENHANCED */
+#toast {
+  visibility: hidden;
+  min-width: 250px;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(20px);
+  color: white;
+  text-align: center;
+  border-radius: 50px;
+  padding: 14px 28px;
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  top: 24px;
+  transform: translateX(-50%);
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  animation: slideInDown 0.5s ease;
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ✨ EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-state .icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.empty-state h3 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--text-main);
+}
+
+.empty-state p {
+  color: var(--text-sub);
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+/* ✨ LOADING SKELETON */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(16,185,129,0.05) 25%,
+    rgba(16,185,129,0.1) 50%,
+    rgba(16,185,129,0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  min-height: 120px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ✨ SCROLLBAR */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
   </style>
 </head>
 <body>
 
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
-
 <div id="app" style="width:100%; height:100%"></div>
-<div id="toast" style="visibility:hidden; min-width:200px; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); color:white; text-align:center; border-radius:50px; padding:12px 24px; position:fixed; z-index:9999; left:50%; top:20px; transform:translateX(-50%); font-weight:600; box-shadow: 0 10px 30px rgba(0,0,0,0.2);"></div>
+<div id="toast" style="visibility:hidden;"></div>
 
-<script>
-// --- CONFIG & STATE ---
+<script>let adminUsersInterval = null;
+
+  let isEditingUser = false;
+function logAudit(action, meta={}) {
+  const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
+  logs.unshift({
+    time: new Date().toISOString(),
+    admin: JSON.parse(localStorage.getItem('user'))?.username,
+    action,
+    meta
+  });
+  localStorage.setItem('auditLogs', JSON.stringify(logs.slice(0,300)));
+}
+
+  window.onerror = function (msg, src, line, col) {
+  console.error("JS Error:", msg, "at", line);
+};
+
+
+  const SESSION_TIMEOUT = 120 * 60 * 1000;
+let sessionTimer = null;
+let lastSyncTime = null;
+
+const APP_LOGO_URL = "./logo.png";
+
 const PRICES = { twoL: 140, oneL: 70, threeQuarterL: 55, halfL: 35 };
 let currentLang = localStorage.getItem('lang') || 'en';
 let currentTheme = localStorage.getItem('theme') || 'light';
@@ -224,78 +1083,660 @@ let currentMonthView = null;
 if(currentTheme === 'dark') document.body.classList.add('dark-mode');
 
 const T = {
-  en: { greet: "Good", dash: "Overview", orders: "Orders", progress: "Progress", profile: "Profile", logout: "Logout", total: "Total Bill", active: "Active Days", req: "Request Milk", sub: "Submit Order", back: "Back", download: "Download PDF", revenue: "Total Revenue", farmers: "Farmers", manage: "Manage" },
-  te: { greet: "నమస్కారం", dash: "హోమ్", orders: "ఆర్డర్లు", progress: "పురోగతి", profile: "ప్రొఫైల్", logout: "వెళ్లు", total: "మొత్తం", active: "రోజులు", req: "ఆర్డర్ చేయండి", sub: "పంపండి", back: "వెనుకకు", download: "రిపోర్ట్", revenue: "ఆదాయం", farmers: "రైతులు", manage: "నిర్వహించు" },
-  hi: { greet: "नमस्ते", dash: "होम", orders: "आर्डर", progress: "प्रगति", profile: "प्रोफाइल", logout: "बाहर", total: "कुल", active: "दिन", req: "ऑर्डर दें", sub: "जमा करें", back: "पीछे", download: "रिपोर्ट", revenue: "राजस्व", farmers: "किसान", manage: "प्रबंधन" }
+  en: {
+    // General
+    welcome: "Welcome",
+    goodMorning: "Good Morning",
+    goodEvening: "Good Evening",
+    admin: "Admin",
+    user: "User",
+
+    // Sidebar
+    overview: "Overview",
+    orders: "Orders",
+    farmers: "Farmers",
+    progress: "Progress",
+    profile: "Profile",
+    logout: "Logout",
+
+    // Dashboard
+    totalBill: "Total Bill",
+    activeDays: "Active Days",
+    needMilk: "Need Milk?",
+    requestMilk: "Request Milk",
+    monthlySpend: "Monthly Spend",
+    consumption: "Consumption",
+
+    // Progress
+    selectMonth: "Select Month",
+    milkDetails: "Milk Entry Details",
+    milkCalendar: "Milk Calendar",
+    back: "Back",
+    total: "Total",
+
+    // Orders
+    history: "History",
+    noOrders: "No orders yet",
+    orderMilk: "Order Milk",
+    submit: "Submit Order",
+
+    // Admin
+    totalRevenue: "Total Revenue",
+    packets: "Packets",
+    manage: "Tap to manage",
+    addEntry: "Add Entry",
+    save: "Save",
+    delete: "Delete",
+
+    // Profile
+    customerSince: "Customer since",
+    totalSpend: "Total Spend",
+    preferredSize: "Preferred Size",
+    changePassword: "Change Password",
+    security: "Security",
+
+    // Status
+    active: "Active",
+    idle: "Idle",
+    inactive: "Inactive",
+    offline: "Offline"
+  },
+
+  te: {
+    // General
+    welcome: "స్వాగతం",
+    goodMorning: "శుభోదయం",
+    goodEvening: "శుభ సాయంత్రం",
+    admin: "నిర్వాహకుడు",
+    user: "వినియోగదారు",
+
+    // Sidebar
+    overview: "అవలోకనం",
+    orders: "ఆర్డర్లు",
+    farmers: "రైతులు",
+    progress: "పురోగతి",
+    profile: "ప్రొఫైల్",
+    logout: "లాగ్ అవుట్",
+
+    // Dashboard
+    totalBill: "మొత్తం బిల్లు",
+    activeDays: "క్రియాశీల రోజులు",
+    needMilk: "పాలు కావాలా?",
+    requestMilk: "పాలు కోరండి",
+    monthlySpend: "నెలవారీ ఖర్చు",
+    consumption: "వినియోగం",
+
+    // Progress
+    selectMonth: "నెలను ఎంచుకోండి",
+    milkDetails: "పాల వివరాలు",
+    milkCalendar: "పాల క్యాలెండర్",
+    back: "వెనక్కి",
+    total: "మొత్తం",
+
+    // Orders
+    history: "చరిత్ర",
+    noOrders: "ఇంకా ఆర్డర్లు లేవు",
+    orderMilk: "పాలు ఆర్డర్ చేయండి",
+    submit: "సమర్పించండి",
+
+    // Admin
+    totalRevenue: "మొత్తం ఆదాయం",
+    packets: "ప్యాకెట్లు",
+    manage: "నిర్వహించండి",
+    addEntry: "ఎంట్రీ జోడించండి",
+    save: "సేవ్ చేయండి",
+    delete: "తొలగించండి",
+
+    // Profile
+    customerSince: "వినియోగదారుగా",
+    totalSpend: "మొత్తం ఖర్చు",
+    preferredSize: "ఇష్టమైన పరిమాణం",
+    changePassword: "పాస్‌వర్డ్ మార్చండి",
+    security: "భద్రత",
+
+    // Status
+    active: "క్రియాశీలం",
+    idle: "నిష్క్రియ",
+    inactive: "అచేతనం",
+    offline: "ఆఫ్‌లైన్"
+  }
 };
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+
+  document.getElementById('langEn')?.classList.toggle('active', lang === 'en');
+  document.getElementById('langTe')?.classList.toggle('active', lang === 'te');
+
+  const saved = JSON.parse(localStorage.getItem('user'));
+  if (!saved) {
+    renderAuth();
+    return;
+  }
+
+  // Re-render current view safely
+  const lastTab = getLastTab();
+  if (saved.role === 'admin') {
+    if (lastTab === 'users') adminUsers();
+    else if (lastTab === 'orders') adminOrders();
+    else adminSummary();
+  } else {
+    if (lastTab === 'progress') userProgress();
+    else if (lastTab === 'orders') userOrders();
+    else if (lastTab === 'profile') userProfile();
+    else userHome();
+  }
+}
+
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', currentTheme);
+  document.body.classList.toggle('dark-mode');
+}
+
 const t = (k) => T[currentLang][k] || k;
 const app = document.getElementById("app");
 
-// --- UTILS ---
-function getGreeting() { const h = new Date().getHours(); const time = h < 12 ? "Morning ☀️" : h < 18 ? "Afternoon 🌤️" : "Evening 🌙"; return `${t('greet')} ${currentLang==='en'?time:''}`; }
-function setLang(l) { localStorage.setItem('lang', l); location.reload(); }
-function toggleTheme() { currentTheme = currentTheme==='light'?'dark':'light'; localStorage.setItem('theme', currentTheme); document.body.classList.toggle('dark-mode'); document.getElementById('themeIcon').innerText = currentTheme==='light'?'🌙':'☀️'; }
+function generateInsights(sales) {
+  if (!sales || sales.length < 2) {
+    return "📊 Start ordering to see smart insights about your milk usage.";
+  }
+
+  let total = 0;
+  let monthTotals = {};
+  let milkCount = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
+
+  sales.forEach(s => {
+    const bill =
+      (s.twoL*140) +
+      (s.oneL*70) +
+      (s.threeQuarterL*55) +
+      (s.halfL*35);
+
+    total += bill;
+
+    const m = s.date.split('/')[1];
+    monthTotals[m] = (monthTotals[m] || 0) + bill;
+
+    milkCount.twoL += s.twoL || 0;
+    milkCount.oneL += s.oneL || 0;
+    milkCount.threeQuarterL += s.threeQuarterL || 0;
+    milkCount.halfL += s.halfL || 0;
+  });
+
+  const favoriteMilk = Object.entries(milkCount)
+    .sort((a,b) => b[1]-a[1])[0][0];
+
+  const milkMap = {
+    twoL: '2L',
+    oneL: '1L',
+    threeQuarterL: '3/4L',
+    halfL: '1/2L'
+  };
+
+  const months = Object.keys(monthTotals);
+  let trendMsg = "📉 Your spending is stable.";
+
+  if (months.length >= 2) {
+    const last = monthTotals[months[months.length-1]];
+    const prev = monthTotals[months[months.length-2]];
+    const diff = ((last - prev) / prev * 100).toFixed(1);
+
+    if (diff > 0) trendMsg = `📈 Your milk spending increased by ${diff}% this month.`;
+    else trendMsg = `📉 Your milk spending decreased by ${Math.abs(diff)}% this month.`;
+  }
+
+  return `
+    ${trendMsg}
+    <span>🥛 Most preferred size: ${milkMap[favoriteMilk]}</span>
+  `;
+}
+function getMonthTotal(sales = []) {
+  return sales.reduce((sum, s) => {
+    return sum +
+      (s.twoL * 140) +
+      (s.oneL * 70) +
+      (s.threeQuarterL * 55) +
+      (s.halfL * 35);
+  }, 0);
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (currentLang === 'te') {
+    return h < 12 ? "శుభోదయం ☀️" : "శుభ సాయంత్రం  🌤️";
+  }
+  return h < 12 ? "Good Morning ☀️" : "Good Evening  🌤️";
+}
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', currentTheme);
+  document.body.classList.toggle('dark-mode');
+
+  const icon = document.getElementById('themeIcon');
+  if (icon) {
+    icon.innerText = currentTheme === 'light' ? ' 🌤️' : '☀️';
+  }
+}
 function showToast(m) { const x=document.getElementById("toast"); x.style.visibility="visible"; x.innerText=m; setTimeout(()=>x.style.visibility="hidden",3000); }
 function fireConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#ffffff'] }); }
 function getMonthName(m) { return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(m)-1]; }
 function sortSalesByDate(sales) { return sales.sort((a, b) => { const [d1, m1, y1] = a.date.split('/'); const [d2, m2, y2] = b.date.split('/'); return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2); }); }
 function calculateStats(sales) { let s={t2:0, t1:0, t34:0, t12:0, days:sales.length, total:0}; sales.forEach(x => { s.t2+=x.twoL||0; s.t1+=x.oneL||0; s.t34+=x.threeQuarterL||0; s.t12+=x.halfL||0; s.total += (x.twoL*PRICES.twoL)+(x.oneL*PRICES.oneL)+(x.threeQuarterL*PRICES.threeQuarterL)+(x.halfL*PRICES.halfL); }); return s; }
 
-// --- SHELL ---
+function renderMilkCalendar(sales, month, year) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let html = `<div class="calendar-grid">`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${String(day).padStart(2,'0')}/${String(month).padStart(2,'0')}/${year}`;
+    const sale = sales.find(s => s.date === dateStr);
+
+    let content = day;
+    if (sale) {
+      const cost =
+        (sale.twoL*140) +
+        (sale.oneL*70) +
+        (sale.threeQuarterL*55) +
+        (sale.halfL*35);
+
+      content += `<small>₹${cost}</small>`;
+    }
+
+    html += `
+      <div class="calendar-day ${sale ? 'active' : ''}"
+           onclick="showDayDetails('${dateStr}')">
+        ${content}
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  return html;
+}
+function resetSessionTimer() {
+  clearTimeout(sessionTimer);
+  sessionTimer = setTimeout(() => {
+    showToast("🔒 Session expired. Logged out.");
+    logout();
+  }, SESSION_TIMEOUT);
+}
+['click','mousemove','keydown','touchstart','scroll'].forEach(evt => {
+  window.addEventListener(evt, resetSessionTimer, { passive: true });
+});
+
+function showDayDetails(date) {
+  const u = JSON.parse(localStorage.getItem('user'));
+  fetch(`/user/${u.username}`)
+    .then(r => r.json())
+    .then(data => {
+      const sale = data.sales.find(s => s.date === date);
+      if (!sale) {
+        showToast(`No milk entry on ${date}`);
+        return;
+      }
+
+      const details = `
+        🗓️ ${date}
+        🥛 ${sale.twoL?'2L ':''}${sale.oneL?'1L ':''}${sale.threeQuarterL?'3/4L ':''}${sale.halfL?'1/2L':''}
+      `;
+      showToast(details);
+    });
+}
+function updateLastSync() {
+  lastSyncTime = new Date();
+}
+
+function saveLastTab(tab) {
+  localStorage.setItem('lastTab', tab);
+}
+
+
+function getLastTab() {
+  return localStorage.getItem('lastTab');
+}
+
+function showNetStatus(type, text) {
+  const bar = document.getElementById('netStatus');
+  bar.className = type === 'online' ? 'net-online' : 'net-offline';
+  bar.innerText = text;
+  bar.style.display = 'block';
+
+  if (type === 'online') {
+    setTimeout(() => bar.style.display = 'none', 3000);
+  }
+}
+
+window.addEventListener('offline', () => {
+  showNetStatus('offline', '📴 You are offline');
+});
+
+window.addEventListener('online', () => {
+  showNetStatus('online', '✅ Back online');
+});
+function requireOnline(action) {
+  if (!navigator.onLine) {
+    showNetStatus('offline', '📴 No internet connection');
+    return false;
+  }
+  action();
+}
+
+let notifications = [];
+
+function addNotification(text) {
+  notifications.unshift({
+    id: Date.now(),
+    text
+  });
+}
+
+function emptyState({ icon, title, message, actionText, action }) {
+  return `
+    <div class="card col-12">
+      <div class="empty-state">
+        <div class="icon">${icon}</div>
+        <h3>${title}</h3>
+        <p>${message}</p>
+        ${
+          actionText
+            ? `<button class="btn-main" onclick="${action}">${actionText}</button>`
+            : ``
+        }
+      </div>
+    </div>
+  `;
+}
+
+function toggleNotifications() {
+  const panel = document.getElementById('notifyPanel');
+  panel.classList.toggle('active');
+
+  panel.innerHTML = notifications.length
+    ? notifications.map(n => `<div style="padding:8px 0;border-bottom:1px solid #eee">${n.text}</div>`).join('')
+    : `<div style="text-align:center;color:var(--text-sub)">No notifications</div>`;
+}
+
+
+function showDashboardSkeleton() {
+  app.innerHTML = `
+    <div class="dashboard-container">
+      <div class="sidebar"></div>
+      <div class="main-content">
+        <div class="bento-grid">
+          <div class="card skeleton"></div>
+          <div class="card skeleton"></div>
+          <div class="card skeleton"></div>
+          <div class="card skeleton col-8"></div>
+          <div class="card skeleton col-4"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+let lastScrollY = window.scrollY;
+
+window.addEventListener('scroll', () => {
+  const dock = document.querySelector('.mobile-dock');
+  if (!dock) return;
+
+  if (window.scrollY > lastScrollY && window.scrollY > 80) {
+    dock.classList.add('hidden');
+  } else {
+    dock.classList.remove('hidden');
+  }
+  lastScrollY = window.scrollY;
+});
+
+function makeAccessible(el, action, label) {
+  el.setAttribute('role', 'button');
+  el.setAttribute('tabindex', '0');
+  if (label) el.setAttribute('aria-label', label);
+
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  });
+}
+function adminDock(tab){
+  return `
+    <div class="mobile-dock display-none-desktop">
+      <button class="dock-item ${tab==='summary'?'active':''}" onclick="adminSummary()"><span>📊</span><small>Summary</small></button>
+      <button class="dock-item ${tab==='orders'?'active':''}" onclick="adminOrders()"><span>📦</span><small>Orders</small></button>
+      <button class="dock-item ${tab==='users'?'active':''}" onclick="adminUsers()"><span>👨‍🌾</span><small>Farmers</small></button>
+    </div>
+  `;
+}
+function userDock(tab){
+  return `
+    <div class="mobile-dock display-none-desktop">
+      <button class="dock-item ${tab==='home'?'active':''}" onclick="userHome()"><span>🏠</span><small>Home</small></button>
+      <button class="dock-item ${tab==='progress'?'active':''}" onclick="userProgress()"><span>📈</span><small>Progress</small></button>
+      <button class="dock-item ${tab==='orders'?'active':''}" onclick="userOrders()"><span>🛒</span><small>Orders</small></button>
+      <button class="dock-item ${tab==='profile'?'active':''}" onclick="userProfile()"><span>👤</span><small>Profile</small></button>
+    </div>
+  `;
+}
+
+function adminAudit() {
+  saveLastTab('audit');
+
+  const u = JSON.parse(localStorage.getItem('user'));
+  const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
+
+  renderShell(u, `
+    <div class="card col-12">
+      <h3>Admin Audit Log</h3>
+
+      <div class="table-wrapper" style="max-height:500px;overflow:auto">
+        <table>
+          <tr>
+            <th>Time</th>
+            <th>Admin_toggle</th>
+            <th>Action</th>
+            <th>Details</th>
+          </tr>
+
+          ${logs.length ? logs.map(l => `
+            <tr>
+              <td>${new Date(l.time).toLocaleString()}</td>
+              <td>${l.admin}</td>
+              <td>${l.action}</td>
+              <td>${JSON.stringify(l.meta)}</td>
+            </tr>
+          `).join('') : `
+            <tr>
+              <td colspan="4" style="text-align:center">
+                No audit logs yet
+              </td>
+            </tr>
+          `}
+        </table>
+      </div>
+    </div>
+  `, 'audit');
+}
+
 function renderShell(user, content, tab) {
   const role = user.role;
-  const menu = role === 'admin' 
-    ? [{k:'summary', i:'📊', l:t('dash'), f:'adminSummary()'}, {k:'orders', i:'📦', l:t('orders'), f:'adminOrders()'}, {k:'users', i:'👥', l:t('farmers'), f:'adminUsers()'}]
-    : [{k:'home', i:'🏠', l:t('dash'), f:'userHome()'}, {k:'progress', i:'📈', l:t('progress'), f:'userProgress()'}, {k:'orders', i:'🛒', l:t('orders'), f:'userOrders()'}, {k:'profile', i:'👤', l:t('profile'), f:'userProfile()'}];
 
-  const sidebar = menu.map(m => `<div class="sidebar-btn ${tab===m.k?'active':''}" onclick="${m.f}"><span>${m.i}</span>${m.l}</div>`).join('');
-  const mobileNav = menu.map(m => `<div class="nav-icon ${tab===m.k?'active':''}" onclick="${m.f}">${m.i}</div>`).join('') + `<div class="nav-icon" style="color:#ef4444" onclick="logout()">🛑</div>`;
+  const menu = role === 'admin'
+    ? [
+        {k:'summary', i:'📊', l:t('overview'), f:'adminSummary()'},
+        {k:'orders', i:'📦', l:t('orders'), f:'adminOrders()'},
+        {k:'users', i:'👥', l:t('farmers'), f:'adminUsers()'},
+        {k:'audit', i:'🧾', l:'Audit Log', f:'adminAudit()'}
+
+      ]
+    : [
+        {k:'home', i:'🏠', l:t('overview'), f:'userHome()'},
+        {k:'progress', i:'📈', l:t('progress'), f:'userProgress()'},
+        {k:'orders', i:'🛒', l:t('orders'), f:'userOrders()'},
+        {k:'profile', i:'👤', l:t('profile'), f:'userProfile()'}
+      ];
+
+  const sidebar = menu.map(m => `
+    <div class="sidebar-btn ${tab===m.k?'active':''}" onclick="${m.f}">
+      <span>${m.i}</span>${m.l}
+    </div>
+  `).join('');
 
   app.innerHTML = `
     <div class="dashboard-container">
-      <div class="sidebar">
-        <div class="logo">🌾 <span>రైతు పాలు</span></div>
+
+      <aside class="sidebar">
+        <div class="logo" style="
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  align-items:flex-start;
+"><div style="position:relative">
+  <img
+    src="${APP_LOGO_URL}"
+    class="logo-glow"
+    style="width:60px;height:60px;border-radius:50%"
+  />
+  <span
+    id="logoStatus"
+    class="logo-status ${navigator.onLine ? 'logo-online' : 'logo-offline'}">
+  </span>
+</div>
+🌾 <span>రైతు పాలు</span></div>
+
         ${sidebar}
-        <div class="sidebar-btn" style="margin-top:auto; color:#ef4444" onclick="logout()"><span>🛑</span> ${t('logout')}</div>
-      </div>
-      <div class="main-content">
-        <div class="header-bar">
-          <div class="greeting-box"><h1>${getGreeting()}</h1><p>${user.username}</p></div>
-          <div class="controls">
-            <button class="control-btn" onclick="toggleTheme()" id="themeIcon">${currentTheme==='light'?'🌙':'☀️'}</button>
-            <select style="width:auto; margin:0; padding:10px; border-radius:20px; border:none; background:var(--surface)" onchange="setLang(this.value)"><option value="en" ${currentLang==='en'?'selected':''}>EN</option><option value="te" ${currentLang==='te'?'selected':''}>TE</option><option value="hi" ${currentLang==='hi'?'selected':''}>HI</option></select>
-          </div>
+
+        <div class="sidebar-btn" style="margin-top:auto;color:#ef4444" onclick="logout()">
+          <span>🛑</span> ${t('logout')}
         </div>
+      </aside>
+
+      <main class="main-content">
+        <div class="header-bar">
+          
+  <!-- LEFT -->
+  <div class="greeting-box">
+    <h1>${getGreeting()}</h1>
+    <p>${user.username}</p>
+  </div>
+
+  <!-- RIGHT -->
+  <div style="
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+  ">
+
+    <!-- Role Badge -->
+    <span style="
+      padding:6px 14px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:800;
+      background:${user.role==='admin' ? '#fee2e2' : '#dcfce7'};
+      color:${user.role==='admin' ? '#991b1b' : '#065f46'};
+    ">
+      ${user.role === 'admin' ? '🛡️ Admin' : '👤 User'}
+    </span>
+
+    <!-- 🌐 Language Toggle -->
+    <div class="lang-toggle">
+      <button onclick="setLang('en')" class="${currentLang==='en'?'active':''}">EN</button>
+      <button onclick="setLang('te')" class="${currentLang==='te'?'active':''}">తెలుగు</button>
+    </div>
+
+    <!-- 🔔 Bell -->
+    <div style="position:relative">
+  <div class="notify-bell" onclick="toggleNotifications()">🔔</div>
+  <div id="notifyPanel" class="notify-panel"></div>
+</div>
+
+    <!-- 🌙 Theme -->
+    <button class="control-btn" onclick="toggleTheme()" id="themeIcon">
+      ${currentTheme === 'dark' ? '☀️' : '🌙'}
+    </button>
+
+  </div>
+
+</div>
+
         ${content}
-      </div>
-      <div class="mobile-nav display-none-desktop">${mobileNav}</div>
-      <style>@media(min-width:769px){.display-none-desktop{display:none}}</style>
-    </div>`;
+      </main>
+
+      ${role === 'admin' ? adminDock(tab) : userDock(tab)}
+
+    </div>
+  `;
 }
 
-// --- USER DASHBOARD (HOME) ---
+window.addEventListener('online', () => {
+  document.getElementById('logoStatus')?.classList
+    .replace('logo-offline', 'logo-online');
+});
+
+window.addEventListener('offline', () => {
+  document.getElementById('logoStatus')?.classList
+    .replace('logo-online', 'logo-offline');
+});
+function showLogoLoader() {
+  app.innerHTML = `
+    <div style="
+      height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:16px;
+    ">
+      <img
+        src="${APP_LOGO_URL}"
+        class="logo-glow"
+        style="width:100px;height:100px"
+      />
+      <div style="font-weight:800;color:var(--primary)">
+        Loading…
+      </div>
+    </div>
+  `;
+}
+
 async function userHome() {
-  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/user/${u.username}`); const data = await res.json();
+  saveLastTab('home');
+  const u = JSON.parse(localStorage.getItem('user')); 
+  showDashboardSkeleton();
+  const res = await fetch(`/user/${u.username}`); 
+  const data = await res.json();
+  updateLastSync();
   const st = calculateStats(data.sales);
   let mData={}; data.sales.forEach(s => { let m=s.date.split('/')[1]; mData[m]=(mData[m]||0)+(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35); });
+const insightText = generateInsights(data.sales);
 
   renderShell(u, `
+  
     <div class="bento-grid">
+      <div class="card col-12 insight-card">
+  <p>${insightText}</p>
+</div>
+
       <div class="card col-4">
         <div class="stat-badge">Overview</div>
         <div class="stat-val">₹${st.total.toLocaleString()}</div>
-        <div class="stat-label">${t('total')}</div>
+        <div class="stat-label">${t('totalBill')}</div>
       </div>
       <div class="card col-4">
         <div class="stat-badge">Activity</div>
         <div class="stat-val">${st.days}</div>
-        <div class="stat-label">${t('active')}</div>
+        <div class="stat-label">${t('activeDays')}</div>
       </div>
       <div class="card col-4" style="background:linear-gradient(135deg, var(--primary), #059669); color:white">
          <div style="font-size:2rem; margin-bottom:5px">🥛</div>
          <div style="font-weight:700;">Need Milk?</div>
-         <button class="btn-main" style="background:white; color:var(--primary); margin-top:auto; padding:10px" onclick="userOrders()">${t('req')} ➔</button>
-      </div>
+<button class="btn-main">${t('requestMilk')} ➔</button>      </div>
       <div class="card col-8">
         <h3>Monthly Spend</h3>
         <div style="height:250px"><canvas id="mainChart"></canvas></div>
@@ -310,114 +1751,427 @@ async function userHome() {
   new Chart(document.getElementById('mainChart'), {type:'line', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Spend', data:Object.values(mData), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4, pointRadius:5}]}, options:{plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{display:false}}}}});
   new Chart(document.getElementById('pieChart'), {type:'doughnut', data:{labels:['2L','1L','3/4L','1/2L'], datasets:[{data:[st.t2, st.t1, st.t34, st.t12], backgroundColor:['#064e3b','#065f46','#10b981','#6ee7b7'], borderWidth:0}]}});
 }
-
-// --- USER PROGRESS (RESTORED) ---
-async function userProgress() {
-  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/user/${u.username}`); const data = await res.json();
-  const grouped = {}; data.sales.forEach(s => { const [d,m,y] = s.date.split('/'); const key = `${m}-${y}`; if(!grouped[key]) grouped[key] = []; grouped[key].push(s); });
-  
-  if (currentMonthView) {
-    const sorted = sortSalesByDate(grouped[currentMonthView]);
-    const st = calculateStats(sorted);
-    const [m, y] = currentMonthView.split('-');
-    
-    renderShell(u, `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-        <button class="btn-sec" onclick="currentMonthView=null; userProgress()">⬅ ${t('back')}</button>
-        <button class="btn-main" style="width:auto; padding:10px 20px" onclick="downloadPDF('${getMonthName(m)} ${y}')">${t('download')}</button>
-      </div>
-      <div class="bento-grid">
-         <div class="card col-4" style="text-align:center">
-            <h3>${getMonthName(m)} ${y}</h3>
-            <div class="stat-val" style="color:var(--primary)">₹${st.total}</div>
-            <p style="color:var(--text-sub)">${st.days} Days Active</p>
-         </div>
-         <div class="card col-8">
-            <div class="table-wrapper">
-               <table id="pdfTable">
-                 <tr><th>Date</th><th>Qty</th><th>Cost</th></tr>
-                 ${sorted.map(s => `<tr><td>${s.date}</td><td>${s.twoL?'2L ':''}${s.oneL?'1L ':''}${s.threeQuarterL?'3/4L ':''}${s.halfL?'1/2L':''}</td><td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td></tr>`).join('')}
-               </table>
-            </div>
-         </div>
-      </div>
-    `, 'progress');
-  } else {
-    renderShell(u, `
-       <div class="bento-grid">
-         <div class="card col-12"><h3>Select a Month</h3><p style="color:var(--text-sub)">Tap to view details</p></div>
-         ${Object.keys(grouped).length === 0 ? '<div class="card col-12">No records found.</div>' : ''}
-         ${Object.keys(grouped).reverse().map(k => `
-            <div class="card col-3 month-box" onclick="currentMonthView='${k}'; userProgress()">
-               <div style="font-size:30px; margin-bottom:10px">📅</div>
-               <div style="font-weight:700; font-size:1.1rem">${getMonthName(k.split('-')[0])}</div>
-               <div style="color:var(--text-sub)">${k.split('-')[1]}</div>
-            </div>
-         `).join('')}
-       </div>
-    `, 'progress');
-  }
+function openMonth(key) {
+  currentMonthView = key;
+  userProgress();
 }
 
-// --- ADMIN SUMMARY (RESTORED TOTALS) ---
+function renderMonthView(sales, month, year) {
+  const sorted = sortSalesByDate(sales);
+  const stats = calculateStats(sorted);
+
+  return `
+    <div class="bento-grid">
+
+     <div class="card col-12"
+  style="
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  ">
+
+  <!-- LEFT -->
+  <button class="btn-sec"
+    onclick="currentMonthView=null;userProgress()">
+    ⬅ Back
+  </button>
+
+  <!-- CENTER -->
+  <h3 style="margin:0;font-weight:800">
+    ${getMonthName(month)} ${year}
+  </h3>
+
+  <!-- RIGHT -->
+  <div style="display:flex;align-items:center;gap:12px">
+
+    <div style="
+      font-weight:800;
+      font-size:16px;
+      color:var(--primary);
+    ">
+      ₹ ${calculateStats(sales).total.toLocaleString()}
+    </div>
+
+    <button class="btn-main"
+      onclick="
+        const u = JSON.parse(localStorage.getItem('user'));
+        downloadMonthPDF(
+          u.username,
+          ${JSON.stringify(sales)},
+          ${month},
+          ${year}
+        );
+      ">
+      📄 Download PDF
+    </button>
+
+  </div>
+
+</div>
+      <div class="card col-12">
+        <h3>Milk Entry Details</h3>
+        <div class="table-wrapper">
+          <table>
+            <tr>
+              <th>Date</th>
+              <th>Quantity</th>
+              <th>Cost</th>
+            </tr>
+            ${sorted.map(s => {
+              const qty =
+                `${s.twoL?'2L ':''}${s.oneL?'1L ':''}${s.threeQuarterL?'3/4L ':''}${s.halfL?'1/2L':''}`;
+              const cost =
+                (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+
+              return `
+                <tr>
+                  <td>${s.date}</td>
+                  <td>${qty}</td>
+                  <td>₹${cost}</td>
+                </tr>
+              `;
+            }).join('')}
+          </table>
+        </div>
+      </div>
+
+      <div class="card col-12">
+        <h3>Milk Calendar</h3>
+        ${renderMilkCalendar(sorted, month, year)}
+      </div>
+
+    </div>
+  `;
+}
+
+function renderMonthSelector(grouped) {
+  return `
+    <div class="bento-grid">
+      <div class="card col-12">
+        <h3>Select Month</h3>
+        <p style="color:var(--text-sub)">Choose a month to view milk details</p>
+      </div>
+
+      ${Object.keys(grouped).reverse().map(k => {
+  const [m, y] = k.split('-');
+  const total = getMonthTotal(grouped[k]);
+
+  return `
+    <div class="card col-3 month-box"
+         onclick="openMonth('${k}')"
+         style="cursor:pointer; text-align:center">
+
+      <div style="font-size:28px; margin-bottom:6px">📅</div>
+
+      <div style="font-weight:800; font-size:15px">
+        ${getMonthName(m)} ${y}
+      </div>
+
+      <div style="
+        margin-top:6px;
+        font-size:14px;
+        font-weight:700;
+        color: var(--primary);
+      ">
+        ₹ ${total.toLocaleString()}
+      </div>
+
+    </div>
+  `;
+}).join('')}
+
+    </div>
+  `;
+}
+
+async function userProgress() {
+  saveLastTab('progress');
+
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch(`/user/${u.username}`);
+const data = await res.json();
+
+if (!data || !Array.isArray(data.sales)) {
+  showToast("No milk data available");
+  return;
+}
+
+
+  const grouped = {};
+  data.sales.forEach(s => {
+    const [, m, y] = s.date.split('/');
+    const key = `${m}-${y}`;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(s);
+  });
+
+  if (currentMonthView) {
+    const [m, y] = currentMonthView.split('-');
+    renderShell(
+      u,
+      renderMonthView(grouped[currentMonthView], m, y),
+      'progress'
+    );
+    return;
+  }
+
+  renderShell(
+    u,
+    renderMonthSelector(grouped),
+    'progress'
+  );
+}
+
+
 async function adminSummary() {
-  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
-  let rev=0, sold={t2:0,t1:0,t34:0,t12:0};
-  users.forEach(u=>u.sales.forEach(s=> {
-     rev+=(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
-     sold.t2+=s.twoL||0; sold.t1+=s.oneL||0; sold.t34+=s.threeQuarterL||0; sold.t12+=s.halfL||0;
+  saveLastTab('summary');
+showLogoLoader();
+
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch('/users');
+  const users = await res.json();
+  updateLastSync();
+
+  let rev = 0;
+  let sold = { t2:0, t1:0, t34:0, t12:0 };
+
+  const months = {};
+
+  users.forEach(user => user.sales.forEach(s => {
+    const total =
+      (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+
+    rev += total;
+
+    sold.t2 += s.twoL || 0;
+    sold.t1 += s.oneL || 0;
+    sold.t34 += s.threeQuarterL || 0;
+    sold.t12 += s.halfL || 0;
+
+    const [,m,y] = s.date.split('/');
+    const key = `${m}-${y}`;
+    months[key] = (months[key] || 0) + total;
   }));
-  
+
+  const sortedMonths = Object.keys(months).sort();
+  const last = months[sortedMonths.at(-1)] || 0;
+  const prev = months[sortedMonths.at(-2)] || 0;
+  const diff = prev ? (((last - prev) / prev) * 100).toFixed(1) : 0;
+
   renderShell(u, `
     <div class="bento-grid">
+
       <div class="card col-6">
-        <div class="stat-badge">Total Revenue</div>
+        <button class="btn-main" onclick="exportAllPDF(${JSON.stringify(users)})">
+          ⬇ Export PDF
+        </button>
+        <div class="stat-badge">${t('totalRevenue')}</div>
         <div class="stat-val">₹${rev.toLocaleString()}</div>
       </div>
+
       <div class="card col-6">
-        <div class="stat-badge">Farmers</div>
+        <div class="stat-badge">${t('farmers')}</div>
         <div class="stat-val">${users.length}</div>
       </div>
-      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t2}</div><div class="stat-label">2L Packets</div></div>
-      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t1}</div><div class="stat-label">1L Packets</div></div>
-      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t34}</div><div class="stat-label">3/4L Packets</div></div>
-      <div class="card col-3"><div class="stat-val" style="font-size:1.5rem">${sold.t12}</div><div class="stat-label">1/2L Packets</div></div>
+
+      <div class="card col-3"><div class="stat-val">${sold.t2}</div><div class="stat-label">2L ${t('packets')}</div></div>
+      <div class="card col-3"><div class="stat-val">${sold.t1}</div><div class="stat-label">1L ${t('packets')}</div></div>
+      <div class="card col-3"><div class="stat-val">${sold.t34}</div><div class="stat-label">3/4L ${t('packets')}</div></div>
+      <div class="card col-3"><div class="stat-val">${sold.t12}</div><div class="stat-label">1/2L ${t('packets')}</div></div>
+
+      <div class="card col-6">
+        <div class="stat-badge">Income Comparison</div>
+        <div class="stat-val">₹${last}</div>
+        <div class="stat-label">
+          ${diff >= 0 ? '⬆️' : '⬇️'} ${Math.abs(diff)}% vs last month
+        </div>
+      </div>
+
     </div>
   `, 'summary');
 }
 
-// --- ADMIN USER MANAGEMENT ---
+function getFarmerStatus(sales = []) {
+  if (!sales.length) {
+    return { label: 'Inactive', color: '#9ca3af', icon: '⚪' };
+  }
+
+  const lastDate = sales[sales.length - 1].date;
+  const [d, m, y] = lastDate.split('/');
+  const last = new Date(y, m - 1, d);
+  const diff = (Date.now() - last.getTime()) / (1000 * 60 * 60 * 24);
+
+  if (diff <= 2) return { label: 'Active', color: '#16a34a', icon: '🟢' };
+  if (diff <= 7) return { label: 'Idle', color: '#f59e0b', icon: '🟡' };
+
+  return { label: 'Inactive', color: '#dc2626', icon: '🔴' };
+}
+function getUserLiveStatus(lastActive) {
+  if (!lastActive) {
+    return { label: 'Offline', color: '#dc2626', icon: '🔴' };
+  }
+
+  const diff = Date.now() - lastActive;
+
+  if (diff < 5 * 60 * 1000) {
+    return { label: 'Active', color: '#16a34a', icon: '🟢' };
+  }
+
+  if (diff < 30 * 60 * 1000) {
+    return { label: 'Idle', color: '#f59e0b', icon: '🟡' };
+  }
+
+  return { label: 'Offline', color: '#dc2626', icon: '🔴' };
+}
 async function adminUsers() {
-  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
+  saveLastTab('users');
+showLogoLoader();
+
+  const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch('/users');
+  const users = await res.json();
+updateLastSync();
   renderShell(u, `
+    <div class="search-wrap">
+  <span>🔍</span>
+  <input
+    class="search-input"
+    placeholder="Search farmer name or date…"
+    oninput="filterFarmers(this.value)"
+  />
+</div>
+
+
     <div class="bento-grid">
-      ${users.map(usr => `
-        <div class="card col-4" onclick="editUser('${usr.username}')" style="cursor:pointer; text-align:center">
-           <div style="font-size:40px; margin-bottom:10px">👨‍🌾</div>
-           <h3>${usr.username}</h3>
-           <p style="color:var(--text-sub); font-size:12px">Tap to Manage</p>
-        </div>
-      `).join('')}
+      ${users.map(usr => {
+  const status = getUserLiveStatus(usr.lastActive);
+
+  return `
+    <div class="card col-4 farmer-card"
+         onclick="editUser('${usr.username}')">
+
+      <div style="font-size:38px">👨‍🌾</div>
+
+      <h3 style="margin:6px 0">${usr.username}</h3>
+
+      <span style="
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        padding:4px 12px;
+        border-radius:20px;
+        font-size:11px;
+        font-weight:800;
+        background:${status.color}20;
+        color:${status.color};
+      ">
+        ${status.icon} ${status.label}
+      </span>
+
+      <p style="font-size:12px;color:var(--text-sub);margin-top:8px">
+        Tap to manage
+      </p>
+    </div>
+  `;
+}).join('')
+}
     </div>
   `, 'users');
+  startAdminUserRefresh();
+
 }
 
+function filterFarmers(query) {
+  query = query.toLowerCase();
+  document.querySelectorAll('.farmer-card').forEach(card => {
+    card.style.display =
+      card.innerText.toLowerCase().includes(query) ? 'block' : 'none';
+  });
+}
+
+
+function startVoiceOrder() {
+  const Speech =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!Speech) {
+    alert("Voice input not supported");
+    return;
+  }
+
+  const rec = new Speech();
+  rec.lang = currentLang === 'te' ? 'te-IN' : 'en-IN';
+  rec.start();
+
+  showToast(
+    currentLang === 'te'
+      ? "🎙️ వినిపిస్తోంది..."
+      : "🎙️ Listening..."
+  );
+
+  rec.onresult = e => {
+    const text = e.results[0][0].transcript.toLowerCase();
+    showToast("🎙️ " + text);
+
+    if (text.includes('2') || text.includes('రెండు')) {
+      document.getElementById('oq').value = 2;
+    } else if (text.includes('1') || text.includes('ఒక')) {
+      document.getElementById('oq').value = 1;
+    } else if (
+      text.includes('half') ||
+      text.includes('సగం')
+    ) {
+      document.getElementById('oq').value = 0.5;
+    }
+  };
+}
+function startAdminUserRefresh() {
+  if (adminUsersInterval) return;
+
+  adminUsersInterval = setInterval(() => {
+    const u = JSON.parse(localStorage.getItem('user'));
+
+    // ✅ ONLY refresh IF admin is CURRENTLY on users page
+    if (
+      u?.role === 'admin' &&
+      getLastTab() === 'users' &&
+      !isEditingUser
+    ) {
+      adminUsers();
+    }
+  }, 60000);
+}
+
+
+
 async function editUser(name) {
+  isEditingUser = true;
+
   const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
   const target = users.find(x => x.username === name);
   const st = calculateStats(target.sales);
   
   renderShell(u, `
-    <button class="btn-sec" onclick="adminUsers()" style="margin-bottom:20px">⬅ ${t('back')}</button>
+<button class="btn-sec"
+  onclick="isEditingUser=false; adminUsers()"
+  style="margin-bottom:20px">
+  ⬅ Back
+</button>
     <div class="bento-grid">
       <div class="card col-6">
         <h3>Add Entry: ${name}</h3>
-        <input type="date" id="d" style="background:var(--surface); border:1px solid var(--surface-border)">
+        <input type="date" id="d" style="background:var(--surface); border:1px solid var(--surface-border); padding:14px; border-radius:14px; width:100%; margin-bottom:16px">
         <div class="milk-grid">
-           <div class="milk-btn" onclick="tog(this,'twoL')">2 L</div><div class="milk-btn" onclick="tog(this,'oneL')">1 L</div>
-           <div class="milk-btn" onclick="tog(this,'threeQuarterL')">0.75 L</div><div class="milk-btn" onclick="tog(this,'halfL')">0.5 L</div>
-        </div>
-        <button class="btn-main" onclick="save('${name}')">${t('save')}</button>
+  <div class="milk-btn" onclick="tog(this,'twoL')">🥛 2 Litre</div>
+  <div class="milk-btn" onclick="tog(this,'oneL')">🥛 1 Litre</div>
+  <div class="milk-btn" onclick="tog(this,'threeQuarterL')">🥛 0.75 L</div>
+  <div class="milk-btn" onclick="tog(this,'halfL')">🥛 0.5 L</div>
+</div>
+
+        <button class="btn-main"
+  onclick="safeAction(() => save('${name}'))">${t('save')}</button>
       </div>
       <div class="card col-6">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px">
@@ -425,39 +2179,119 @@ async function editUser(name) {
         </div>
         <div class="table-wrapper" style="max-height:400px; overflow-y:auto">
            <table>
-             ${target.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td><td style="color:red; cursor:pointer" onclick="del('${name}','${s.date}')">✕</td></tr>`).join('')}
+             ${target.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td><td style="color:red; cursor:pointer" onclick="safeAction(() => del('${name}','${s.date}'))">✕</td></tr>`).join('')}
            </table>
         </div>
       </div>
     </div>
+    <div class="card col-6">
+  <h3>Order History</h3>
+  <div class="table-wrapper" style="max-height:300px;overflow-y:auto">
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Qty</th>
+        <th>Status</th>
+      </tr>
+      ${target.orders?.length
+        ? target.orders.slice().reverse().map(o => `
+            <tr>
+              <td>${new Date(o.timestamp).toLocaleDateString()}</td>
+              <td>${o.quantity}L</td>
+              <td>${o.status}</td>
+            </tr>
+          `).join('')
+        : `<tr><td colspan="3">No orders</td></tr>`
+      }
+    </table>
+  </div>
+</div>
+
   `, 'users');
+  document.querySelectorAll('.milk-btn').forEach(btn => {
+  makeAccessible(btn, () => btn.click(), 'Select milk quantity');
+});
+
 }
 
-// --- ORDERS ---
 async function userOrders() {
+  saveLastTab('orders');
   const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/orders/${u.username}`); const orders = await res.json();
   renderShell(u, `
     <div class="bento-grid">
       <div class="card col-5">
-        <h3>${t('req')}</h3>
-        <select id="oq" style="width:100%; padding:15px; border-radius:15px; border:1px solid #ddd; margin-bottom:20px">
+        <button class="btn-sec" onclick="startVoiceOrder()">🎙️ Voice Order</button>
+
+        <h3>${t('requestMilk')}</h3>
+        <select id="oq" style="width:100%; padding:16px; border-radius:16px; border:2px solid var(--surface-border); margin:16px 0; font-size:15px; font-weight:600">
            <option value="1">1 Litre</option><option value="2">2 Litres</option><option value="0.5">0.5 Litre</option>
         </select>
-        <button class="btn-main" onclick="placeOrder('${u.username}')">${t('sub')}</button>
+       <button class="btn-main"
+  onclick="safeAction(() => placeOrder('${u.username}'))">${t('submit')}</button>
       </div>
       <div class="card col-7">
+        <button class="btn-sec" onclick="startVoiceOrder()">🎙️ Voice Order</button>
+
         <h3>History</h3>
         <div class="table-wrapper" style="max-height:300px; overflow-y:auto">
            <table>
-             ${orders.map(o => `<tr><td>${new Date(o.timestamp).toLocaleDateString()}</td><td>${o.quantity}L</td><td><span style="color:${o.status==='Pending'?'orange':'#10b981'}">${o.status}</span></td></tr>`).join('')}
+${orders.length === 0 
+  ? emptyState({
+      icon: '🛒',
+      title: 'No orders yet',
+      message: 'You have not placed any milk orders.',
+      actionText: 'Order Milk',
+      action: 'userOrders()'
+    })
+  : orders.map(o => `
+      <tr>
+        <td>${new Date(o.timestamp).toLocaleDateString()}</td>
+        <td>${o.quantity}L</td>
+        <td>${o.status}</td>
+      </tr>
+    `).join('')
+}
            </table>
         </div>
       </div>
     </div>
   `, 'orders');
 }
+function updateUserActivity() {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) return;
+
+  const now = Date.now();
+  localStorage.setItem('lastActive', now);
+
+  fetch('/update-activity', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: user.username,
+      lastActive: now
+    })
+  }).catch(()=>{});
+}
+
+let activityTimeout = null;
+
+function throttledActivity() {
+  if (activityTimeout) return;
+  activityTimeout = setTimeout(() => {
+    updateUserActivity();
+    activityTimeout = null;
+  }, 60000); // once per minute
+}
+
+['click','keydown','touchstart'].forEach(evt => {
+  window.addEventListener(evt, throttledActivity, { passive:true });
+});
+
+
 
 async function adminOrders() {
+  saveLastTab('orders');
   const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/orders'); const orders = await res.json();
   const pending = orders.filter(o => o.status === 'Pending');
   renderShell(u, `
@@ -467,69 +2301,558 @@ async function adminOrders() {
            <h3>${o.username}</h3>
            <div class="stat-val" style="font-size:1.5rem">${o.quantity}L</div>
            <p>${new Date(o.timestamp).toLocaleString()}</p>
-           <button class="btn-main" onclick="acceptOrder('${o.id}')">Approve ✅</button>
+           <button class="btn-main"
+  onclick="safeAction(() => acceptOrder('${o.id}'))">Approve ✅</button>
          </div>
        `).join('')}
-       ${pending.length===0 ? '<div class="card col-12"><p style="text-align:center">No pending orders 🎉</p></div>' : ''}
+${pending.length === 0 
+  ? emptyState({
+      icon: '🎉',
+      title: 'All caught up!',
+      message: 'There are no pending orders right now.'
+    })
+  : ''
+}
     </div>
   `, 'orders');
 }
+function getCustomerSince(sales = []) {
+  if (!sales.length) return "—";
 
-// --- PROFILE ---
-function userProfile() {
+  const sorted = sortSalesByDate([...sales]);
+  const [d, m, y] = sorted[0].date.split('/');
+  return `${getMonthName(m)} ${y}`;
+}
+function downloadMonthPDF(username, sales, month, year) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Filter month data
+  const monthSales = sales.filter(s => {
+    const [, m, y] = s.date.split('/');
+    return Number(m) === Number(month) && Number(y) === Number(year);
+  });
+
+  if (monthSales.length === 0) {
+    showToast("No data for this month");
+    return;
+  }
+
+  // ===== HEADER =====
+  doc.addImage(APP_LOGO_URL, "PNG", 85, 10, 40, 40);
+
+  doc.setFontSize(16);
+  doc.text("రైతు పాలు – Monthly Milk Report", 105, 60, { align: "center" });
+
+  doc.setFontSize(12);
+  doc.text(`User: ${username}`, 14, 72);
+  doc.text(`Month: ${getMonthName(month)} ${year}`, 14, 80);
+
+  // ===== TABLE =====
+  let y = 90;
+  let total = 0;
+
+  doc.setFontSize(11);
+  doc.setFont(undefined, "bold");
+  doc.text("Date", 14, y);
+  doc.text("Milk Details", 70, y);
+  doc.text("Amount (₹)", 160, y, { align: "right" });
+
+  y += 6;
+  doc.setFont(undefined, "normal");
+
+  monthSales.forEach(s => {
+    const qty =
+      `${s.twoL ? '2L ' : ''}` +
+      `${s.oneL ? '1L ' : ''}` +
+      `${s.threeQuarterL ? '3/4L ' : ''}` +
+      `${s.halfL ? '1/2L' : ''}`;
+
+    const cost =
+      (s.twoL * 140) +
+      (s.oneL * 70) +
+      (s.threeQuarterL * 55) +
+      (s.halfL * 35);
+
+    total += cost;
+
+    doc.text(s.date, 14, y);
+    doc.text(qty || "-", 70, y);
+    doc.text(cost.toString(), 160, y, { align: "right" });
+
+    y += 6;
+
+    if (y > 270) {
+      doc.addPage();
+      y = 20;
+    }
+  });
+
+  // ===== TOTAL =====
+  y += 6;
+  doc.setFont(undefined, "bold");
+  doc.text(`Total Amount: ₹ ${total}`, 14, y);
+
+  // ===== SAVE =====
+  doc.save(
+    `${username}-${getMonthName(month)}-${year}-Milk-Report.pdf`
+  );
+}
+
+function getUserActivityStatus(sales = []) {
+  if (!sales.length) {
+    return { label: 'Inactive', color: '#dc2626', icon: '🔴' };
+  }
+
+  const last = sales[sales.length - 1].date;
+  const [d, m, y] = last.split('/');
+  const diffDays = (Date.now() - new Date(y, m - 1, d)) / 86400000;
+
+  if (diffDays <= 2) return { label: 'Active', color: '#16a34a', icon: '🟢' };
+  if (diffDays <= 7) return { label: 'Idle', color: '#f59e0b', icon: '🟡' };
+
+  return { label: 'Inactive', color: '#dc2626', icon: '🔴' };
+}
+
+async function userProfile() {
+  saveLastTab('profile');
+showLogoLoader();
+
   const u = JSON.parse(localStorage.getItem('user'));
+  const res = await fetch(`/user/${u.username}`);
+  const data = await res.json();
+const since = getCustomerSince(data.sales);
+const status = getUserActivityStatus(data.sales);
+
+  const stats = calculateStats(data.sales);
+
   renderShell(u, `
-    <div class="card" style="max-width:500px; margin:0 auto; text-align:center">
-       <div style="width:80px; height:80px; background:#d1fae5; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px; margin:0 auto 20px auto">👤</div>
-       <h2>${u.username}</h2>
-       <input id="oldP" type="password" placeholder="Old Password">
-       <input id="newP" type="password" placeholder="New Password">
-       <button class="btn-main" onclick="changePass('${u.username}')">Update Password</button>
+    <div style="max-width:900px; margin:0 auto">
+
+      <div class="card" style="
+        display:flex;
+        gap:24px;
+        align-items:center;
+        margin-bottom:24px
+      ">
+        <div style="
+          width:120px;
+          height:120px;
+          border-radius:50%;
+          background:var(--gradient-soft);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:48px
+        ">
+          👤
+        </div>
+
+        <div>
+          <h2 style="margin-bottom:6px">${u.username}</h2>
+          <p style="color:var(--text-sub)">
+            Milk Consumer • Raithu Palu
+          </p>
+
+          <div style="margin-top:10px;display:flex;gap:14px;flex-wrap:wrap">
+
+  <span style="
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+    background:${status.color}20;
+    color:${status.color};
+  ">
+    ${status.icon} ${status.label}
+  </span>
+
+  <span style="
+    font-size:12px;
+    color:var(--text-sub);
+  ">
+    📅 Customer since ${since}
+  </span>
+
+</div>
+
+        </div>
+      </div>
+
+      <div class="bento-grid">
+        <div class="card col-3">
+          <div class="stat-val">${stats.days}</div>
+          <div class="stat-label">Active Days</div>
+        </div>
+
+        <div class="card col-3">
+          <div class="stat-val">${stats.t1 + stats.t2 + stats.t34 + stats.t12}</div>
+          <div class="stat-label">Total Milk Packs</div>
+        </div>
+
+        <div class="card col-3">
+          <div class="stat-val">₹${stats.total}</div>
+          <div class="stat-label">Total Spend</div>
+        </div>
+
+        <div class="card col-3">
+          <div class="stat-val">
+            ${stats.t1 >= stats.t2 ? '1L' : '2L'}
+          </div>
+          <div class="stat-label">Preferred Size</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:32px">
+        <h3 style="margin-bottom:10px">Security</h3>
+        <p style="color:var(--text-sub); margin-bottom:16px">
+          Change your account password securely.
+        </p>
+
+        <button class="btn-sec"
+          onclick="document.getElementById('passBox').style.display='block'">
+          🔐 Change Password
+        </button>
+
+        <div id="passBox" style="display:none; margin-top:20px">
+          <input id="oldP" type="password" placeholder="Current Password" style="width:100%; padding:14px; border-radius:14px; border:2px solid var(--surface-border); margin-bottom:12px">
+          <input id="newP" type="password" placeholder="New Password" style="width:100%; padding:14px; border-radius:14px; border:2px solid var(--surface-border); margin-bottom:12px">
+
+          <button class="btn-main"
+            onclick="safeAction(() => changePass('${u.username}'))">
+            Update Password
+          </button>
+        </div>
+      </div>
+
     </div>
   `, 'profile');
 }
 
-// --- LOGIC ---
-function tog(b,t){b.classList.toggle('active');selectedMilk[t]=selectedMilk[t]?0:1;}
-async function save(n){const d=document.getElementById('d').value;if(!d)return;const[y,m,day]=d.split('-');await fetch('/add-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,sale:{date:`${day}/${m}/${y}`,...selectedMilk}})});selectedMilk={twoL:0,oneL:0,threeQuarterL:0,halfL:0};fireConfetti();showToast("Entry Added ✨");editUser(n);}
-async function del(n,d){await fetch('/delete-sale',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:n,date:d})});showToast("Deleted");editUser(n);}
+let isOffline = !navigator.onLine;
+window.addEventListener('offline', () => {
+  isOffline = true;
+  showNetStatus('offline', '📴 Offline mode');
+  disableActions(true);
+});
+
+window.addEventListener('online', () => {
+  isOffline = false;
+  showNetStatus('online', '✅ Back online');
+  disableActions(false);
+});
+function disableActions(disable) {
+  document.querySelectorAll('.btn-main').forEach(btn => {
+    btn.disabled = disable;
+    btn.style.opacity = disable ? '0.6' : '1';
+    btn.style.pointerEvents = disable ? 'none' : 'auto';
+  });
+}
+function exportAllPDF() {
+  fetch('/users')
+    .then(r => r.json())
+    .then(users => {
+      const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // WATERMARK LOGO
+  doc.addImage(
+    APP_LOGO_URL,
+    "PNG",
+    30,
+    80,
+    150,
+    150,
+    undefined,
+    "FAST"
+  );
+  doc.setGState(new doc.GState({ opacity: 0.08 }));
+
+  // RESET OPACITY FOR TEXT
+  doc.setGState(new doc.GState({ opacity: 1 }));
+
+  doc.setFontSize(16);
+  doc.text("రైతు పాలు – Farmers Report", 105, 20, { align: "center" });
+
+  let y = 30;
+
+      users.forEach(u => {
+        doc.text(`Farmer: ${u.username}`, 14, y);
+        y += 6;
+
+        u.sales.forEach(s => {
+          const total =
+            (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+          doc.text(`${s.date} → ₹${total}`, 18, y);
+          y += 6;
+        });
+
+        y += 10;
+        if (y > 270) { doc.addPage(); y = 20; }
+      });
+
+      doc.save('farmers-data.pdf');
+    });
+}
+
+
+function tog(btn, type) {
+  btn.classList.toggle('active');
+  selectedMilk[type] = selectedMilk[type] ? 0 : 1;
+}
+async function save(username) {
+  const dateInput = document.getElementById('d').value;
+  if (!dateInput) {
+    showToast("Select date");
+    return;
+  }
+
+  const [y, m, d] = dateInput.split('-');
+  const date = `${d}/${m}/${y}`;
+
+  const res = await fetch('/user/' + username);
+  const data = await res.json();
+
+  const existing = data.sales.find(s => s.date === date);
+
+  const finalSale = {
+    date,
+    twoL: (existing?.twoL || 0) + (selectedMilk.twoL || 0),
+    oneL: (existing?.oneL || 0) + (selectedMilk.oneL || 0),
+    threeQuarterL: (existing?.threeQuarterL || 0) + (selectedMilk.threeQuarterL || 0),
+    halfL: (existing?.halfL || 0) + (selectedMilk.halfL || 0),
+  };
+
+  await fetch('/add-sale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username,
+      sale: finalSale
+    })
+  });
+
+  selectedMilk = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
+  logAudit("ADD_MILK_ENTRY", {
+  user: username,
+  date: date,
+  milk: { ...selectedMilk }
+});
+
+  fireConfetti();
+  showToast("Milk entry updated 🥛");
+  editUser(username);
+}
+async function del(n, d) {
+  if (!confirm("Delete this entry?")) return;
+
+  await fetch('/delete-sale', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ username:n, date:d })
+  });
+
+  logAudit("DELETE_MILK_ENTRY", {
+    user: n,
+    date: d
+  });
+
+  showToast("Deleted");
+  editUser(n);
+}
 async function changePass(u){const o=document.getElementById('oldP').value,n=document.getElementById('newP').value;const r=await fetch('/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,oldPassword:o,newPassword:n})});const d=await r.json();d.success?(fireConfetti(),showToast('Success'),userProfile()):alert(d.error);}
-async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});fireConfetti();showToast('Order Sent 🚀');userOrders();}
-async function acceptOrder(id){await fetch('/update-order', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, status:'Success'})}); fireConfetti(); adminOrders();}
+async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});fireConfetti();showToast('Order Sent 🚀');userOrders();addNotification("🛒 Order placed successfully");}
+async function acceptOrder(id) {
+  // 1. Get order
+  const res = await fetch('/orders');
+  const orders = await res.json();
+  const order = orders.find(o => o.id === id);
+  if (!order) return;
+
+  const username = order.username;
+  const qty = order.quantity; // 1, 2, 0.5
+  const today = new Date();
+  const date = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
+
+  // 2. Fetch user data
+  const uRes = await fetch(`/user/${username}`);
+  const uData = await uRes.json();
+
+  const existing = uData.sales.find(s => s.date === date);
+
+  // 3. Map quantity to milk type
+  const add = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
+  if (qty == 2) add.twoL = 1;
+  if (qty == 1) add.oneL = 1;
+  if (qty == 0.75) add.threeQuarterL = 1;
+  if (qty == 0.5) add.halfL = 1;
+
+  const finalSale = {
+    date,
+    twoL: (existing?.twoL || 0) + add.twoL,
+    oneL: (existing?.oneL || 0) + add.oneL,
+    threeQuarterL: (existing?.threeQuarterL || 0) + add.threeQuarterL,
+    halfL: (existing?.halfL || 0) + add.halfL,
+  };
+
+  // 4. Save sale
+  await fetch('/add-sale', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ username, sale: finalSale })
+  });
+
+  // 5. Approve order
+  await fetch('/update-order', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ id, status:'Success' })
+  });
+
+  fireConfetti();
+  showToast("Order approved & added to milk entry 🥛");
+  logAudit("ORDER_APPROVED", {
+  orderId: id,
+  username: username,
+  quantity: qty
+});
+
+  adminOrders();
+}
 function downloadPDF(title){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.text(title,14,20);doc.autoTable({html:'#pdfTable',startY:30});doc.save(title+'.pdf');}
-async function login(){const u=document.getElementById('u').value,p=document.getElementById('p').value;const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(!d)return alert('Invalid');localStorage.setItem('user',JSON.stringify({username:u,role:d.role}));d.role==='admin'?adminSummary():userHome();}
+async function login(){const u=document.getElementById('u').value,p=document.getElementById('p').value;const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(!d)return alert('Invalid');localStorage.setItem('user', JSON.stringify({username:u, role:d.role}));
+localStorage.removeItem('lastTab'); // 🔥 VERY IMPORTANT
+d.role === 'admin' ? adminSummary() : userHome();
+}
 async function register(){const u=document.getElementById('ru').value,p=document.getElementById('rp').value;await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});alert('Registered');location.reload();}
-function logout(){localStorage.clear();renderAuth();}
+function logout(){
+  localStorage.removeItem('user');
+  localStorage.removeItem('lastTab');
+  isEditingUser = false;
+
+  if (adminUsersInterval) {
+    clearInterval(adminUsersInterval);
+    adminUsersInterval = null;
+  }
+
+  renderAuth();
+}
 function toggleAuth(v){document.getElementById('loginForm').style.display=v==='login'?'block':'none';document.getElementById('regForm').style.display=v==='reg'?'block':'none';}
 function togglePass(id){const x=document.getElementById(id);x.type=x.type==='password'?'text':'password';}
 
-// --- LOGIN SCREEN ---
-function renderAuth(){
+function safeAction(action, options = {}) {
+  const {
+    offlineMsg = '📴 No internet connection',
+    before = null,
+    after = null
+  } = options;
+
+  if (!navigator.onLine) {
+    showNetStatus('offline', offlineMsg);
+    return;
+  }
+
+  if (before) before();
+
+  const result = action();
+
+  if (result instanceof Promise && after) {
+    result.then(after);
+  }
+}
+
+function renderAuth() {
   app.innerHTML = `
     <div class="auth-wrap">
       <div class="auth-glass">
-        <div style="font-size:50px; margin-bottom:20px">🌾</div>
-        <h1 style="margin:0; color:var(--primary-dark)">${t('welcome')}</h1>
-        <p style="color:#666; margin-bottom:30px">Premium Farm Management</p>
+          <img
+    class="logo-glow"
+    src="${APP_LOGO_URL}"
+    alt="రైతు పాలు Logo"
+    style="
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      margin-bottom:16px;
+      box-shadow:0 12px 30px rgba(0,0,0,0.15);
+      object-fit:cover;
+    "
+  />
+        <div class="auth-logo">🌾</div>
+        <div class="auth-title">welcome to రైతు పాలు</div>
+        <div class="auth-sub">Premium Farm Management</div>
+
         <div id="loginForm">
-           <input id="u" placeholder="Username">
-           <div style="position:relative"><input id="p" type="password" placeholder="Password"><span style="position:absolute; right:15px; top:15px; cursor:pointer" onclick="togglePass('p')">👁️</span></div>
-           <button class="btn-main" onclick="login()">Login</button>
-           <p style="margin-top:20px; cursor:pointer; font-weight:700; color:var(--primary)" onclick="toggleAuth('reg')">Create Account</p>
+          <input id="u" class="auth-input" placeholder="Username">
+
+          <div class="auth-pass">
+            <input id="p" type="password" class="auth-input" placeholder="Password">
+            <span onclick="togglePass('p')">👁️</span>
+          </div>
+
+          <button class="auth-btn" onclick="login()">Login</button>
+
+          <div class="auth-link" onclick="toggleAuth('reg')">
+            Create Account
+          </div>
         </div>
+
         <div id="regForm" style="display:none">
-           <input id="ru" placeholder="Username">
-           <div style="position:relative"><input id="rp" type="password" placeholder="Password"><span style="position:absolute; right:15px; top:15px; cursor:pointer" onclick="togglePass('rp')">👁️</span></div>
-           <button class="btn-main" onclick="register()">Sign Up</button>
-           <p style="margin-top:20px; cursor:pointer; font-weight:700; color:var(--primary)" onclick="toggleAuth('login')">Back to Login</p>
+          <input id="ru" class="auth-input" placeholder="Username">
+
+          <div class="auth-pass">
+            <input id="rp" type="password" class="auth-input" placeholder="Password">
+            <span onclick="togglePass('rp')">👁️</span>
+          </div>
+
+          <button class="auth-btn" onclick="register()">Create Account</button>
+
+          <div class="auth-link" onclick="toggleAuth('login')">
+            Back to Login
+          </div>
         </div>
+
       </div>
-    </div>`;
+    </div>
+  `;
 }
 
-// INIT
+
+
 const saved=JSON.parse(localStorage.getItem('user'));
-if(saved) saved.role==='admin'?adminSummary():userHome(); else renderAuth();
+if (saved) {
+  const lastTab = getLastTab();
+
+  if (saved.role === 'admin') {
+    if (lastTab === 'orders') adminOrders();
+    else if (lastTab === 'users') adminUsers();
+    else adminSummary();
+  } else {
+    if (lastTab === 'progress') userProgress();
+    else if (lastTab === 'orders') userOrders();
+    else if (lastTab === 'profile') userProfile();
+    else userHome();
+  }
+} else {
+  renderAuth();
+}
+
 </script>
+<div id="netStatus" style="
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 0 0 20px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  z-index: 99999;
+  display: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+"></div>
+
 </body>
 </html>
