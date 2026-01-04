@@ -1342,9 +1342,12 @@ function getMonthTotal(sales = []) {
   }, 0);
 }
 function toggleMobileSidebar() {
-  const el = document.getElementById('mobileSidebar');
-  el.classList.toggle('active');
+  const sidebar = document.getElementById('mobileSidebar');
+  if (!sidebar) return;
+
+  sidebar.classList.toggle('active');
 }
+
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -1360,9 +1363,10 @@ function toggleTheme() {
 
   const icon = document.getElementById('themeIcon');
   if (icon) {
-    icon.innerText = currentTheme === 'light' ? ' 🌤️' : '☀️';
+    icon.innerText = currentTheme === 'light' ? '🌙' : '☀️';
   }
 }
+
 function showToast(m) { const x=document.getElementById("toast"); x.style.visibility="visible"; x.innerText=m; setTimeout(()=>x.style.visibility="hidden",3000); }
 function fireConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#ffffff'] }); }
 function getMonthName(m) { return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(m)-1]; }
@@ -1614,7 +1618,6 @@ function renderShell(user, content, tab) {
         {k:'orders', i:'📦', l:t('orders'), f:'adminOrders()'},
         {k:'users', i:'👥', l:t('farmers'), f:'adminUsers()'},
         {k:'audit', i:'🧾', l:'Audit Log', f:'adminAudit()'}
-
       ]
     : [
         {k:'home', i:'🏠', l:t('overview'), f:'userHome()'},
@@ -1623,7 +1626,7 @@ function renderShell(user, content, tab) {
         {k:'profile', i:'👤', l:t('profile'), f:'userProfile()'}
       ];
 
-  const sidebar = menu.map(m => `
+  const sidebarHTML = menu.map(m => `
     <div class="sidebar-btn ${tab===m.k?'active':''}" onclick="${m.f}">
       <span>${m.i}</span>${m.l}
     </div>
@@ -1631,127 +1634,85 @@ function renderShell(user, content, tab) {
 
   app.innerHTML = `
     <div class="dashboard-container">
+
+      <!-- DESKTOP SIDEBAR -->
       <aside class="sidebar">
-      <div class="logo" style="
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      align-items:flex-start;
-      "><div style="position:relative">
-      <img
-      src="${APP_LOGO_URL}"
-      class="logo-glow"
-      style="width:60px;height:60px;border-radius:50%"
-      />
-      <span
-      id="logoStatus"
-      class="logo-status ${navigator.onLine ? 'logo-online' : 'logo-offline'}">
-      </span>
-      <div id="mobileSidebar" class="mobile-sidebar" onclick="toggleMobileSidebar()">
-  <aside class="sidebar" onclick="event.stopPropagation()">
-    <div class="logo">
-      <img src="${APP_LOGO_URL}" style="width:50px;height:50px;border-radius:50%" />
-      <span>రైతు పాలు</span>
-    </div>
+        <div class="logo">
+          <img src="${APP_LOGO_URL}" class="logo-glow"
+               style="width:60px;height:60px;border-radius:50%" />
+          <span>🌾</span>
+          <span>రైతు పాలు</span>
+        </div>
 
-    ${sidebar}
+        ${sidebarHTML}
 
-    <div class="sidebar-btn"
-      style="margin-top:auto;color:#ef4444"
-      onclick="logout()">
-      🛑 ${t('logout')}
-    </div>
-  </aside>
-</div>
-
-    </div>
-🌾 <span>రైతు పాలు</span></div>
-
-        ${sidebar}
-
-        <div class="sidebar-btn" style="margin-top:auto;color:#ef4444" onclick="logout()">
-          <span>🛑</span> ${t('logout')}
+        <div class="sidebar-btn"
+             style="margin-top:auto;color:#ef4444"
+             onclick="logout()">
+          🛑 ${t('logout')}
         </div>
       </aside>
 
+      <!-- MAIN -->
       <main class="main-content">
         <div class="header-bar">
-          
-  <div style="
-  display:flex;
-  align-items:center;
-  gap:12px;
-">
 
-  <!-- ☰ MOBILE MENU -->
-  <button
-    onclick="toggleMobileSidebar()"
-    style="
-      display:none;
-      font-size:22px;
-      background:none;
-      border:none;
-      cursor:pointer;
-    "
-    class="mobile-only">
-    ☰
-  </button>
+          <!-- LEFT -->
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="mobile-only"
+              onclick="toggleMobileSidebar()"
+              style="font-size:22px;background:none;border:none;cursor:pointer">
+              ☰
+            </button>
 
-  <!-- GREETING -->
-  <div class="greeting-box">
-    <h1>${getGreeting()}</h1>
-    <p>${user.username}</p>
-  </div>
+            <div class="greeting-box">
+              <h1>${getGreeting()}</h1>
+              <p>${user.username}</p>
+            </div>
+          </div>
 
-</div>
+          <!-- RIGHT -->
+          <div style="display:flex;align-items:center;gap:14px">
 
+            <div class="lang-toggle">
+              <button onclick="setLang('en')" class="${currentLang==='en'?'active':''}">EN</button>
+              <button onclick="setLang('te')" class="${currentLang==='te'?'active':''}">తెలుగు</button>
+            </div>
 
-  <!-- RIGHT -->
-  <div style="
-    display:flex;
-    align-items:center;
-    gap:14px;
-    flex-wrap:wrap;
-  ">
+            <div style="position:relative">
+              <div class="notify-bell" onclick="toggleNotifications()">🔔</div>
+              <div id="notifyPanel" class="notify-panel"></div>
+            </div>
 
-    <!-- Role Badge -->
-    <span style="
-      padding:6px 14px;
-      border-radius:20px;
-      font-size:12px;
-      font-weight:800;
-      background:${user.role==='admin' ? '#fee2e2' : '#dcfce7'};
-      color:${user.role==='admin' ? '#991b1b' : '#065f46'};
-    ">
-      ${user.role === 'admin' ? '🛡️ Admin' : '👤 User'}
-    </span>
+            <button class="control-btn" id="themeIcon" onclick="toggleTheme()">
+              ${currentTheme === 'dark' ? '☀️' : '🌙'}
+            </button>
 
-    <!-- 🌐 Language Toggle -->
-    <div class="lang-toggle">
-      <button onclick="setLang('en')" class="${currentLang==='en'?'active':''}">EN</button>
-      <button onclick="setLang('te')" class="${currentLang==='te'?'active':''}">తెలుగు</button>
-    </div>
-
-    <!-- 🔔 Bell -->
-    <div style="position:relative">
-  <div class="notify-bell" onclick="toggleNotifications()">🔔</div>
-  <div id="notifyPanel" class="notify-panel"></div>
-</div>
-
-    <!-- 🌙 Theme -->
-    <button class="control-btn" onclick="toggleTheme()" id="themeIcon">
-      ${currentTheme === 'dark' ? '☀️' : '🌙'}
-    </button>
-
-  </div>
-
-</div>
+          </div>
+        </div>
 
         ${content}
       </main>
 
       ${role === 'admin' ? adminDock(tab) : userDock(tab)}
+    </div>
 
+    <!-- MOBILE SIDEBAR -->
+    <div id="mobileSidebar" class="mobile-sidebar" onclick="toggleMobileSidebar()">
+      <aside class="sidebar" onclick="event.stopPropagation()">
+        <div class="logo">
+          <img src="${APP_LOGO_URL}" style="width:50px;height:50px;border-radius:50%" />
+          <span>రైతు పాలు</span>
+        </div>
+
+        ${sidebarHTML}
+
+        <div class="sidebar-btn"
+             style="margin-top:auto;color:#ef4444"
+             onclick="logout()">
+          🛑 ${t('logout')}
+        </div>
+      </aside>
     </div>
   `;
 }
@@ -2635,28 +2596,16 @@ function exportAllPDF() {
     .then(r => r.json())
     .then(users => {
       const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+      const doc = new jsPDF();
 
-  // WATERMARK LOGO
-  doc.addImage(
-    APP_LOGO_URL,
-    "PNG",
-    30,
-    80,
-    150,
-    150,
-    undefined,
-    "FAST"
-  );
-  doc.setGState(new doc.GState({ opacity: 0.08 }));
+      doc.addImage(APP_LOGO_URL, "PNG", 30, 80, 150, 150, undefined, "FAST");
+      doc.setGState(new doc.GState({ opacity: 0.08 }));
 
-  // RESET OPACITY FOR TEXT
-  doc.setGState(new doc.GState({ opacity: 1 }));
+      doc.setGState(new doc.GState({ opacity: 1 }));
+      doc.setFontSize(16);
+      doc.text("రైతు పాలు – Farmers Report", 105, 20, { align: "center" });
 
-  doc.setFontSize(16);
-  doc.text("రైతు పాలు – Farmers Report", 105, 20, { align: "center" });
-
-  let y = 30;
+      let y = 30;
 
       users.forEach(u => {
         doc.text(`Farmer: ${u.username}`, 14, y);
@@ -2802,10 +2751,29 @@ async function acceptOrder(id) {
   adminOrders();
 }
 function downloadPDF(title){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.text(title,14,20);doc.autoTable({html:'#pdfTable',startY:30});doc.save(title+'.pdf');}
-async function login(){const u=document.getElementById('u').value,p=document.getElementById('p').value;const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});const d=await r.json();if(!d)return alert('Invalid');localStorage.setItem('user', JSON.stringify({username:u, role:d.role}));
-localStorage.removeItem('lastTab'); // 🔥 VERY IMPORTANT
-d.role === 'admin' ? adminSummary() : userHome();
+async function login() {
+  const u = document.getElementById('u').value;
+  const p = document.getElementById('p').value;
+
+  const r = await fetch('/login', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ username:u, password:p })
+  });
+
+  const d = await r.json();
+  if (!d) return alert('Invalid');
+
+  localStorage.setItem('user', JSON.stringify({
+    username: u,
+    role: d.role
+  }));
+
+  localStorage.removeItem('lastTab'); // 🔥 VERY IMPORTANT
+
+  d.role === 'admin' ? adminSummary() : userHome();
 }
+
 async function register(){const u=document.getElementById('ru').value,p=document.getElementById('rp').value;await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});alert('Registered');location.reload();}
 function logout(){
   localStorage.removeItem('user');
