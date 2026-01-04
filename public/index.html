@@ -1402,21 +1402,30 @@ if (isLowEndDevice && window.Chart) {
 
 
 let cache = {};
-
 async function fetchCached(url, ttl = 60000) {
-  if (cache[url] && Date.now() - cache[url].time < ttl) {
-    return cache[url].data;
+  try {
+    if (cache[url] && Date.now() - cache[url].time < ttl) {
+      return cache[url].data;
+    }
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    cache[url] = {
+      data,
+      time: Date.now()
+    };
+
+    return data;
+  } catch (err) {
+    console.error("fetchCached failed:", url, err);
+    return null; // 🔥 DO NOT THROW
   }
-
-  const res = await fetch(url);
-  const data = await res.json();
-
-  cache[url] = {
-    data,
-    time: Date.now()
-  };
-
-  return data;
 }
 
 function logAudit(action, meta={}) {
@@ -1430,10 +1439,10 @@ function logAudit(action, meta={}) {
   localStorage.setItem('auditLogs', JSON.stringify(logs.slice(0,300)));
 }
 
-  window.onerror = function (msg, src, line, col) {
-  console.error("JS Error:", msg, "at", line);
+window.onerror = function (msg, src, line, col) {
+  console.error("JS Error:", msg, src, line);
+  showToast("⚠️ Something went wrong");
 };
-
 
   const SESSION_TIMEOUT = 120 * 60 * 1000;
 let sessionTimer = null;
@@ -2072,82 +2081,93 @@ let appCharts = {}; // Use a single global object
 
 async function userHome() {
   saveLastTab('home');
-  const u = JSON.parse(localStorage.getItem('user')); 
-  showDashboardSkeleton();
-  
-  try {
-    const data = await fetchCached(`/user/${u.username}`);
-    updateLastSync();
-    
-    const st = calculateStats(data.sales);
-    let mData = {}; 
-    data.sales.forEach(s => { 
-      let m = s.date.split('/')[1]; 
-      mData[m] = (mData[m] || 0) + (s.twoL * 140) + (s.oneL * 70) + (s.threeQuarterL * 55) + (s.halfL * 35); 
-    });
-    
-    const insightText = generateInsights(data.sales);
+  const u = JSON.parse(localStorage.getItem('user'));
+  if (!u) return renderAuth();
 
+  showDashboardSkeleton();
+
+  // ⏳ Mobile needs a tiny delay
+  if (isLowEndDevice) {
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  const data = await fetchCached(`/user/${u.username}`);
+
+  if (!data || !Array.isArray(data.sales)) {
+    console.warn("Invalid dashboard data", data);
     renderShell(u, `
-      <div class="bento-grid">
-        <div class="card col-12 insight-card"><p>${insightText}</p></div>
-        <div class="card col-4"><div class="stat-badge">Overview</div><div class="stat-val">₹${st.total.toLocaleString()}</div><div class="stat-label">${t('totalBill')}</div></div>
-        <div class="card col-4"><div class="stat-badge">Activity</div><div class="stat-val">${st.days}</div><div class="stat-label">${t('activeDays')}</div></div>
-        <div class="card col-4" style="background:var(--gradient-primary); color:white; cursor:pointer" onclick="userOrders()">
-           <div style="font-size:2rem; margin-bottom:5px">🥛</div><div style="font-weight:700;">Need Milk?</div><button class="btn-main" style="background:white; color:var(--primary); padding:8px 15px; margin-top:5px; box-shadow:none">${t('requestMilk')}</button>
-        </div>
-        <div class="card col-8"><h3>Monthly Spend</h3><div style="height:250px"><canvas id="mainChart"></canvas></div></div>
-        <div class="card col-4"><h3>Consumption</h3><div style="height:200px; display:flex; justify-content:center"><canvas id="pieChart"></canvas></div></div>
+      <div class="card col-12">
+        <p style="color:gray;text-align:center">
+          No dashboard data available
+        </p>
       </div>
     `, 'home');
+    return;
+  }
 
-    // Destroy old instances to prevent "Canvas already in use" error
-    if (appCharts.main) appCharts.main.destroy();
-    if (appCharts.pie) appCharts.pie.destroy();
+  const stats = calculateStats(data.sales);
+  const monthly = {};
 
-    setTimeout(() => {
-  const mainCanvas = document.getElementById('mainChart');
-  const pieCanvas = document.getElementById('pieChart');
-
-  if (!mainCanvas || !pieCanvas) return;
-
-  if (appCharts.main) appCharts.main.destroy();
-  if (appCharts.pie) appCharts.pie.destroy();
-
-  appCharts.main = new Chart(mainCanvas, {
-    type: 'line',
-    data: {
-      labels: Object.keys(mData).map(m => getMonthName(m)),
-      datasets: [{
-        data: Object.values(mData),
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16,185,129,0.1)',
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
+  data.sales.forEach(s => {
+    const m = s.date.split('/')[1];
+    monthly[m] = (monthly[m] || 0) + calculateBill(s);
   });
 
-  appCharts.pie = new Chart(pieCanvas, {
-    type: 'doughnut',
-    data: {
-      labels: ['2L','1L','3/4L','1/2L'],
-      datasets: [{
-        data: [st.t2, st.t1, st.t34, st.t12],
-        backgroundColor: ['#064e3b','#065f46','#10b981','#6ee7b7']
-      }]
-    },
-    options: { responsive: true }
-  });
-}, isLowEndDevice ? 600 : 0);
-    const ctxPie = document.getElementById('pieChart').getContext('2d');
-    renderUserCharts(mData, st);
+  const insightText = generateInsights(data.sales);
 
-  } catch (e) {
-    showToast("Error loading dashboard data");
+  renderShell(u, `
+    <div class="bento-grid">
+      <div class="card col-12 insight-card"><p>${insightText}</p></div>
+
+      <div class="card col-4">
+        <div class="stat-badge">Overview</div>
+        <div class="stat-val">₹${stats.total}</div>
+        <div class="stat-label">Total Bill</div>
+      </div>
+
+      <div class="card col-4">
+        <div class="stat-badge">Activity</div>
+        <div class="stat-val">${stats.days}</div>
+        <div class="stat-label">Active Days</div>
+      </div>
+
+      <div class="card col-4" onclick="userOrders()" style="cursor:pointer">
+        <div style="font-size:2rem">🥛</div>
+        <strong>Need Milk?</strong>
+      </div>
+
+      ${
+        window.Chart && !isLowEndDevice
+        ? `
+          <div class="card col-8">
+            <h3>Monthly Spend</h3>
+            <div style="height:220px"><canvas id="mainChart"></canvas></div>
+          </div>
+
+          <div class="card col-4">
+            <h3>Consumption</h3>
+            <canvas id="pieChart"></canvas>
+          </div>
+        `
+        : `
+          <div class="card col-12">
+            <p style="text-align:center;color:gray">
+              Charts disabled on this device
+            </p>
+          </div>
+        `
+      }
+    </div>
+  `, 'home');
+
+  // 🟢 Charts only if safe
+  if (window.Chart && !isLowEndDevice) {
+    requestAnimationFrame(() => {
+      renderUserCharts(monthly, stats);
+    });
   }
 }
+
 function renderUserCharts(mData, stats) {
   if (!window.Chart) return;
 
@@ -2311,11 +2331,6 @@ function renderMonthSelector(grouped) {
     </div>
   `;
 }
-if (isLowEndDevice) {
-  Chart.defaults.animation = false;
-  Chart.defaults.transitions.active.animation.duration = 0;
-}
-
 async function userProgress() {
   saveLastTab('progress');
 
