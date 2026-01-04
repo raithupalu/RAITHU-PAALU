@@ -1207,8 +1207,7 @@ tr:hover td {
 <div id="app" style="width:100%; height:100%"></div>
 <div id="toast" style="visibility:hidden;"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script><script>
 let adminUsersInterval = null;
   let isEditingUser = false;
 function logAudit(action, meta={}) {
@@ -1779,14 +1778,8 @@ function renderShell(user, content, tab) {
       <main class="main-content">
         <div class="header-bar">
 
-          <!-- LEFT -->
+          <!-- LEFT (Hamburger Button Removed) -->
           <div style="display:flex;align-items:center;gap:12px">
-            <button class="mobile-only"
-              onclick="toggleMobileSidebar()"
-              style="font-size:22px;background:none;border:none;cursor:pointer">
-              ☰
-            </button>
-
             <div class="greeting-box">
               <h1>${getGreeting()}</h1>
               <p>${user.username}</p>
@@ -1818,27 +1811,8 @@ function renderShell(user, content, tab) {
 
       ${role === 'admin' ? adminDock(tab) : userDock(tab)}
     </div>
-
-    <!-- MOBILE SIDEBAR -->
-    <div id="mobileSidebar" class="mobile-sidebar" onclick="toggleMobileSidebar()">
-      <aside class="sidebar" onclick="event.stopPropagation()">
-        <div class="logo">
-          <img src="${APP_LOGO_URL}" style="width:50px;height:50px;border-radius:50%" />
-          <span>రైతు పాలు</span>
-        </div>
-
-        ${sidebarHTML}
-
-        <div class="sidebar-btn"
-             style="margin-top:auto;color:#ef4444"
-             onclick="logout()">
-          🛑 ${t('logout')}
-        </div>
-      </aside>
-    </div>
   `;
 }
-
 window.addEventListener('online', () => {
   document.getElementById('logoStatus')?.classList
     .replace('logo-offline', 'logo-online');
