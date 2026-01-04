@@ -108,45 +108,7 @@
 .dock-item span {
   font-size: 18px; /* Slightly smaller icons to fit 5 items */
 }
-/* Intense Background for Login */
-.auth-glass::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.3)), 
-                    url('https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=1000');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.8; /* High intensity */
-  filter: saturate(1.6) contrast(1.2);
-  z-index: -1;
-}
 
-/* Inline Notification Style (Replaces Popups) */
-.inline-status {
-  padding: 12px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  font-weight: 700;
-  font-size: 14px;
-  text-align: center;
-  animation: fadeIn 0.3s ease;
-}
-.status-success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
-.status-error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
-
-/* Remove User Button Styling */
-.btn-danger-outline {
-  padding: 12px 20px;
-  border-radius: 14px;
-  background: transparent;
-  border: 2px solid #ef4444;
-  color: #ef4444;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-danger-outline:hover { background: #ef4444; color: white; }
 .dock-item small {
   font-size: 9px; /* Optimized label size */
   font-weight: 700;
@@ -1221,21 +1183,6 @@ tr:hover td {
   100% { background-position: -200% 0; }
 }
 
-.low-end * {
-  animation: none !important;
-  transition: none !important;
-}
-
-.low-end .card {
-  box-shadow: none !important;
-}
-
-.low-end .sidebar,
-.low-end .card,
-.low-end .mobile-dock {
-  backdrop-filter: none !important;
-}
-
 /* ✨ SCROLLBAR */
 ::-webkit-scrollbar {
   width: 8px;
@@ -1253,129 +1200,6 @@ tr:hover td {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-dark);
 }
-/* ===== AUTH SCREEN - INTENSE BACKGROUND ===== */
-.auth-glass {
-  width: 100%;
-  max-width: 440px;
-  background: rgba(255, 255, 255, 0.85); /* Card base transparency */
-  border-radius: 32px;
-  padding: 48px 40px;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.2);
-  text-align: center;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  position: relative;
-  overflow: hidden; /* Keeps the background image inside the rounded corners */
-  z-index: 1;
-}
-
-/* This layer controls the Buffalo Image Intensity */
-.auth-glass::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: url('https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=1000');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.5; /* Increase this (0.1 to 1.0) to make the image more or less visible */
-  filter: saturate(1.5) contrast(1.1); /* Makes the colors deeper and more intense */
-  z-index: -1;
-}
-
-/* Ensuring text stays sharp on the intense background */
-/* Update these specific blocks in your <style> section */
-
-.auth-title {
-  font-size: 32px;
-  font-weight: 900;
-  /* We use a solid color or a very high-contrast gradient */
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  
-  /* KEY: Strong multi-layered shadow to create a readable "buffer" zone */
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) 
-          drop-shadow(0 0 2px rgba(255, 255, 255, 1));
-          
-  margin-bottom: 8px;
-  text-transform: lowercase;
-  display: block;
-}
-
-.auth-sub {
-  font-size: 16px;
-  /* Dark text with a white background glow for perfect contrast */
-  color: #064e3b; 
-  font-weight: 800;
-  background: rgba(255, 255, 255, 0.4);
-  padding: 4px 12px;
-  border-radius: 20px;
-  display: inline-block;
-  backdrop-filter: blur(4px);
-  margin-bottom: 32px;
-}
-
-/* Optional: Add a slight darkening overlay to the image to help text pop */
-.auth-glass::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: 
-    linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.4)), /* Subtle overlay */
-    url('https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=1000');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.6; 
-  filter: saturate(1.3) contrast(1.1);
-  z-index: -1;
-}
-.auth-glass::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.2)), 
-                    url('https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=1000');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.85; /* Very high intensity */
-  filter: saturate(1.7) contrast(1.2);
-  z-index: -1;
-}
-/* --- REPLACE THESE IN <style> --- */
-
-.auth-glass::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), 
-                    url('https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=1000');
-  background-size: cover;
-  background-position: center;
-  opacity: 0.9; /* Higher Intensity */
-  filter: saturate(1.8) contrast(1.2);
-  z-index: -1;
-}
-
-.auth-title {
-  font-size: 32px;
-  font-weight: 900;
-  color: #ffffff; /* Solid White for maximum visibility */
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(16, 185, 129, 0.5);
-  margin-bottom: 12px;
-  filter: none; /* Removed the transparent clip which causes blending issues */
-}
-
-.auth-sub {
-  color: #ffffff;
-  background: rgba(16, 185, 129, 0.8); /* Solid plate for visibility */
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-weight: 800;
-  display: inline-block;
-  margin-bottom: 30px;
-}
   </style>
 </head>
 <body>
@@ -1384,50 +1208,8 @@ tr:hover td {
 <div id="toast" style="visibility:hidden;"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script><script>
-let cachedView = localStorage.getItem('cachedView');
 let adminUsersInterval = null;
-let charts1= {};
-let ordersCache = [];
-
   let isEditingUser = false;
-const isLowEndDevice =
-  navigator.hardwareConcurrency <= 4 ||
-  navigator.deviceMemory <= 4 ||
-  window.innerWidth <= 768;
-
-if (isLowEndDevice && window.Chart) {
-  Chart.defaults.animation = false;
-  Chart.defaults.transitions.active.animation.duration = 0;
-}
-
-
-let cache = {};
-async function fetchCached(url, ttl = 60000) {
-  try {
-    if (cache[url] && Date.now() - cache[url].time < ttl) {
-      return cache[url].data;
-    }
-
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    cache[url] = {
-      data,
-      time: Date.now()
-    };
-
-    return data;
-  } catch (err) {
-    console.error("fetchCached failed:", url, err);
-    return null; // 🔥 DO NOT THROW
-  }
-}
-
 function logAudit(action, meta={}) {
   const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
   logs.unshift({
@@ -1439,10 +1221,10 @@ function logAudit(action, meta={}) {
   localStorage.setItem('auditLogs', JSON.stringify(logs.slice(0,300)));
 }
 
-window.onerror = function (msg, src, line, col) {
-  console.error("JS Error:", msg, src, line);
-  showToast("⚠️ Something went wrong");
+  window.onerror = function (msg, src, line, col) {
+  console.error("JS Error:", msg, "at", line);
 };
+
 
   const SESSION_TIMEOUT = 120 * 60 * 1000;
 let sessionTimer = null;
@@ -1456,199 +1238,218 @@ let currentTheme = localStorage.getItem('theme') || 'light';
 let selectedMilk = { twoL: 0, oneL: 0, threeQuarterL: 0, halfL: 0 };
 let currentMonthView = null;
 if(currentTheme === 'dark') document.body.classList.add('dark-mode');
+
 const T = {
   en: {
-    appName: "Raithu Palu",
+    // General
     welcome: "Welcome",
     goodMorning: "Good Morning",
     goodEvening: "Good Evening",
+    admin: "Admin",
+    user: "User",
+
+    // Sidebar
     overview: "Overview",
     orders: "Orders",
     farmers: "Farmers",
     progress: "Progress",
     profile: "Profile",
     logout: "Logout",
-    auditLog: "Audit Log",
+
+    // Dashboard
     totalBill: "Total Bill",
     activeDays: "Active Days",
     needMilk: "Need Milk?",
     requestMilk: "Request Milk",
     monthlySpend: "Monthly Spend",
     consumption: "Consumption",
+
+    // Progress
     selectMonth: "Select Month",
     milkDetails: "Milk Entry Details",
     milkCalendar: "Milk Calendar",
     back: "Back",
     total: "Total",
+
+    // Orders
     history: "History",
     noOrders: "No orders yet",
     orderMilk: "Order Milk",
     submit: "Submit Order",
+
+    // Admin
     totalRevenue: "Total Revenue",
     packets: "Packets",
     manage: "Tap to manage",
     addEntry: "Add Entry",
     save: "Save",
     delete: "Delete",
+
+    // Profile
     customerSince: "Customer since",
     totalSpend: "Total Spend",
     preferredSize: "Preferred Size",
-    security: "Security",
     changePassword: "Change Password",
+    security: "Security",
+
+    // Status
     active: "Active",
     idle: "Idle",
-    offline: "Offline",
-    searchPlaceholder: "Search farmer name...",
-    voiceOrder: "🎙️ Voice Order",
-    approve: "Approve ✅",
-    downloadPDF: "Download PDF",
-    exportPDF: "Export PDF",
-    status: "Status",
-    date: "Date",
-    quantity: "Quantity",
-    amount: "Amount",
-    grandTotal: "Grand Total",
-    updatePass: "Update Password",
-    currPass: "Current Password",
-    newPass: "New Password",
-    noEntries: "No entries yet",
-    loading: "Loading...",
-    farmers: "Customers", // Changed from Farmers
-    manage: "Manage Entry",
-    date: "Date",
-    amount: "Amount",
-    delete: "Delete",
-    status: "Status",
-    reject: "Reject",
-    approve: "Approve",
-    history: "Order History",
-    total: "Total",
-    addEntry: "Add Entry",
+    inactive: "Inactive",
+    offline: "Offline"
   },
+
   te: {
-    appName: "రైతు పాలు",
+    // General
     welcome: "స్వాగతం",
     goodMorning: "శుభోదయం",
     goodEvening: "శుభ సాయంత్రం",
+    admin: "నిర్వాహకుడు",
+    user: "వినియోగదారు",
+
+    // Sidebar
     overview: "అవలోకనం",
     orders: "ఆర్డర్లు",
     farmers: "రైతులు",
     progress: "పురోగతి",
     profile: "ప్రొఫైల్",
     logout: "లాగ్ అవుట్",
-    auditLog: "ఆడిట్ లాగ్",
+
+    // Dashboard
     totalBill: "మొత్తం బిల్లు",
     activeDays: "క్రియాశీల రోజులు",
     needMilk: "పాలు కావాలా?",
     requestMilk: "పాలు కోరండి",
     monthlySpend: "నెలవారీ ఖర్చు",
     consumption: "వినియోగం",
+
+    // Progress
     selectMonth: "నెలను ఎంచుకోండి",
     milkDetails: "పాల వివరాలు",
     milkCalendar: "పాల క్యాలెండర్",
     back: "వెనక్కి",
     total: "మొత్తం",
+
+    // Orders
     history: "చరిత్ర",
     noOrders: "ఇంకా ఆర్డర్లు లేవు",
     orderMilk: "పాలు ఆర్డర్ చేయండి",
     submit: "సమర్పించండి",
+
+    // Admin
     totalRevenue: "మొత్తం ఆదాయం",
     packets: "ప్యాకెట్లు",
-    manage: "నిర్వహించడానికి క్లిక్ చేయండి",
-    addEntry: "వివరాలు జోడించండి",
+    manage: "నిర్వహించండి",
+    addEntry: "ఎంట్రీ జోడించండి",
     save: "సేవ్ చేయండి",
-    delete: "తొలగించు",
-    customerSince: "వినియోగదారుగా మారిన తేదీ",
+    delete: "తొలగించండి",
+
+    // Profile
+    customerSince: "వినియోగదారుగా",
     totalSpend: "మొత్తం ఖర్చు",
     preferredSize: "ఇష్టమైన పరిమాణం",
-    security: "భద్రత",
     changePassword: "పాస్‌వర్డ్ మార్చండి",
+    security: "భద్రత",
+
+    // Status
     active: "క్రియాశీలం",
-    idle: "నిష్క్రియం",
-    offline: "ఆఫ్‌లైన్",
-    searchPlaceholder: "రైతు పేరు కోసం వెతకండి...",
-    voiceOrder: "🎙️ వాయిస్ ఆర్డర్",
-    approve: "ఆమోదించు ✅",
-    downloadPDF: "PDF డౌన్‌లోడ్",
-    exportPDF: "PDF ఎగుమతి",
-    status: "స్థితి",
-    date: "తేదీ",
-    quantity: "పరిమాణం",
-    amount: "మొత్తం",
-    grandTotal: "మొత్తం బిల్లు",
-    updatePass: "పాస్‌వర్డ్ అప్‌డేట్",
-    currPass: "ప్రస్తుత పాస్‌వర్డ్",
-    newPass: "కొత్త పాస్‌వర్డ్",
-    noEntries: "వివరాలు లేవు",
-    loading: "లోడ్ అవుతోంది...",
-    farmers: "కస్టమర్లు", // Changed from రైతులు
-    manage: "నిర్వహించు",
-    date: "తేదీ",
-    amount: "మొత్తం",
-    delete: "తొలగించు",
-    status: "స్థితి",
-    reject: "తిరస్కరించు",
-    approve: "ఆమోదించు",
-    history: "ఆర్డర్ చరిత్ర",
-    addEntry: "వివరాలు జోడించండి",
-    total: "మొత్తం",
+    idle: "నిష్క్రియ",
+    inactive: "అచేతనం",
+    offline: "ఆఫ్‌లైన్"
   }
 };
 
 function setLang(lang) {
-  if (currentLang === lang) return;
-
   currentLang = lang;
   localStorage.setItem('lang', lang);
 
   document.getElementById('langEn')?.classList.toggle('active', lang === 'en');
   document.getElementById('langTe')?.classList.toggle('active', lang === 'te');
 
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (!user) return;
-
-  const tab = getLastTab() || (user.role === 'admin' ? 'summary' : 'home');
-
-  if (user.role === 'admin') {
-    tab === 'orders' ? adminOrders()
-    : tab === 'users' ? adminUsers()
-    : tab === 'audit' ? adminAudit()
-    : adminSummary();
-  } else {
-    tab === 'orders' ? userOrders()
-    : tab === 'progress' ? userProgress()
-    : tab === 'profile' ? userProfile()
-    : userHome();
+  const saved = JSON.parse(localStorage.getItem('user'));
+  if (!saved) {
+    renderAuth();
+    return;
   }
+
+  // Re-render current view safely
+  const lastTab = getLastTab();
+  if (saved.role === 'admin') {
+    if (lastTab === 'users') adminUsers();
+    else if (lastTab === 'orders') adminOrders();
+    else adminSummary();
+  } else {
+    if (lastTab === 'progress') userProgress();
+    else if (lastTab === 'orders') userOrders();
+    else if (lastTab === 'profile') userProfile();
+    else userHome();
+  }
+}
+
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', currentTheme);
+  document.body.classList.toggle('dark-mode');
 }
 
 const t = (k) => T[currentLang][k] || k;
 const app = document.getElementById("app");
 
 function generateInsights(sales) {
-  if (!sales || sales.length < 1) {
-    return currentLang === 'te' ? "📊 విశ్లేషణను చూడటానికి ఆర్డర్ చేయడం ప్రారంభించండి." : "📊 Start ordering to see insights.";
+  if (!sales || sales.length < 2) {
+    return "📊 Start ordering to see smart insights about your milk usage.";
   }
 
-  // Simplified logic for brevity, using templates
-  const milkMap = { twoL: '2L', oneL: '1L', threeQuarterL: '3/4L', halfL: '1/2L' };
-  const prefText = currentLang === 'te' ? "🥛 ఎక్కువగా వినియోగించే పరిమాణం" : "🥛 Most preferred size";
-  
-  // Logic to find favorite (reusing your existing math)
-  let counts = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
-  sales.forEach(s => { counts.twoL += s.twoL||0; counts.oneL += s.oneL||0; });
-  const favorite = Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
+  let total = 0;
+  let monthTotals = {};
+  let milkCount = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
 
-  return `<span>${prefText}: ${milkMap[favorite]}</span>`;
+  sales.forEach(s => {
+    const bill =
+      (s.twoL*140) +
+      (s.oneL*70) +
+      (s.threeQuarterL*55) +
+      (s.halfL*35);
+
+    total += bill;
+
+    const m = s.date.split('/')[1];
+    monthTotals[m] = (monthTotals[m] || 0) + bill;
+
+    milkCount.twoL += s.twoL || 0;
+    milkCount.oneL += s.oneL || 0;
+    milkCount.threeQuarterL += s.threeQuarterL || 0;
+    milkCount.halfL += s.halfL || 0;
+  });
+
+  const favoriteMilk = Object.entries(milkCount)
+    .sort((a,b) => b[1]-a[1])[0][0];
+
+  const milkMap = {
+    twoL: '2L',
+    oneL: '1L',
+    threeQuarterL: '3/4L',
+    halfL: '1/2L'
+  };
+
+  const months = Object.keys(monthTotals);
+  let trendMsg = "📉 Your spending is stable.";
+
+  if (months.length >= 2) {
+    const last = monthTotals[months[months.length-1]];
+    const prev = monthTotals[months[months.length-2]];
+    const diff = ((last - prev) / prev * 100).toFixed(1);
+
+    if (diff > 0) trendMsg = `📈 Your milk spending increased by ${diff}% this month.`;
+    else trendMsg = `📉 Your milk spending decreased by ${Math.abs(diff)}% this month.`;
+  }
+
+  return `
+    ${trendMsg}
+    <span>🥛 Most preferred size: ${milkMap[favoriteMilk]}</span>
+  `;
 }
-async function fetchOrdersCached(force = false) {
-  if (!force && ordersCache.length) return ordersCache;
-
-  const res = await fetch('/orders');
-  ordersCache = await res.json();
-  return ordersCache;
-}
-
 function getMonthTotal(sales = []) {
   return sales.reduce((sum, s) => {
     return sum +
@@ -1669,9 +1470,9 @@ function toggleMobileSidebar() {
 function getGreeting() {
   const h = new Date().getHours();
   if (currentLang === 'te') {
-    return h < 12 ? t('goodMorning')+'<span>☀️</span>' : t('goodEvening')+'<span>🌤️</span>';
+    return h < 12 ? "శుభోదయం ☀️" : "శుభ సాయంత్రం  🌤️";
   }
-  return h < 12 ? t('goodMorning')+'<span>☀️</span>' : t('goodEvening')+'<span>🌤️</span>';
+  return h < 12 ? "Good Morning ☀️" : "Good Evening  🌤️";
 }
 function toggleTheme() {
   currentTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -1686,11 +1487,7 @@ function toggleTheme() {
 
 function showToast(m) { const x=document.getElementById("toast"); x.style.visibility="visible"; x.innerText=m; setTimeout(()=>x.style.visibility="hidden",3000); }
 function fireConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#ffffff'] }); }
-function getMonthName(m) {
-  const monthsEn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const monthsTe = ["జనవరి", "ఫిబ్రవరి", "మార్చి", "ఏప్రిల్", "మే", "జూన్", "జూలై", "ఆగస్టు", "సెప్టెంబర్", "అక్టోబర్", "నవంబర్", "డిసెంబర్"];
-  return currentLang === 'te' ? monthsTe[parseInt(m)-1] : monthsEn[parseInt(m)-1];
-}
+function getMonthName(m) { return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][parseInt(m)-1]; }
 function sortSalesByDate(sales) { return sales.sort((a, b) => { const [d1, m1, y1] = a.date.split('/'); const [d2, m2, y2] = b.date.split('/'); return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2); }); }
 function calculateStats(sales) { let s={t2:0, t1:0, t34:0, t12:0, days:sales.length, total:0}; sales.forEach(x => { s.t2+=x.twoL||0; s.t1+=x.oneL||0; s.t34+=x.threeQuarterL||0; s.t12+=x.halfL||0; s.total += (x.twoL*PRICES.twoL)+(x.oneL*PRICES.oneL)+(x.threeQuarterL*PRICES.threeQuarterL)+(x.halfL*PRICES.halfL); }); return s; }
 
@@ -1734,7 +1531,6 @@ function resetSessionTimer() {
 ['click','mousemove','keydown','touchstart','scroll'].forEach(evt => {
   window.addEventListener(evt, resetSessionTimer, { passive: true });
 });
-
 
 function showDayDetails(date) {
   const u = JSON.parse(localStorage.getItem('user'));
@@ -1874,98 +1670,76 @@ function makeAccessible(el, action, label) {
 }
 function adminDock(tab) {
   return `
-    <div class="mobile-dock">
+    <div class="mobile-dock display-none-desktop">
       <button class="dock-item ${tab==='summary'?'active':''}" onclick="adminSummary()"><span>📊</span><small>Summary</small></button>
       <button class="dock-item ${tab==='orders'?'active':''}" onclick="adminOrders()"><span>📦</span><small>Orders</small></button>
-      <button class="dock-item ${tab==='users'?'active':''}" onclick="adminUsers()"><span>👥</span><small>Customers</small></button>
-      <button class="dock-item ${tab==='audit'?'active':''}" onclick="adminAudit()"><span>🧾</span><small>Logs</small></button>
-      <button class="dock-item" onclick="logout()" style="color:#ef4444"><span>🛑</span><small>Exit</small></button>
+      <button class="dock-item ${tab==='users'?'active':''}" onclick="adminUsers()"><span>👨‍🌾</span><small>Farmers</small></button>
+      <button class="dock-item" onclick="logout()" style="color:#ef4444"><span>🛑</span><small>${t('logout')}</small></button>
     </div>
   `;
 }
 
 function userDock(tab) {
   return `
-    <div class="mobile-dock">
+    <div class="mobile-dock display-none-desktop">
       <button class="dock-item ${tab==='home'?'active':''}" onclick="userHome()"><span>🏠</span><small>Home</small></button>
-      <button class="dock-item ${tab==='progress'?'active':''}" onclick="userProgress()"><span>📈</span><small>Data</small></button>
+      <button class="dock-item ${tab==='progress'?'active':''}" onclick="userProgress()"><span>📈</span><small>Progress</small></button>
       <button class="dock-item ${tab==='orders'?'active':''}" onclick="userOrders()"><span>🛒</span><small>Orders</small></button>
       <button class="dock-item ${tab==='profile'?'active':''}" onclick="userProfile()"><span>👤</span><small>Profile</small></button>
+      <button class="dock-item" onclick="logout()" style="color:#ef4444"><span>🛑</span><small>${t('logout')}</small></button>
     </div>
   `;
 }
-// REPLACE adminAudit to include clear button
+
 function adminAudit() {
   saveLastTab('audit');
+
   const u = JSON.parse(localStorage.getItem('user'));
   const logs = JSON.parse(localStorage.getItem('auditLogs')) || [];
 
   renderShell(u, `
     <div class="card col-12">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-        <h3 style="margin:0">Admin Audit Log</h3>
-        <button class="btn-sec" onclick="clearAuditLogs(this)" style="border-color:#ef4444; color:#ef4444">
-          🗑️ Clear All Logs
-        </button>
-      </div>
-      <div class="table-wrapper" style="max-height:500px; overflow:auto">
+      <h3>Admin Audit Log</h3>
+
+      <div class="table-wrapper" style="max-height:500px;overflow:auto">
         <table>
-          <tr><th>Time</th><th>Admin</th><th>Action</th><th>Details</th></tr>
-          ${logs.map(l => `
+          <tr>
+            <th>Time</th>
+            <th>Admin_toggle</th>
+            <th>Action</th>
+            <th>Details</th>
+          </tr>
+
+          ${logs.length ? logs.map(l => `
             <tr>
-              <td>${new Date(l.time).toLocaleTimeString()}</td>
+              <td>${new Date(l.time).toLocaleString()}</td>
               <td>${l.admin}</td>
               <td>${l.action}</td>
               <td>${JSON.stringify(l.meta)}</td>
             </tr>
-          `).join('')}
+          `).join('') : `
+            <tr>
+              <td colspan="4" style="text-align:center">
+                No audit logs yet
+              </td>
+            </tr>
+          `}
         </table>
       </div>
     </div>
   `, 'audit');
 }
-function clearAuditLogs(btn) {
-  if (!btn.dataset.confirmed) {
-    btn.dataset.confirmed = "yes";
-    btn.innerText = "Click again to confirm";
-    btn.style.background = "#ef4444";
-    btn.style.color = "#fff";
-
-    setTimeout(() => {
-      btn.dataset.confirmed = "";
-      btn.innerText = "🗑️ Clear All Logs";
-      btn.style.background = "";
-      btn.style.color = "#ef4444";
-    }, 3000);
-    return;
-  }
-
-  localStorage.removeItem('auditLogs');
-
-  const table = document.querySelector('.table-wrapper table');
-  if (table) {
-    table.innerHTML = `
-      <tr>
-        <td colspan="4" style="text-align:center;color:gray">
-          No audit logs available
-        </td>
-      </tr>
-    `;
-  }
-
-  showToast("Audit logs cleared 🧹");
-}
 
 function renderShell(user, content, tab) {
   const role = user.role;
-  updateUserActivity();
+
   const menu = role === 'admin'
-? [
-    {k:'summary', i:'📊', l:t('overview'), f:'adminSummary()'},
-    {k:'orders', i:'📦', l:t('orders'), f:'adminOrders()'},
-    {k:'users', i:'👥', l:t('farmers'), f:'adminUsers()'}, // 'farmers' now translates to 'Customers'
-    {k:'audit', i:'🧾', l:t('auditLog'), f:'adminAudit()'}
-  ]
+    ? [
+        {k:'summary', i:'📊', l:t('overview'), f:'adminSummary()'},
+        {k:'orders', i:'📦', l:t('orders'), f:'adminOrders()'},
+        {k:'users', i:'👥', l:t('farmers'), f:'adminUsers()'},
+        {k:'audit', i:'🧾', l:'Audit Log', f:'adminAudit()'}
+      ]
     : [
         {k:'home', i:'🏠', l:t('overview'), f:'userHome()'},
         {k:'progress', i:'📈', l:t('progress'), f:'userProgress()'},
@@ -2039,12 +1813,6 @@ function renderShell(user, content, tab) {
     </div>
   `;
 }
-function cacheViewSafe() {
-  if (app.innerHTML.length < 150000) {
-    localStorage.setItem('cachedView', app.innerHTML);
-  }
-}
-
 window.addEventListener('online', () => {
   document.getElementById('logoStatus')?.classList
     .replace('logo-offline', 'logo-online');
@@ -2077,134 +1845,43 @@ function showLogoLoader() {
 }
 let charts = {}; // Global variable at the top of your script
 
-let appCharts = {}; // Use a single global object
-
 async function userHome() {
   saveLastTab('home');
-  const u = JSON.parse(localStorage.getItem('user'));
-  if (!u) return renderAuth();
-
+  const u = JSON.parse(localStorage.getItem('user')); 
   showDashboardSkeleton();
-
-  // ⏳ Mobile needs a tiny delay
-  if (isLowEndDevice) {
-    await new Promise(r => setTimeout(r, 300));
-  }
-
-  const data = await fetchCached(`/user/${u.username}`);
-
-  if (!data || !Array.isArray(data.sales)) {
-    console.warn("Invalid dashboard data", data);
-    renderShell(u, `
-      <div class="card col-12">
-        <p style="color:gray;text-align:center">
-          No dashboard data available
-        </p>
-      </div>
-    `, 'home');
-    return;
-  }
-
-  const stats = calculateStats(data.sales);
-  const monthly = {};
-
-  data.sales.forEach(s => {
-    const m = s.date.split('/')[1];
-    monthly[m] = (monthly[m] || 0) + calculateBill(s);
+  const res = await fetch(`/user/${u.username}`); 
+  const data = await res.json();
+  updateLastSync();
+  
+  const st = calculateStats(data.sales);
+  let mData={}; 
+  data.sales.forEach(s => { 
+    let m=s.date.split('/')[1]; 
+    mData[m]=(mData[m]||0)+(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35); 
   });
-
+  
   const insightText = generateInsights(data.sales);
 
   renderShell(u, `
     <div class="bento-grid">
       <div class="card col-12 insight-card"><p>${insightText}</p></div>
-
-      <div class="card col-4">
-        <div class="stat-badge">Overview</div>
-        <div class="stat-val">₹${stats.total}</div>
-        <div class="stat-label">Total Bill</div>
+      <div class="card col-4"><div class="stat-badge">Overview</div><div class="stat-val">₹${st.total.toLocaleString()}</div><div class="stat-label">${t('totalBill')}</div></div>
+      <div class="card col-4"><div class="stat-badge">Activity</div><div class="stat-val">${st.days}</div><div class="stat-label">${t('activeDays')}</div></div>
+      <div class="card col-4" style="background:var(--gradient-primary); color:white; cursor:pointer" onclick="userOrders()">
+         <div style="font-size:2rem; margin-bottom:5px">🥛</div><div style="font-weight:700;">Need Milk?</div><button class="btn-main" style="background:white; color:var(--primary); padding:8px 15px; margin-top:5px; box-shadow:none">${t('requestMilk')}</button>
       </div>
-
-      <div class="card col-4">
-        <div class="stat-badge">Activity</div>
-        <div class="stat-val">${stats.days}</div>
-        <div class="stat-label">Active Days</div>
-      </div>
-
-      <div class="card col-4" onclick="userOrders()" style="cursor:pointer">
-        <div style="font-size:2rem">🥛</div>
-        <strong>Need Milk?</strong>
-      </div>
-
-      ${
-        window.Chart && !isLowEndDevice
-        ? `
-          <div class="card col-8">
-            <h3>Monthly Spend</h3>
-            <div style="height:220px"><canvas id="mainChart"></canvas></div>
-          </div>
-
-          <div class="card col-4">
-            <h3>Consumption</h3>
-            <canvas id="pieChart"></canvas>
-          </div>
-        `
-        : `
-          <div class="card col-12">
-            <p style="text-align:center;color:gray">
-              Charts disabled on this device
-            </p>
-          </div>
-        `
-      }
+      <div class="card col-8"><h3>Monthly Spend</h3><div style="height:250px"><canvas id="mainChart"></canvas></div></div>
+      <div class="card col-4"><h3>Consumption</h3><div style="height:200px; display:flex; justify-content:center"><canvas id="pieChart"></canvas></div></div>
     </div>
   `, 'home');
 
-  // 🟢 Charts only if safe
-  if (window.Chart && !isLowEndDevice) {
-    requestAnimationFrame(() => {
-      renderUserCharts(monthly, stats);
-    });
-  }
+  // Destroy old charts if they exist
+  if (charts.main) charts.main.destroy();
+  if (charts.pie) charts.pie.destroy();
+
+  charts.main = new Chart(document.getElementById('mainChart'), {type:'line', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Spend', data:Object.values(mData), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4}]}, options:{responsive:true, maintainAspectRatio:false}});
+  charts.pie = new Chart(document.getElementById('pieChart'), {type:'doughnut', data:{labels:['2L','1L','3/4L','1/2L'], datasets:[{data:[st.t2, st.t1, st.t34, st.t12], backgroundColor:['#064e3b','#065f46','#10b981','#6ee7b7'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false}});
 }
-
-function renderUserCharts(mData, stats) {
-  if (!window.Chart) return;
-
-  const main = document.getElementById('mainChart');
-  const pie = document.getElementById('pieChart');
-  if (!main || !pie) return;
-
-  appCharts.main?.destroy();
-  appCharts.pie?.destroy();
-
-  appCharts.main = new Chart(main, {
-    type: 'line',
-    data: {
-      labels: Object.keys(mData).map(getMonthName),
-      datasets: [{
-        data: Object.values(mData),
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16,185,129,0.15)',
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-
-  appCharts.pie = new Chart(pie, {
-    type: 'doughnut',
-    data: {
-      labels: ['2L','1L','3/4L','1/2L'],
-      datasets: [{
-        data: [stats.t2, stats.t1, stats.t34, stats.t12],
-        backgroundColor: ['#064e3b','#065f46','#10b981','#6ee7b7']
-      }]
-    }
-  });
-}
-
 function openMonth(key) {
   currentMonthView = key;
   userProgress();
@@ -2331,11 +2008,13 @@ function renderMonthSelector(grouped) {
     </div>
   `;
 }
+
 async function userProgress() {
   saveLastTab('progress');
 
   const u = JSON.parse(localStorage.getItem('user'));
-  const data = await fetchCached(`/user/${u.username}`);
+  const res = await fetch(`/user/${u.username}`);
+const data = await res.json();
 
 if (!data || !Array.isArray(data.sales)) {
   showToast("No milk data available");
@@ -2367,17 +2046,15 @@ if (!data || !Array.isArray(data.sales)) {
     'progress'
   );
 }
+
+
 async function adminSummary() {
   saveLastTab('summary');
+showLogoLoader();
+
   const u = JSON.parse(localStorage.getItem('user'));
-  
-  // Use a subtle opacity change instead of a full screen loader for smoother transitions
-  const main = document.querySelector('.main-content');
-  if(main) main.style.opacity = '0.7';
-
-  const users = await fetchCached('/users');
-  if(main) main.style.opacity = '1';
-
+  const res = await fetch('/users');
+  const users = await res.json();
   updateLastSync();
 
   let rev = 0;
@@ -2456,49 +2133,78 @@ function getFarmerStatus(sales = []) {
   return { label: 'Inactive', color: '#dc2626', icon: '🔴' };
 }
 function getUserLiveStatus(lastActive) {
-  if (!lastActive) return { label: t('offline'), color: '#dc2626', icon: '🔴' };
+  if (!lastActive) {
+    return { label: 'Offline', color: '#dc2626', icon: '🔴' };
+  }
+
   const diff = Date.now() - lastActive;
-  if (diff < 5 * 60 * 1000) return { label: t('active'), color: '#16a34a', icon: '🟢' };
-  if (diff < 30 * 60 * 1000) return { label: t('idle'), color: '#f59e0b', icon: '🟡' };
-  return { label: t('offline'), color: '#dc2626', icon: '🔴' };
+
+  if (diff < 5 * 60 * 1000) {
+    return { label: 'Active', color: '#16a34a', icon: '🟢' };
+  }
+
+  if (diff < 30 * 60 * 1000) {
+    return { label: 'Idle', color: '#f59e0b', icon: '🟡' };
+  }
+
+  return { label: 'Offline', color: '#dc2626', icon: '🔴' };
 }
-// REPLACE adminUsers to be faster
 async function adminUsers() {
   saveLastTab('users');
+showLogoLoader();
+
   const u = JSON.parse(localStorage.getItem('user'));
-  localStorage.removeItem('editingUser');
-isEditingUser = false;
-
-  // Use a targeted loader instead of full screen showLogoLoader()
-  const main = document.querySelector('.main-content');
-  if(main) main.style.opacity = '0.6';
-
-  const users = await fetchCached('/users', 10000); // 10s cache to stop rapid re-fetching
-  if(main) main.style.opacity = '1';
-
-  updateLastSync();
-  
+  const res = await fetch('/users');
+  const users = await res.json();
+updateLastSync();
   renderShell(u, `
     <div class="search-wrap">
-      <span>🔍</span>
-      <input class="search-input" placeholder="Search customer..." oninput="filterFarmers(this.value)">
-    </div>
-    <div class="bento-grid" id="customerGrid">
+  <span>🔍</span>
+  <input
+    class="search-input"
+    placeholder="Search farmer name or date…"
+    oninput="filterFarmers(this.value)"
+  />
+</div>
+
+
+    <div class="bento-grid">
       ${users.map(usr => {
-        const status = getUserLiveStatus(usr.lastActive);
-        return `
-          <div class="card col-4 farmer-card" data-user="${usr.username}" onclick="editUser('${usr.username}')">
-            <div style="font-size:38px">👤</div>
-            <h3 style="margin:6px 0">${usr.username}</h3>
-            <span class="status-badge" style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:800; background:${status.color}20; color:${status.color};">
-              ${status.icon} ${status.label}
-            </span>
-          </div>`;
-      }).join('')}
+  const status = getUserLiveStatus(usr.lastActive);
+
+  return `
+    <div class="card col-4 farmer-card"
+         onclick="editUser('${usr.username}')">
+
+      <div style="font-size:38px">👨‍🌾</div>
+
+      <h3 style="margin:6px 0">${usr.username}</h3>
+
+      <span style="
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        padding:4px 12px;
+        border-radius:20px;
+        font-size:11px;
+        font-weight:800;
+        background:${status.color}20;
+        color:${status.color};
+      ">
+        ${status.icon} ${status.label}
+      </span>
+
+      <p style="font-size:12px;color:var(--text-sub);margin-top:8px">
+        Tap to manage
+      </p>
+    </div>
+  `;
+}).join('')
+}
     </div>
   `, 'users');
-  
   startAdminUserRefresh();
+
 }
 
 function filterFarmers(query) {
@@ -2548,202 +2254,88 @@ function startVoiceOrder() {
 function startAdminUserRefresh() {
   if (adminUsersInterval) return;
 
-  adminUsersInterval = setInterval(async () => {
-    if (getLastTab() !== 'users' || isEditingUser) return;
+  adminUsersInterval = setInterval(() => {
+    const u = JSON.parse(localStorage.getItem('user'));
 
-    const users = await fetch('/users').then(r => r.json());
-
-    document.querySelectorAll('.farmer-card').forEach(card => {
-      const name = card.dataset.user;
-      const user = users.find(u => u.username === name);
-      if (!user) return;
-
-      const status = getUserLiveStatus(user.lastActive);
-      const badge = card.querySelector('.status-badge');
-
-      badge.innerHTML = `${status.icon} ${status.label}`;
-      badge.style.color = status.color;
-      badge.style.background = `${status.color}20`;
-    });
-
-  }, 120000); // every 2 minutes
+    // ✅ ONLY refresh IF admin is CURRENTLY on users page
+    if (
+      u?.role === 'admin' &&
+      getLastTab() === 'users' &&
+      !isEditingUser
+    ) {
+      adminUsers();
+    }
+  }, 60000);
 }
 
-async function editUser(username) {
+
+
+async function editUser(name) {
   isEditingUser = true;
-  const admin = JSON.parse(localStorage.getItem('user'));
-  const userOrders = ordersCache.filter(o => o.username === username);
-  // FAST: get cached users first
-  let users = cache['/users']?.data;
-  if (!users) {
-    users = await fetch('/users').then(r => r.json());
-  }
 
-  const user = users.find(u => u.username === username);
-  if (!user) return showToast("User not found");
-
-  const stats = calculateStats(user.sales || []);
-  const orders = user.orders || [];
-
-  renderShell(admin, `
-    <div style="display:flex;justify-content:space-between;margin-bottom:16px">
-      <button class="btn-sec" onclick="isEditingUser=false;adminUsers()">⬅ Back</button>
-      <button class="btn-danger-outline" onclick="removeCustomerInline('${username}')">
-        🗑️ Remove Customer
-      </button>
-    </div>
-
-    <div id="inlineStatus"></div>
-
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
+  const target = users.find(x => x.username === name);
+  const st = calculateStats(target.sales);
+  
+  renderShell(u, `
+<button class="btn-sec"
+  onclick="isEditingUser=false; adminUsers()"
+  style="margin-bottom:20px">
+  ⬅ Back
+</button>
     <div class="bento-grid">
-
-      <!-- ADD MILK -->
       <div class="card col-6">
-        <h3>Add Milk Entry</h3>
-        <input type="date" id="d" class="auth-input">
+        <h3>Add Entry: ${name}</h3>
+        <input type="date" id="d" style="background:var(--surface); border:1px solid var(--surface-border); padding:14px; border-radius:14px; width:100%; margin-bottom:16px">
         <div class="milk-grid">
-          <div class="milk-btn" onclick="tog(this,'twoL')">2L</div>
-          <div class="milk-btn" onclick="tog(this,'oneL')">1L</div>
-          <div class="milk-btn" onclick="tog(this,'threeQuarterL')">3/4L</div>
-          <div class="milk-btn" onclick="tog(this,'halfL')">1/2L</div>
-        </div>
-        <button class="btn-main" onclick="save('${username}')">Save Entry</button>
-      </div>
+  <div class="milk-btn" onclick="tog(this,'twoL')">🥛 2 Litre</div>
+  <div class="milk-btn" onclick="tog(this,'oneL')">🥛 1 Litre</div>
+  <div class="milk-btn" onclick="tog(this,'threeQuarterL')">🥛 0.75 L</div>
+  <div class="milk-btn" onclick="tog(this,'halfL')">🥛 0.5 L</div>
+</div>
 
-      <!-- SALES -->
+        <button class="btn-main"
+  onclick="safeAction(() => save('${name}'))">${t('save')}</button>
+      </div>
       <div class="card col-6">
-        <h3>Milk Entries</h3>
-        <div class="table-wrapper" style="max-height:280px">
-          <table>
-            <tr><th>Date</th><th>Amount</th><th>❌</th></tr>
-            ${(user.sales || []).slice().reverse().map(s => `
-              <tr>
-                <td>${s.date}</td>
-                <td>₹${calculateBill(s)}</td>
-                <td>
-                  <button onclick="confirmInlineDelete('${username}','${s.date}',this)">✕</button>
-                </td>
-              </tr>
-            `).join('') || '<tr><td colspan="3">No entries</td></tr>'}
-          </table>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+           <span>Total: <b>₹${st.total}</b></span><span>Entries: <b>${st.days}</b></span>
+        </div>
+        <div class="table-wrapper" style="max-height:400px; overflow-y:auto">
+           <table>
+             ${target.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td><td style="color:red; cursor:pointer" onclick="safeAction(() => del('${name}','${s.date}'))">✕</td></tr>`).join('')}
+           </table>
         </div>
       </div>
-
-      <!-- ORDER HISTORY -->
-      <div class="card col-12">
-  <h3>📦 Order History</h3>
-  <div class="table-wrapper" style="max-height:300px">
+    </div>
+    <div class="card col-6">
+  <h3>Order History</h3>
+  <div class="table-wrapper" style="max-height:300px;overflow-y:auto">
     <table>
       <tr>
         <th>Date</th>
         <th>Qty</th>
         <th>Status</th>
       </tr>
-      ${
-        userOrders.length
-        ? userOrders.slice().reverse().map(o => `
-          <tr>
-            <td>${new Date(o.timestamp).toLocaleString()}</td>
-            <td>${o.quantity} L</td>
-            <td style="font-weight:700;color:${
-              o.status === 'Rejected' ? '#ef4444'
-              : o.status === 'Pending' ? '#f59e0b'
-              : '#10b981'
-            }">${o.status}</td>
-          </tr>
-        `).join('')
+      ${target.orders?.length
+        ? target.orders.slice().reverse().map(o => `
+            <tr>
+              <td>${new Date(o.timestamp).toLocaleDateString()}</td>
+              <td>${o.quantity}L</td>
+              <td>${o.status}</td>
+            </tr>
+          `).join('')
         : `<tr><td colspan="3">No orders</td></tr>`
       }
     </table>
   </div>
 </div>
+
   `, 'users');
-  await fetchOrdersCached(true);
+  document.querySelectorAll('.milk-btn').forEach(btn => {
+  makeAccessible(btn, () => btn.click(), 'Select milk quantity');
+});
 
-}
-function updateOrderCache(order) {
-  const index = ordersCache.findIndex(o => o.id === order.id);
-  if (index !== -1) ordersCache[index] = order;
-  else ordersCache.push(order);
-}
-
-// Function to show inline status messages
-function setInlineStatus(msg, type = 'success') {
-  const el = document.getElementById('inlineStatus');
-  if (!el) { showToast(msg); return; } // Fallback to toast if not on edit screen
-  el.innerHTML = `<div class="inline-status status-${type}">${msg}</div>`;
-  setTimeout(() => el.innerHTML = '', 4000);
-}
-async function removeCustomerInline(username) {
-  if (!confirm(`Delete ${username}?`)) return;
-
-  try {
-    const res = await fetch('/delete-user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username })
-    });
-
-    const data = await res.json();
-    if (!data.success) throw new Error();
-
-    logAudit("USER_REMOVED", { username });
-
-    // ⚡ REMOVE CARD INSTANTLY (NO reload)
-    document
-      .querySelectorAll('.farmer-card')
-      .forEach(c => {
-        if (c.innerText.includes(username)) c.remove();
-      });
-
-    isEditingUser = false;
-    localStorage.removeItem('editingUser');
-
-    showToast(`User ${username} removed`);
-
-  } catch {
-    showToast("Failed to remove user ❌");
-  }
-}
-
-
-// 2. Inline Row Delete Confirmation
-function confirmInlineDelete(name, date, btn) {
-  const originalHtml = btn.innerHTML;
-  btn.innerHTML = "Sure?";
-  btn.style.color = "#b91c1c";
-  btn.onclick = async () => {
-    await del(name, date);
-    setInlineStatus("Entry Deleted successfully 🗑️", "success");
-  };
-  setTimeout(() => { 
-    btn.innerHTML = originalHtml; 
-    btn.style.color = "#ef4444"; 
-    btn.onclick = () => confirmInlineDelete(name, date, btn);
-  }, 3000);
-}
-
-// 3. Updated Register (No Popup)
-async function register() {
-  const u = document.getElementById('ru').value;
-  const p = document.getElementById('rp').value;
-  if (!u || !p) return;
-
-  const res = await fetch('/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: u, password: p })
-  });
-
-  const box = document.getElementById('regForm');
-  box.innerHTML = `
-    <div class="inline-status status-success">
-      User <b>${u}</b> created successfully
-    </div>
-    <button class="auth-btn" onclick="toggleAuth('login')">
-      Go to Login
-    </button>
-  `;
 }
 
 async function userOrders() {
@@ -2819,88 +2411,35 @@ function throttledActivity() {
 ['click','keydown','touchstart'].forEach(evt => {
   window.addEventListener(evt, throttledActivity, { passive:true });
 });
+
+
+
 async function adminOrders() {
   saveLastTab('orders');
-  const admin = JSON.parse(localStorage.getItem('user'));
-
-  const orders = await fetchOrdersCached(true);
-
+  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/orders'); const orders = await res.json();
   const pending = orders.filter(o => o.status === 'Pending');
-  const history = orders.filter(o => o.status !== 'Pending');
-
-  renderShell(admin, `
+  renderShell(u, `
     <div class="bento-grid">
-
-      <!-- PENDING -->
-      <div class="card col-12">
-        <h3>🟡 Pending Orders</h3>
-      </div>
-
-      ${pending.length
-        ? pending.map(o => `
-          <div class="card col-4" id="order-${o.id}">
-            <h3>👤 ${o.username}</h3>
-            <div class="stat-val" style="font-size:1.5rem">${o.quantity} L</div>
-            <p>${new Date(o.timestamp).toLocaleString()}</p>
-
-            <div style="display:flex; gap:10px">
-              <button class="btn-main" onclick="acceptOrder('${o.id}')">Approve</button>
-              <button class="btn-sec"
-                style="border-color:#ef4444;color:#ef4444"
-                onclick="rejectOrder('${o.id}')">Reject</button>
-            </div>
-          </div>
-        `).join('')
-        : `<div class="card col-12">No pending orders 🎉</div>`
-      }
-
-      <!-- HISTORY -->
-      <div class="card col-12">
-        <h3>📜 Order History</h3>
-        <div class="table-wrapper" style="max-height:350px">
-          <table>
-            <tr>
-              <th>User</th>
-              <th>Date</th>
-              <th>Qty</th>
-              <th>Status</th>
-            </tr>
-            ${history.slice().reverse().map(o => `
-              <tr>
-                <td>${o.username}</td>
-                <td>${new Date(o.timestamp).toLocaleString()}</td>
-                <td>${o.quantity} L</td>
-                <td style="font-weight:700;color:${
-                  o.status === 'Rejected' ? '#ef4444'
-                  : '#10b981'
-                }">
-                  ${o.status}
-                </td>
-              </tr>
-            `).join('')}
-          </table>
-        </div>
-      </div>
-
+       ${pending.map(o => `
+         <div class="card col-4">
+           <h3>${o.username}</h3>
+           <div class="stat-val" style="font-size:1.5rem">${o.quantity}L</div>
+           <p>${new Date(o.timestamp).toLocaleString()}</p>
+           <button class="btn-main"
+  onclick="safeAction(() => acceptOrder('${o.id}'))">Approve ✅</button>
+         </div>
+       `).join('')}
+${pending.length === 0 
+  ? emptyState({
+      icon: '🎉',
+      title: 'All caught up!',
+      message: 'There are no pending orders right now.'
+    })
+  : ''
+}
     </div>
   `, 'orders');
 }
-
-async function rejectOrder(id) {
-  await fetch('/update-order', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ id, status:'Rejected' })
-  });
-
-  ordersCache = ordersCache.map(o =>
-    o.id === id ? { ...o, status: 'Rejected' } : o
-  );
-
-  showToast("Order Rejected ❌");
-  adminOrders();
-}
-
 function getCustomerSince(sales = []) {
   if (!sales.length) return "—";
 
@@ -2961,59 +2500,133 @@ async function downloadMonthPDF(username, month, year) {
   doc.save(`${username}_${getMonthName(month)}_${year}.pdf`);
   fireConfetti();
 }
-// Helper function to bridge the naming gap
-function getUserActivityStatus(sales) {
-  return getFarmerStatus(sales); 
-}
 
+function getUserActivityStatus(sales = []) {
+  if (!sales.length) return { label: 'New Member', color: '#6b7280', icon: '✨' };
+  
+  const sorted = sortSalesByDate([...sales]);
+  const lastDate = sorted[sorted.length - 1].date;
+  const [d, m, y] = lastDate.split('/');
+  const last = new Date(y, m - 1, d);
+  const diffDays = (new Date() - last) / (1000 * 60 * 60 * 24);
+
+  if (diffDays <= 3) return { label: 'Regular', color: '#10b981', icon: '🟢' };
+  if (diffDays <= 10) return { label: 'Occasional', color: '#f59e0b', icon: '🟡' };
+  return { label: 'Inactive', color: '#ef4444', icon: '🔴' };
+}
 async function userProfile() {
   saveLastTab('profile');
-  showLogoLoader();
+showLogoLoader();
 
   const u = JSON.parse(localStorage.getItem('user'));
-  try {
-    const res = await fetch(`/user/${u.username}`);
-    const data = await res.json();
-    const since = getCustomerSince(data.sales);
-    const status = getUserActivityStatus(data.sales); // Now defined
-    const stats = calculateStats(data.sales);
+  const res = await fetch(`/user/${u.username}`);
+  const data = await res.json();
+const since = getCustomerSince(data.sales);
+const status = getUserActivityStatus(data.sales);
 
-    renderShell(u, `
-      <div style="max-width:900px; margin:0 auto">
-        <div class="card" style="display:flex; gap:24px; align-items:center; margin-bottom:24px">
-          <div style="width:120px; height:120px; border-radius:50%; background:var(--gradient-soft); display:flex; align-items:center; justify-content:center; font-size:48px">👤</div>
-          <div>
-            <h2 style="margin-bottom:6px">${u.username}</h2>
-            <p style="color:var(--text-sub)">Milk Consumer • Raithu Palu</p>
-            <div style="margin-top:10px;display:flex;gap:14px;flex-wrap:wrap">
-              <span style="padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700; background:${status.color}20; color:${status.color};">
-                ${status.icon} ${status.label}
-              </span>
-              <span style="font-size:12px; color:var(--text-sub);">📅 Customer since ${since}</span>
-            </div>
-          </div>
+  const stats = calculateStats(data.sales);
+
+  renderShell(u, `
+    <div style="max-width:900px; margin:0 auto">
+
+      <div class="card" style="
+        display:flex;
+        gap:24px;
+        align-items:center;
+        margin-bottom:24px
+      ">
+        <div style="
+          width:120px;
+          height:120px;
+          border-radius:50%;
+          background:var(--gradient-soft);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:48px
+        ">
+          👤
         </div>
-        <div class="bento-grid">
-          <div class="card col-3"><div class="stat-val">${stats.days}</div><div class="stat-label">Active Days</div></div>
-          <div class="card col-3"><div class="stat-val">${stats.t1 + stats.t2 + stats.t34 + stats.t12}</div><div class="stat-label">Total Milk Packs</div></div>
-          <div class="card col-3"><div class="stat-val">₹${stats.total}</div><div class="stat-label">Total Spend</div></div>
-          <div class="card col-3"><div class="stat-val">${stats.t1 >= stats.t2 ? '1L' : '2L'}</div><div class="stat-label">Preferred Size</div></div>
-        </div>
-        <div class="card" style="margin-top:32px">
-          <h3>Security</h3>
-          <p style="color:var(--text-sub); margin-bottom:16px">Change your account password securely.</p>
-          <button class="btn-sec" onclick="document.getElementById('passBox').style.display='block'">🔐 Change Password</button>
-          <div id="passBox" style="display:none; margin-top:20px">
-            <input id="oldP" type="password" placeholder="Current Password" class="auth-input">
-            <input id="newP" type="password" placeholder="New Password" class="auth-input">
-            <button class="btn-main" onclick="safeAction(() => changePass('${u.username}'))">Update Password</button>
-          </div>
+
+        <div>
+          <h2 style="margin-bottom:6px">${u.username}</h2>
+          <p style="color:var(--text-sub)">
+            Milk Consumer • Raithu Palu
+          </p>
+
+          <div style="margin-top:10px;display:flex;gap:14px;flex-wrap:wrap">
+
+  <span style="
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+    background:${status.color}20;
+    color:${status.color};
+  ">
+    ${status.icon} ${status.label}
+  </span>
+
+  <span style="
+    font-size:12px;
+    color:var(--text-sub);
+  ">
+    📅 Customer since ${since}
+  </span>
+
+</div>
+
         </div>
       </div>
-    `, 'profile');
-  } catch (e) {
-    showToast("Error loading profile");
-  }
+
+      <div class="bento-grid">
+        <div class="card col-3">
+          <div class="stat-val">${stats.days}</div>
+          <div class="stat-label">Active Days</div>
+        </div>
+
+        <div class="card col-3">
+          <div class="stat-val">${stats.t1 + stats.t2 + stats.t34 + stats.t12}</div>
+          <div class="stat-label">Total Milk Packs</div>
+        </div>
+
+        <div class="card col-3">
+          <div class="stat-val">₹${stats.total}</div>
+          <div class="stat-label">Total Spend</div>
+        </div>
+
+        <div class="card col-3">
+          <div class="stat-val">
+            ${stats.t1 >= stats.t2 ? '1L' : '2L'}
+          </div>
+          <div class="stat-label">Preferred Size</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:32px">
+        <h3 style="margin-bottom:10px">Security</h3>
+        <p style="color:var(--text-sub); margin-bottom:16px">
+          Change your account password securely.
+        </p>
+
+        <button class="btn-sec"
+          onclick="document.getElementById('passBox').style.display='block'">
+          🔐 Change Password
+        </button>
+
+        <div id="passBox" style="display:none; margin-top:20px">
+          <input id="oldP" type="password" placeholder="Current Password" style="width:100%; padding:14px; border-radius:14px; border:2px solid var(--surface-border); margin-bottom:12px">
+          <input id="newP" type="password" placeholder="New Password" style="width:100%; padding:14px; border-radius:14px; border:2px solid var(--surface-border); margin-bottom:12px">
+
+          <button class="btn-main"
+            onclick="safeAction(() => changePass('${u.username}'))">
+            Update Password
+          </button>
+        </div>
+      </div>
+
+    </div>
+  `, 'profile');
 }
 
 let isOffline = !navigator.onLine;
@@ -3023,8 +2636,11 @@ window.addEventListener('offline', () => {
   disableActions(true);
 });
 
-function calculateBill(s) {
-  return (s.twoL * 140) + (s.oneL * 70) + (s.threeQuarterL * 55) + (s.halfL * 35);
+function calculateBill(entry) {
+  return (entry.twoL || 0) * PRICES.twoL +
+         (entry.oneL || 0) * PRICES.oneL +
+         (entry.threeQuarterL || 0) * PRICES.threeQuarterL +
+         (entry.halfL || 0) * PRICES.halfL;
 }
 
 // Then update your loops like this:
@@ -3046,36 +2662,51 @@ function exportAllPDF() {
     .then(r => r.json())
     .then(users => {
       const { jsPDF } = window.jspdf;
+      if (!jsPDF) {
+        alert("PDF library not loaded");
+        return;
+      }
+
       const doc = new jsPDF();
 
-      doc.setFontSize(18);
-      doc.text("రైతు పాలు – Customers Report", 105, 15, { align: "center" });
+      /* ---------- WATERMARK ---------- */
+      doc.addImage(APP_LOGO_URL, "PNG", 30, 90, 150, 150, undefined, "FAST");
+      doc.setGState(new doc.GState({ opacity: 0.08 }));
 
-      let y = 25;
+      doc.setGState(new doc.GState({ opacity: 1 }));
+      doc.setFontSize(16);
+      doc.text("రైతు పాలు – Farmers Report", 105, 20, { align: "center" });
 
-      users.forEach(u => {
+      let y = 30;
+
+      users.forEach(user => {
         doc.setFontSize(12);
-        doc.text(`Customer: ${u.username}`, 14, y);
+        doc.text(`Farmer: ${user.username}`, 14, y);
         y += 6;
 
-        if (!u.sales.length) {
-          doc.text("No milk entries", 18, y);
+        if (!user.sales.length) {
+          doc.text("No entries", 18, y);
           y += 6;
         }
 
-        u.sales.forEach(s => {
-          const total = calculateBill(s);
-          doc.text(`${s.date} → ₹${total}`, 18, y);
+        user.sales.forEach(s => {
+          const total =
+            (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
+          doc.text(`${s.date} → ₹ ${total}`, 18, y);
           y += 6;
-          if (y > 270) { doc.addPage(); y = 20; }
+
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
         });
 
         y += 10;
       });
 
-      doc.save("raithu-palu-report.pdf");
+      doc.save("raithu-palu-farmers-report.pdf");
     })
-    .catch(() => showToast("PDF export failed"));
+    .catch(() => alert("Failed to export PDF"));
 }
 
 function tog(btn, type) {
@@ -3083,56 +2714,52 @@ function tog(btn, type) {
   selectedMilk[type] = selectedMilk[type] ? 0 : 1;
 }
 async function save(username) {
-  const dateInput = document.getElementById('d')?.value;
-  if (!dateInput) return showToast("Select date");
-
-  if (Object.values(selectedMilk).every(v => v === 0)) {
-    return showToast("Select milk type");
+  const dateInput = document.getElementById('d').value;
+  if (!dateInput) {
+    showToast("Select date");
+    return;
   }
 
   const [y, m, d] = dateInput.split('-');
   const date = `${d}/${m}/${y}`;
 
-  try {
-    await fetch('/add-sale', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username,
-        sale: { date, ...selectedMilk }
-      })
-    });
-
-    selectedMilk = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
-    document.querySelectorAll('.milk-btn').forEach(b => b.classList.remove('active'));
-
-    setInlineStatus("Entry saved 🥛");
-
-    // ⚡ PARTIAL REFRESH ONLY
-    refreshEditedUser(username);
-
-  } catch {
-    showToast("Save failed ❌");
-  }
-}
-async function refreshEditedUser(username) {
-  const res = await fetch(`/user/${username}`);
+  const res = await fetch('/user/' + username);
   const data = await res.json();
 
-  const tbody = document.querySelector('.table-wrapper tbody');
-  if (!tbody) return;
+  const existing = data.sales.find(s => s.date === date);
 
-  tbody.innerHTML = data.sales.slice().reverse().map(s => `
-    <tr>
-      <td>${s.date}</td>
-      <td>₹${calculateBill(s)}</td>
-      <td>
-        <button onclick="confirmInlineDelete('${username}','${s.date}',this)">✕</button>
-      </td>
-    </tr>
-  `).join('');
+  const finalSale = {
+    date,
+    twoL: (existing?.twoL || 0) + (selectedMilk.twoL || 0),
+    oneL: (existing?.oneL || 0) + (selectedMilk.oneL || 0),
+    threeQuarterL: (existing?.threeQuarterL || 0) + (selectedMilk.threeQuarterL || 0),
+    halfL: (existing?.halfL || 0) + (selectedMilk.halfL || 0),
+  };
+
+  await fetch('/add-sale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username,
+      sale: finalSale
+    })
+  });
+
+  selectedMilk = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
+  logAudit("ADD_MILK_ENTRY", {
+  user: username,
+  date: date,
+  milk: { ...selectedMilk }
+  
+});
+  if (Object.values(selectedMilk).every(v => v === 0)) {
+    showToast("Please select at least one milk type!");
+    return;
 }
-
+  fireConfetti();
+  showToast("Milk entry updated 🥛");
+  editUser(username);
+}
 async function del(n, d) {
   if (!confirm("Delete this entry?")) return;
 
@@ -3156,24 +2783,62 @@ async function changePass(u){const o=document.getElementById('oldP').value,n=doc
 }}
 async function placeOrder(u){const q=document.getElementById('oq').value;await fetch('/place-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,quantity:q})});fireConfetti();showToast('Order Sent 🚀');userOrders();addNotification("🛒 Order placed successfully");}
 async function acceptOrder(id) {
-  const orders = await fetchOrdersCached(true);
+  // 1. Get order
+  const res = await fetch('/orders');
+  const orders = await res.json();
   const order = orders.find(o => o.id === id);
   if (!order) return;
 
-  await fetch('/update-order', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, status: 'Success' })
+  const username = order.username;
+  const qty = order.quantity; // 1, 2, 0.5
+  const today = new Date();
+  const date = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}`;
+
+  // 2. Fetch user data
+  const uRes = await fetch(`/user/${username}`);
+  const uData = await uRes.json();
+
+  const existing = uData.sales.find(s => s.date === date);
+
+  // 3. Map quantity to milk type
+  const add = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
+  if (qty == 2) add.twoL = 1;
+  if (qty == 1) add.oneL = 1;
+  if (qty == 0.75) add.threeQuarterL = 1;
+  if (qty == 0.5) add.halfL = 1;
+
+  const finalSale = {
+    date,
+    twoL: (existing?.twoL || 0) + add.twoL,
+    oneL: (existing?.oneL || 0) + add.oneL,
+    threeQuarterL: (existing?.threeQuarterL || 0) + add.threeQuarterL,
+    halfL: (existing?.halfL || 0) + add.halfL,
+  };
+
+  // 4. Save sale
+  await fetch('/add-sale', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ username, sale: finalSale })
   });
 
-  ordersCache = ordersCache.map(o =>
-    o.id === id ? { ...o, status: 'Success' } : o
-  );
+  // 5. Approve order
+  await fetch('/update-order', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ id, status:'Success' })
+  });
 
-  showToast("Order Approved 🥛");
-  adminOrders(); // soft refresh
+  fireConfetti();
+  showToast("Order approved & added to milk entry 🥛");
+  logAudit("ORDER_APPROVED", {
+  orderId: id,
+  username: username,
+  quantity: qty
+});
+
+  adminOrders();
 }
-
 function downloadPDF(title){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.text(title,14,20);doc.autoTable({html:'#pdfTable',startY:30});doc.save(title+'.pdf');}
 async function login() {
   const u = document.getElementById('u').value;
@@ -3198,6 +2863,7 @@ async function login() {
   d.role === 'admin' ? adminSummary() : userHome();
 }
 
+async function register(){const u=document.getElementById('ru').value,p=document.getElementById('rp').value;await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});alert('Registered');location.reload();}
 function logout(){
   localStorage.removeItem('user');
   localStorage.removeItem('lastTab');
