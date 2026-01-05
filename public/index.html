@@ -2978,61 +2978,162 @@ function safeAction(action, options = {}) {
     result.then(after);
   }
 }
-
 function renderAuth() {
   app.innerHTML = `
     <div class="auth-wrap">
       <div class="auth-glass">
-          <img
-    class="logo-glow"
-    src="${APP_LOGO_URL}"
-    alt="రైతు పాలు Logo"
-    style="
-      width:120px;
-      height:120px;
-      border-radius:50%;
-      margin-bottom:16px;
-      box-shadow:0 12px 30px rgba(0,0,0,0.15);
-      object-fit:cover;
-    "
-  />
+        <img class="logo-glow" src="${APP_LOGO_URL}" alt="Logo" style="width:120px; height:120px; border-radius:50%; margin-bottom:16px; box-shadow:0 12px 30px rgba(0,0,0,0.15); object-fit:cover;" />
+        
         <div class="auth-logo">🌾</div>
         <div class="auth-title">welcome to రైతు పాలు</div>
         <div class="auth-sub">Premium Farm Management</div>
 
         <div id="loginForm">
           <input id="u" class="auth-input" placeholder="Username">
-
           <div class="auth-pass">
             <input id="p" type="password" class="auth-input" placeholder="Password">
             <span onclick="togglePass('p')">👁️</span>
           </div>
-
           <button class="auth-btn" onclick="login()">Login</button>
+          
+          <div style="margin: 20px 0; color: var(--text-sub); font-size: 12px; display: flex; align-items: center; gap: 10px;">
+            <hr style="flex:1; opacity:0.1"> OR <hr style="flex:1; opacity:0.1">
+          </div>
 
-          <div class="auth-link" onclick="toggleAuth('reg')">
+          <button class="auth-btn" style="background:#fff; color:#444; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px;" onclick="loginWithGoogle()">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="18">
+            Sign in with Google
+          </button>
+
+          <button class="auth-btn" style="background:var(--primary-light); color:var(--primary-dark); border:none;" onclick="showMobileInput()">
+            📱 Login with Mobile OTP
+          </button>
+
+          <div class="auth-link" onclick="toggleAuth('reg')" style="margin-top: 25px; display: block; font-size: 16px;">
             Create Account
           </div>
         </div>
 
+        <div id="otpMobileForm" style="display:none">
+          <div style="margin-bottom: 20px; font-weight: 700;">Mobile Number</div>
+          <input id="mobileNum" type="tel" class="auth-input" placeholder="Enter 10 digit number">
+          <button class="auth-btn" onclick="requestOTP()">Send 4-Digit OTP</button>
+          <div class="auth-link" onclick="backToLogin()" style="margin-top: 20px; display: block;">Back</div>
+        </div>
+
+        <div id="otpVerifyForm" style="display:none">
+          <div style="margin-bottom: 10px; font-weight: 700;">Verify OTP</div>
+          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 20px;">Check your messages for the 4-digit code</p>
+          <input id="otpCode" type="number" class="auth-input" placeholder="0 0 0 0" style="text-align:center; letter-spacing: 15px; font-size: 24px;">
+          <button class="auth-btn" onclick="verifyOTPAndLogin()">Verify & Open Dashboard</button>
+          <div class="auth-link" onclick="showMobileInput()" style="margin-top: 20px; display: block;">Resend</div>
+        </div>
+
         <div id="regForm" style="display:none">
+          <div style="margin-bottom: 20px; font-weight: 800; color: var(--primary);">NEW ACCOUNT</div>
           <input id="ru" class="auth-input" placeholder="Username">
-
           <div class="auth-pass">
-            <input id="rp" type="password" class="auth-input" placeholder="Password">
-            <span onclick="togglePass('rp')">👁️</span>
+             <input id="rp" type="password" class="auth-input" placeholder="Password">
+             <span onclick="togglePass('rp')">👁️</span>
           </div>
-
           <button class="auth-btn" onclick="register()">Create Account</button>
-
-          <div class="auth-link" onclick="toggleAuth('login')">
-            Back to Login
-          </div>
+          <div class="auth-link" onclick="backToLogin()" style="margin-top: 20px; display: block;">Already have an account? Login</div>
         </div>
 
       </div>
     </div>
   `;
+}
+
+function completeSocialLogin(name) {
+    const user = { username: name, role: 'user' };
+    localStorage.setItem('user', JSON.stringify(user));
+    // Confetti effect for premium feel
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+    });
+    setTimeout(() => { userHome(); }, 500);
+}
+
+function showChoice() {
+    hideAllAuthForms();
+    document.getElementById('choiceForm').style.display = 'block';
+}
+let tempOTP = null;
+
+function loginWithGoogle() {
+    showToast("Opening Google Account Selector...");
+    // Simulate Google account selection delay
+    setTimeout(() => {
+        const email = prompt("Google Sign-In\nChoose an account:\n- farmer.pro@gmail.com\n- myfarm123@gmail.com", "farmer.pro@gmail.com");
+        if(email) {
+            processSuccessfulLogin(email.split('@')[0]); // Use first part of email as username
+        }
+    }, 800);
+}
+
+function showMobileInput() {
+    hideAllAuthForms();
+    document.getElementById('otpMobileForm').style.display = 'block';
+}
+
+function requestOTP() {
+    const phone = document.getElementById('mobileNum').value;
+    if (phone.length < 10) {
+        showToast("Enter a valid 10-digit number");
+        return;
+    }
+    // Generate random 4-digit code
+    tempOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    alert("SYSTEM: Your 4-digit OTP is " + tempOTP);
+    
+    hideAllAuthForms();
+    document.getElementById('otpVerifyForm').style.display = 'block';
+}
+
+function verifyOTPAndLogin() {
+    const entered = document.getElementById('otpCode').value;
+    if (entered === tempOTP) {
+        processSuccessfulLogin("MobileUser");
+    } else {
+        showToast("Invalid code. Please check and try again.");
+    }
+}
+
+function processSuccessfulLogin(name) {
+    showToast("Welcome, " + name + "!");
+    const user = { username: name, role: 'user', joined: new Date().toLocaleDateString() };
+    localStorage.setItem('user', JSON.stringify(user));
+    
+    // Premium celebration
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    
+    setTimeout(() => { userHome(); }, 1000);
+}
+
+function hideAllAuthForms() {
+    ['loginForm', 'regForm', 'otpMobileForm', 'otpVerifyForm'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+    });
+}
+
+function backToLogin() {
+    hideAllAuthForms();
+    document.getElementById('loginForm').style.display = 'block';
+}
+function hideAllAuthForms() {
+    const ids = ['loginForm', 'choiceForm', 'regForm', 'otpMobileForm', 'otpVerifyForm'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+    });
+}
+
+function backToLogin() {
+    hideAllAuthForms();
+    document.getElementById('loginForm').style.display = 'block';
 }
 async function initApp() {
   showLogoLoader();
