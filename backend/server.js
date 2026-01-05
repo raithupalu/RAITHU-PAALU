@@ -53,10 +53,12 @@ const connectDB = async () => {
 };
 
 mongoose.connection.on('disconnected', () => {
+  if (isShuttingDown) return;
   console.log('⚠️ MongoDB disconnected. Attempting to reconnect...');
   isDBConnected = false;
   connectDB();
 });
+
 
 mongoose.connection.on('error', (err) => {
   console.error('❌ MongoDB error:', err);
@@ -83,14 +85,18 @@ const saleSchema = new mongoose.Schema({
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true, trim: true },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
   password: { type: String, required: true },
   sales: [saleSchema],
   lastActive: { type: Number, default: Date.now },
   createdAt: { type: Date, default: Date.now }
 });
 
-userSchema.index({ username: 1 });
 
 const orderSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
@@ -423,21 +429,28 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
-// Graceful shutdown
-const gracefulShutdown = (signal) => {
+let isShuttingDown = false;
+
+const gracefulShutdown = async (signal) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
   console.log(`\n${signal} received. Closing server gracefully...`);
-  server.close(() => {
+
+  try {
+    // Stop accepting new connections
+    await new Promise(resolve => server.close(resolve));
     console.log('HTTP server closed');
-    mongoose.connection.close(false, () => {
-      console.log('MongoDB connection closed');
-      process.exit(0);
-    });
-  });
-  
-  setTimeout(() => {
-    console.error('Could not close connections in time, forcefully shutting down');
+
+    // Close MongoDB connection (PROMISE-BASED)
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed');
+
+    process.exit(0);
+  } catch (err) {
+    console.error('Shutdown error:', err);
     process.exit(1);
-  }, 10000);
+  }
 };
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
@@ -449,6 +462,6 @@ process.on('uncaughtException', (err) => {
   gracefulShutdown('uncaughtException');
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
 });
