@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <title>రైతు పాలు | Premium Farm App</title>
   
   <!-- Modern Fonts -->
@@ -81,21 +85,25 @@
   background: none;
   border: none;
   color: var(--text-sub);
-  gap: 2px; /* Tighter gap for better fit */
+  gap: 4px;
+  padding: 8px 4px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .dock-item span {
-  font-size: 18px; /* Slightly smaller icons to fit 5 items */
+  font-size: 22px;
+  transition: transform 0.2s ease;
+  display: block;
 }
 
 .dock-item small {
-  font-size: 9px; /* Optimized label size */
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
@@ -104,7 +112,7 @@
 }
 
 .dock-item.active span {
-  transform: translateY(-2px) scale(1.1);
+  transform: translateY(-3px) scale(1.1);
 }
 
 /* Specific styling for the Logout button in the dock */
@@ -117,15 +125,15 @@
   opacity: 1;
 }
 /* 📱 PERFECT MOBILE DOCK */
-/* 📱 MOBILE DOCK (FINAL) */
+/* 📱 PERFECT MOBILE DOCK - FIXED VERSION */
 .mobile-dock {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-
   height: 70px;
-  background: rgba(255, 255, 255, 0.95);
+  
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
 
@@ -133,10 +141,14 @@
   justify-content: space-around;
   align-items: center;
 
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
   border-top: 1px solid var(--surface-border);
   box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
   z-index: 10000;
+  
+  transform: translateZ(0); /* Force GPU acceleration */
+  will-change: transform;
+  transition: transform 0.3s ease;
 }
 
 .dock-item {
@@ -172,10 +184,25 @@
 .dock-item.active span {
   transform: translateY(-4px) scale(1.1);
 }
+.dock-item:active {
+  transform: scale(0.95);
+}
 
 /* Hide dock on desktop */
 @media (min-width: 769px) {
-  .mobile-dock { display: none; }
+  .mobile-dock { display: none !important; }
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  
+  .main-content {
+    padding-bottom: 90px !important; /* Extra space for dock */
+  }
 }
 /* ================================
    GLOBAL RESET
@@ -1178,7 +1205,6 @@ tr:hover td {
 }
 .mobile-dock.hidden {
   transform: translateY(100%);
-  transition: transform 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -2982,34 +3008,82 @@ async function initApp() {
     return;
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // Wait 15s
+  let retries = 0;
+  const maxRetries = 3;
 
-    const res = await fetch(`/user/${savedUser.username}`, { signal: controller.signal });
-    clearTimeout(timeoutId);
+  async function attemptConnection() {
+    try {
+      // First check if server is alive
+      const healthCheck = await fetch('/health', { 
+        signal: AbortSignal.timeout(8000) 
+      });
+      
+      if (!healthCheck.ok) throw new Error("Server not ready");
 
-    if (res.ok) {
-      if (savedUser.role === 'admin') await adminSummary();
-      else await userHome();
-    } else {
-      throw new Error("Backend responded with an error");
+      // Now fetch user data
+      const res = await fetch(`/user/${savedUser.username}`, { 
+        signal: AbortSignal.timeout(10000) 
+      });
+
+      if (res.ok) {
+        if (savedUser.role === 'admin') await adminSummary();
+        else await userHome();
+        return true;
+      } else {
+        throw new Error("Backend responded with an error");
+      }
+    } catch (err) {
+      console.error("Connection attempt failed:", err);
+      retries++;
+
+      if (retries >= maxRetries) {
+        app.innerHTML = `
+          <div style="
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+          ">
+            <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+            <h2 style="color: var(--primary); margin-bottom: 10px;">Connection Failed</h2>
+            <p style="color: var(--text-sub); margin-bottom: 30px;">
+              Unable to connect to server after ${maxRetries} attempts.
+            </p>
+            <button class="btn-main" onclick="location.reload()">
+              🔄 Retry Connection
+            </button>
+            <button class="btn-sec" onclick="logout()" style="margin-top: 15px;">
+              ← Back to Login
+            </button>
+          </div>
+        `;
+        return false;
+      }
+
+      // Update loader with retry info
+      const statusMsg = document.querySelector('div[style*="color: var(--text-sub)"]');
+      if (statusMsg) {
+        statusMsg.innerHTML = `
+          <span style="color:#f59e0b">⏳ Waking up server...</span>
+          <br>
+          <small>Attempt ${retries}/${maxRetries} (Retrying in 3s...)</small>
+        `;
+      }
+
+      // Retry with backoff
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      return attemptConnection();
     }
-  } catch (err) {
-    console.error("Connection failed:", err);
-    
-    // Update the loader text to tell the user what's happening
-    const statusMsg = document.querySelector('div[style*="color: var(--text-sub)"]');
-    if (statusMsg) {
-      statusMsg.innerHTML = `⚠️ <span style="color:red">Connection delayed.</span><br><small>Waking up server (Attempting again in 10s...)</small>`;
-    }
-    
-    // Retry with a longer delay (10 seconds) to give Render time to boot
-    setTimeout(initApp, 10000);
   }
+
+  await attemptConnection();
 }
 
 initApp();
+
 </script>
 <div id="netStatus" style="
   position: fixed;
