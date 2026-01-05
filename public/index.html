@@ -1246,6 +1246,37 @@ tr:hover td {
 
   .greeting-box h1 { font-size: 1.4rem !important; }
 }
+/* Step 3: Spinner and Shake styles */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.shake-error {
+  animation: shake 0.4s ease-in-out;
+  border-color: #ef4444 !important;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+/* Step 4: Footer Link Hover */
+.auth-glass a:hover {
+  color: var(--primary) !important;
+  transition: 0.3s;
+}
+
+/* Ensure icons in inputs are consistent */
+.auth-pass span {
+  opacity: 0.6;
+  filter: grayscale(1);
+}
   </style>
 </head>
 <body>
@@ -2978,10 +3009,37 @@ function safeAction(action, options = {}) {
     result.then(after);
   }
 }
+function handleLoginUI() {
+    const u = document.getElementById('u');
+    const p = document.getElementById('p');
+    const box = document.getElementById('authBox');
+    
+    // Step 3: Input Validation
+    if (!u.value || !p.value) {
+        box.classList.add('shake-error');
+        showToast("Missing credentials!");
+        setTimeout(() => box.classList.remove('shake-error'), 400);
+        return;
+    }
+
+    // Step 3: Loading State
+    document.getElementById('loginBtnText').style.display = 'none';
+    document.getElementById('loginBtnSpinner').style.display = 'block';
+    
+    // Call your existing login() function
+    setTimeout(() => {
+        login();
+    }, 1200); 
+}
 function renderAuth() {
   app.innerHTML = `
     <div class="auth-wrap">
-      <div class="auth-glass">
+      <div style="position:fixed; top:0; left:0; width:100%; height:100%; 
+                  background: url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=80'); 
+                  background-size:cover; background-position:center; opacity:0.07; z-index:-1; pointer-events:none;">
+      </div>
+
+      <div class="auth-glass" id="authBox">
         <img class="logo-glow" src="${APP_LOGO_URL}" alt="Logo" style="width:120px; height:120px; border-radius:50%; margin-bottom:16px; box-shadow:0 12px 30px rgba(0,0,0,0.15); object-fit:cover;" />
         
         <div class="auth-logo">🌾</div>
@@ -2989,12 +3047,17 @@ function renderAuth() {
         <div class="auth-sub">Premium Farm Management</div>
 
         <div id="loginForm">
-          <input id="u" class="auth-input" placeholder="Username">
+          <input id="u" class="auth-input" placeholder="Username" oninput="this.style.borderColor=this.value?'var(--primary)':'rgba(16,185,129,0.2)'">
+          
           <div class="auth-pass">
-            <input id="p" type="password" class="auth-input" placeholder="Password">
+            <input id="p" type="password" class="auth-input" placeholder="Password" oninput="this.style.borderColor=this.value?'var(--primary)':'rgba(16,185,129,0.2)'">
             <span onclick="togglePass('p')">👁️</span>
           </div>
-          <button class="auth-btn" onclick="login()">Login</button>
+
+          <button class="auth-btn" id="loginBtn" onclick="handleLoginUI()">
+            <span id="loginBtnText">Login</span>
+            <div id="loginBtnSpinner" class="spinner" style="display:none; margin: 0 auto;"></div>
+          </button>
           
           <div style="margin: 20px 0; color: var(--text-sub); font-size: 12px; display: flex; align-items: center; gap: 10px;">
             <hr style="flex:1; opacity:0.1"> OR <hr style="flex:1; opacity:0.1">
@@ -3040,11 +3103,18 @@ function renderAuth() {
           <div class="auth-link" onclick="backToLogin()" style="margin-top: 20px; display: block;">Already have an account? Login</div>
         </div>
 
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: center; gap: 15px;">
+           <a href="#" onclick="showToast('Privacy Policy coming soon')" style="font-size: 11px; color: var(--text-sub); text-decoration: none; font-weight: 700;">PRIVACY</a>
+           <span style="font-size: 11px; color: var(--text-sub); opacity: 0.3;">|</span>
+           <a href="#" onclick="showToast('Support: support@raithupaalu.com')" style="font-size: 11px; color: var(--text-sub); text-decoration: none; font-weight: 700;">HELP</a>
+           <span style="font-size: 11px; color: var(--text-sub); opacity: 0.3;">|</span>
+           <a href="#" onclick="showToast('v2.0.1 - Beta')" style="font-size: 11px; color: var(--text-sub); text-decoration: none; font-weight: 700;">VERSION</a>
+        </div>
+
       </div>
     </div>
   `;
 }
-
 function completeSocialLogin(name) {
     const user = { username: name, role: 'user' };
     localStorage.setItem('user', JSON.stringify(user));
