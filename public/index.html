@@ -2973,11 +2973,8 @@ function renderAuth() {
     </div>
   `;
 }
-
-
 async function initApp() {
   showLogoLoader();
-  
   const savedUser = JSON.parse(localStorage.getItem('user'));
   
   if (!savedUser) {
@@ -2986,25 +2983,32 @@ async function initApp() {
   }
 
   try {
-    // Set a timeout for the fetch
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 10000); // 10 seconds
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // Wait 15s
 
-    if (savedUser.role === 'admin') {
-      await adminSummary();
+    const res = await fetch(`/user/${savedUser.username}`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      if (savedUser.role === 'admin') await adminSummary();
+      else await userHome();
     } else {
-      await userHome();
+      throw new Error("Backend responded with an error");
     }
-    clearTimeout(id);
   } catch (err) {
-    console.error("Init error:", err);
-    // If server is down/slow, try to render with cached data or show login
-    showToast("Server is waking up... Please wait");
-    setTimeout(initApp, 3000); // Retry after 3 seconds
+    console.error("Connection failed:", err);
+    
+    // Update the loader text to tell the user what's happening
+    const statusMsg = document.querySelector('div[style*="color: var(--text-sub)"]');
+    if (statusMsg) {
+      statusMsg.innerHTML = `⚠️ <span style="color:red">Connection delayed.</span><br><small>Waking up server (Attempting again in 10s...)</small>`;
+    }
+    
+    // Retry with a longer delay (10 seconds) to give Render time to boot
+    setTimeout(initApp, 10000);
   }
 }
 
-// Start the app
 initApp();
 </script>
 <div id="netStatus" style="

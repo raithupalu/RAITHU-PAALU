@@ -237,6 +237,6 @@ app.post("/update-order", async (req, res) => {
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => { // Adding '0.0.0.0' helps Render find the app
   console.log(`Server running on port ${PORT}`);
 });
