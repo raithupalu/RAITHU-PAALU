@@ -1277,6 +1277,18 @@ tr:hover td {
   opacity: 0.6;
   filter: grayscale(1);
 }
+@media (min-width: 769px) {
+  .display-none-desktop {
+    display: none !important;
+  }
+}
+
+/* Ensure the main content doesn't get hidden behind the mobile dock */
+@media (max-width: 768px) {
+  .main-content {
+    padding-bottom: 100px !important;
+  }
+}
   </style>
 </head>
 <body>
@@ -1962,7 +1974,8 @@ async function userHome() {
   const res = await fetch(`/user/${u.username}`); 
   const data = await res.json();
   updateLastSync();
-  
+  if (window.myChart1 instanceof Chart) window.myChart1.destroy();
+if (window.myChart2 instanceof Chart) window.myChart2.destroy();
   const st = calculateStats(data.sales);
   let mData={}; 
   data.sales.forEach(s => { 
@@ -1984,13 +1997,8 @@ async function userHome() {
       <div class="card col-4"><h3>Consumption</h3><div style="height:200px; display:flex; justify-content:center"><canvas id="pieChart"></canvas></div></div>
     </div>
   `, 'home');
-
-  // Destroy old charts if they exist
-  if (charts.main) charts.main.destroy();
-  if (charts.pie) charts.pie.destroy();
-
-  charts.main = new Chart(document.getElementById('mainChart'), {type:'line', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Spend', data:Object.values(mData), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4}]}, options:{responsive:true, maintainAspectRatio:false}});
-  charts.pie = new Chart(document.getElementById('pieChart'), {type:'doughnut', data:{labels:['2L','1L','3/4L','1/2L'], datasets:[{data:[st.t2, st.t1, st.t34, st.t12], backgroundColor:['#064e3b','#065f46','#10b981','#6ee7b7'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false}});
+  window.myChart1  = new Chart(document.getElementById('mainChart'), {type:'line', data:{labels:Object.keys(mData).map(m=>getMonthName(m)), datasets:[{label:'Spend', data:Object.values(mData), borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.1)', fill:true, tension:0.4}]}, options:{responsive:true, maintainAspectRatio:false}});
+  indow.myChart2 = new Chart(document.getElementById('pieChart'), {type:'doughnut', data:{labels:['2L','1L','3/4L','1/2L'], datasets:[{data:[st.t2, st.t1, st.t34, st.t12], backgroundColor:['#064e3b','#065f46','#10b981','#6ee7b7'], borderWidth:0}]}, options:{responsive:true, maintainAspectRatio:false}});
 }
 function openMonth(key) {
   currentMonthView = key;
@@ -2377,35 +2385,37 @@ function startAdminUserRefresh() {
     }
   }, 60000);
 }
-
-
-
 async function editUser(name) {
   isEditingUser = true;
+  // RESET selection every time we enter a user's edit screen
+  selectedMilk = { twoL: 0, oneL: 0, threeQuarterL: 0, halfL: 0 };
 
-  const u = JSON.parse(localStorage.getItem('user')); const res = await fetch('/users'); const users = await res.json();
+  const u = JSON.parse(localStorage.getItem('user')); 
+  const res = await fetch('/users'); 
+  const users = await res.json();
   const target = users.find(x => x.username === name);
+  
+  if (!target) {
+    showToast("Farmer not found");
+    adminUsers();
+    return;
+  }
+
   const st = calculateStats(target.sales);
   
   renderShell(u, `
-<button class="btn-sec"
-  onclick="isEditingUser=false; adminUsers()"
-  style="margin-bottom:20px">
-  ⬅ Back
-</button>
+    <button class="btn-sec" onclick="isEditingUser=false; adminUsers()" style="margin-bottom:20px">⬅ Back</button>
     <div class="bento-grid">
       <div class="card col-6">
         <h3>Add Entry: ${name}</h3>
-        <input type="date" id="d" style="background:var(--surface); border:1px solid var(--surface-border); padding:14px; border-radius:14px; width:100%; margin-bottom:16px">
+        <input type="date" id="d" value="${new Date().toISOString().split('T')[0]}" style="background:var(--surface); border:1px solid var(--surface-border); padding:14px; border-radius:14px; width:100%; margin-bottom:16px">
         <div class="milk-grid">
-  <div class="milk-btn" onclick="tog(this,'twoL')">🥛 2 Litre</div>
-  <div class="milk-btn" onclick="tog(this,'oneL')">🥛 1 Litre</div>
-  <div class="milk-btn" onclick="tog(this,'threeQuarterL')">🥛 0.75 L</div>
-  <div class="milk-btn" onclick="tog(this,'halfL')">🥛 0.5 L</div>
-</div>
-
-        <button class="btn-main"
-  onclick="safeAction(() => save('${name}'))">${t('save')}</button>
+          <div class="milk-btn" onclick="tog(this,'twoL')">🥛 2 Litre</div>
+          <div class="milk-btn" onclick="tog(this,'oneL')">🥛 1 Litre</div>
+          <div class="milk-btn" onclick="tog(this,'threeQuarterL')">🥛 0.75 L</div>
+          <div class="milk-btn" onclick="tog(this,'halfL')">🥛 0.5 L</div>
+        </div>
+        <button class="btn-main" onclick="save('${name}')">${t('save')}</button>
       </div>
       <div class="card col-6">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px">
@@ -2413,41 +2423,18 @@ async function editUser(name) {
         </div>
         <div class="table-wrapper" style="max-height:400px; overflow-y:auto">
            <table>
-             ${target.sales.slice().reverse().map(s => `<tr><td>${s.date}</td><td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td><td style="color:red; cursor:pointer" onclick="safeAction(() => del('${name}','${s.date}'))">✕</td></tr>`).join('')}
+             ${target.sales.slice().reverse().map(s => `
+               <tr>
+                <td>${s.date}</td>
+                <td>₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}</td>
+                <td style="color:red; cursor:pointer; font-weight:bold" onclick="del('${name}','${s.date}')">✕</td>
+               </tr>`).join('')}
            </table>
         </div>
       </div>
     </div>
-    <div class="card col-6">
-  <h3>Order History</h3>
-  <div class="table-wrapper" style="max-height:300px;overflow-y:auto">
-    <table>
-      <tr>
-        <th>Date</th>
-        <th>Qty</th>
-        <th>Status</th>
-      </tr>
-      ${target.orders?.length
-        ? target.orders.slice().reverse().map(o => `
-            <tr>
-              <td>${new Date(o.timestamp).toLocaleDateString()}</td>
-              <td>${o.quantity}L</td>
-              <td>${o.status}</td>
-            </tr>
-          `).join('')
-        : `<tr><td colspan="3">No orders</td></tr>`
-      }
-    </table>
-  </div>
-</div>
-
   `, 'users');
-  document.querySelectorAll('.milk-btn').forEach(btn => {
-  makeAccessible(btn, () => btn.click(), 'Select milk quantity');
-});
-
 }
-
 async function userOrders() {
   saveLastTab('orders');
   const u = JSON.parse(localStorage.getItem('user')); const res = await fetch(`/orders/${u.username}`); const orders = await res.json();
@@ -2767,75 +2754,65 @@ function disableActions(disable) {
     btn.style.pointerEvents = disable ? 'none' : 'auto';
   });
 }
-function exportAllPDF() {
-  fetch('/users')
-    .then(r => r.json())
-    .then(users => {
-      const { jsPDF } = window.jspdf;
-      if (!jsPDF) {
-        alert("PDF library not loaded");
-        return;
-      }
+async function exportAllPDF() {
+  try {
+    const res = await fetch('/users');
+    const users = await res.json();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-      const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.setTextColor(16, 185, 129);
+    doc.text("రైతు పాలు – All Farmers Report", 105, 20, { align: "center" });
 
-      /* ---------- WATERMARK ---------- */
-      doc.addImage(APP_LOGO_URL, "PNG", 30, 90, 150, 150, undefined, "FAST");
-      doc.setGState(new doc.GState({ opacity: 0.08 }));
+    let finalY = 30;
 
-      doc.setGState(new doc.GState({ opacity: 1 }));
-      doc.setFontSize(16);
-      doc.text("రైతు పాలు – Farmers Report", 105, 20, { align: "center" });
+    users.forEach((user, index) => {
+      if (index > 0) doc.addPage();
+      
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text(`Farmer: ${user.username}`, 14, 30);
 
-      let y = 30;
+      const rows = user.sales.map(s => [
+        s.date,
+        `${s.twoL||0}x2L, ${s.oneL||0}x1L, ${s.threeQuarterL||0}x3/4L, ${s.halfL||0}x1/2L`,
+        `₹${(s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35)}`
+      ]);
 
-      users.forEach(user => {
-        doc.setFontSize(12);
-        doc.text(`Farmer: ${user.username}`, 14, y);
-        y += 6;
-
-        if (!user.sales.length) {
-          doc.text("No entries", 18, y);
-          y += 6;
-        }
-
-        user.sales.forEach(s => {
-          const total =
-            (s.twoL*140)+(s.oneL*70)+(s.threeQuarterL*55)+(s.halfL*35);
-          doc.text(`${s.date} → ₹ ${total}`, 18, y);
-          y += 6;
-
-          if (y > 270) {
-            doc.addPage();
-            y = 20;
-          }
-        });
-
-        y += 10;
+      doc.autoTable({
+        startY: 35,
+        head: [['Date', 'Quantity', 'Total']],
+        body: rows,
+        theme: 'striped',
+        headStyles: { fillColor: [16, 185, 129] }
       });
+    });
 
-      doc.save("raithu-palu-farmers-report.pdf");
-    })
-    .catch(() => alert("Failed to export PDF"));
+    doc.save("farmers_master_report.pdf");
+    showToast("✅ Master PDF Downloaded");
+  } catch (err) {
+    showToast("❌ PDF Export failed");
+    console.error(err);
+  }
 }
-
 function tog(btn, type) {
   btn.classList.toggle('active');
   selectedMilk[type] = selectedMilk[type] ? 0 : 1;
 }
 async function save(username) {
   const dateInput = document.getElementById('d').value;
-  if (!dateInput) {
-    showToast("Select date");
-    return;
-  }
+  if (!dateInput) return showToast("⚠️ Select a date");
+
+  // Check if any milk is selected
+  const hasSelection = Object.values(selectedMilk).some(v => v > 0);
+  if (!hasSelection) return showToast("⚠️ Select at least one milk packet");
 
   const [y, m, d] = dateInput.split('-');
   const date = `${d}/${m}/${y}`;
 
   const res = await fetch('/user/' + username);
   const data = await res.json();
-
   const existing = data.sales.find(s => s.date === date);
 
   const finalSale = {
@@ -2846,29 +2823,20 @@ async function save(username) {
     halfL: (existing?.halfL || 0) + (selectedMilk.halfL || 0),
   };
 
-  await fetch('/add-sale', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      username,
-      sale: finalSale
-    })
-  });
-
-  selectedMilk = { twoL:0, oneL:0, threeQuarterL:0, halfL:0 };
-  logAudit("ADD_MILK_ENTRY", {
-  user: username,
-  date: date,
-  milk: { ...selectedMilk }
-  
-});
-  if (Object.values(selectedMilk).every(v => v === 0)) {
-    showToast("Please select at least one milk type!");
-    return;
-}
-  fireConfetti();
-  showToast("Milk entry updated 🥛");
-  editUser(username);
+  try {
+    await fetch('/add-sale', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, sale: finalSale })
+    });
+    
+    logAudit("ADD_ENTRY", { user: username, date: date });
+    fireConfetti();
+    showToast("✅ Milk entry updated");
+    editUser(username); // Refresh UI
+  } catch (e) {
+    showToast("❌ Save failed");
+  }
 }
 async function del(n, d) {
   if (!confirm("Delete this entry?")) return;
@@ -3036,81 +3004,75 @@ function renderAuth() {
     <div class="auth-wrap">
       <div style="position:fixed; top:0; left:0; width:100%; height:100%; 
                   background: url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=80'); 
-                  background-size:cover; background-position:center; opacity:0.07; z-index:-1; pointer-events:none;">
+                  background-size:cover; opacity:0.07; z-index:-1; pointer-events:none;">
       </div>
 
       <div class="auth-glass" id="authBox">
-        <img class="logo-glow" src="${APP_LOGO_URL}" alt="Logo" style="width:120px; height:120px; border-radius:50%; margin-bottom:16px; box-shadow:0 12px 30px rgba(0,0,0,0.15); object-fit:cover;" />
+        <img class="logo-glow" src="${APP_LOGO_URL}" alt="Logo" style="width:110px; height:110px; border-radius:50%; margin-bottom:16px; box-shadow:0 12px 30px rgba(0,0,0,0.15); object-fit:cover;" />
         
         <div class="auth-logo">🌾</div>
         <div class="auth-title">welcome to రైతు పాలు</div>
         <div class="auth-sub">Premium Farm Management</div>
 
         <div id="loginForm">
-          <input id="u" class="auth-input" placeholder="Username" oninput="this.style.borderColor=this.value?'var(--primary)':'rgba(16,185,129,0.2)'">
-          
+          <input id="u" class="auth-input" placeholder="Username">
           <div class="auth-pass">
-            <input id="p" type="password" class="auth-input" placeholder="Password" oninput="this.style.borderColor=this.value?'var(--primary)':'rgba(16,185,129,0.2)'">
+            <input id="p" type="password" class="auth-input" placeholder="Password">
             <span onclick="togglePass('p')">👁️</span>
           </div>
-
-          <button class="auth-btn" id="loginBtn" onclick="handleLoginUI()">
-            <span id="loginBtnText">Login</span>
-            <div id="loginBtnSpinner" class="spinner" style="display:none; margin: 0 auto;"></div>
-          </button>
+          <button class="auth-btn" onclick="login()">Login</button>
           
-          <div style="margin: 20px 0; color: var(--text-sub); font-size: 12px; display: flex; align-items: center; gap: 10px;">
-            <hr style="flex:1; opacity:0.1"> OR <hr style="flex:1; opacity:0.1">
-          </div>
-
-          <button class="auth-btn" style="background:#fff; color:#444; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px;" onclick="loginWithGoogle()">
-            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="18">
-            Sign in with Google
-          </button>
-
-          <button class="auth-btn" style="background:var(--primary-light); color:var(--primary-dark); border:none;" onclick="showMobileInput()">
-            📱 Login with Mobile OTP
-          </button>
-
-          <div class="auth-link" onclick="toggleAuth('reg')" style="margin-top: 25px; display: block; font-size: 16px;">
-            Create Account
+          <div class="auth-link" onclick="showRegChoice()" style="margin-top: 25px; display: block; font-size: 16px; font-weight: 800; color: var(--primary);">
+            New here? Create Account
           </div>
         </div>
 
+        <div id="regChoiceForm" style="display:none">
+          <div style="margin-bottom: 20px; font-weight: 700; color: var(--text-main);">Join రైతు పాలు via:</div>
+          
+          <button class="auth-btn" style="margin-bottom: 12px;" onclick="showTraditionalReg()">
+            ✉️ User & Password
+          </button>
+
+          <button class="auth-btn" style="background:var(--primary-light); color:var(--primary-dark); border:none; margin-bottom: 12px;" onclick="showMobileInput()">
+            📱 Mobile OTP
+          </button>
+
+          <button class="auth-btn" style="background:#fff; color:#444; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="loginWithGoogle()">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="18">
+            Google Account
+          </button>
+
+          <div class="auth-link" onclick="backToLogin()" style="margin-top: 20px; display: block;">Back to Login</div>
+        </div>
+
+        <div id="regForm" style="display:none">
+          <div style="margin-bottom: 15px; font-weight: 800; color: var(--primary);">CREATE USER</div>
+          <input id="ru" class="auth-input" placeholder="Set Username">
+          <div class="auth-pass">
+             <input id="rp" type="password" class="auth-input" placeholder="Set Password">
+             <span onclick="togglePass('rp')">👁️</span>
+          </div>
+          <button class="auth-btn" onclick="registerAndLogin()">Create & Enter</button>
+          <div class="auth-link" onclick="showRegChoice()" style="margin-top: 20px; display: block;">Back</div>
+        </div>
+
         <div id="otpMobileForm" style="display:none">
-          <div style="margin-bottom: 20px; font-weight: 700;">Mobile Number</div>
-          <input id="mobileNum" type="tel" class="auth-input" placeholder="Enter 10 digit number">
+          <div style="margin-bottom: 15px; font-weight: 700;">Mobile Sign-up</div>
+          <input id="mobileNum" type="tel" class="auth-input" placeholder="10 Digit Number">
           <button class="auth-btn" onclick="requestOTP()">Send 4-Digit OTP</button>
-          <div class="auth-link" onclick="backToLogin()" style="margin-top: 20px; display: block;">Back</div>
+          <div class="auth-link" onclick="showRegChoice()" style="margin-top: 20px; display: block;">Back</div>
         </div>
 
         <div id="otpVerifyForm" style="display:none">
           <div style="margin-bottom: 10px; font-weight: 700;">Verify OTP</div>
-          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 20px;">Check your messages for the 4-digit code</p>
           <input id="otpCode" type="number" class="auth-input" placeholder="0 0 0 0" style="text-align:center; letter-spacing: 15px; font-size: 24px;">
-          <button class="auth-btn" onclick="verifyOTPAndLogin()">Verify & Open Dashboard</button>
-          <div class="auth-link" onclick="showMobileInput()" style="margin-top: 20px; display: block;">Resend</div>
+          <button class="auth-btn" onclick="verifyOTPAndLogin()">Verify & Login</button>
         </div>
 
-        <div id="regForm" style="display:none">
-          <div style="margin-bottom: 20px; font-weight: 800; color: var(--primary);">NEW ACCOUNT</div>
-          <input id="ru" class="auth-input" placeholder="Username">
-          <div class="auth-pass">
-             <input id="rp" type="password" class="auth-input" placeholder="Password">
-             <span onclick="togglePass('rp')">👁️</span>
-          </div>
-          <button class="auth-btn" onclick="register()">Create Account</button>
-          <div class="auth-link" onclick="backToLogin()" style="margin-top: 20px; display: block;">Already have an account? Login</div>
+        <div style="margin-top: 25px; font-size: 10px; color: var(--text-sub); opacity: 0.6;">
+          © 2026 Raithu Paalu Premium
         </div>
-
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: center; gap: 15px;">
-           <a href="#" onclick="showToast('Privacy Policy coming soon')" style="font-size: 11px; color: var(--text-sub); text-decoration: none; font-weight: 700;">PRIVACY</a>
-           <span style="font-size: 11px; color: var(--text-sub); opacity: 0.3;">|</span>
-           <a href="#" onclick="showToast('Support: support@raithupaalu.com')" style="font-size: 11px; color: var(--text-sub); text-decoration: none; font-weight: 700;">HELP</a>
-           <span style="font-size: 11px; color: var(--text-sub); opacity: 0.3;">|</span>
-           <a href="#" onclick="showToast('v2.0.1 - Beta')" style="font-size: 11px; color: var(--text-sub); text-decoration: none; font-weight: 700;">VERSION</a>
-        </div>
-
       </div>
     </div>
   `;
@@ -3132,79 +3094,106 @@ function showChoice() {
     document.getElementById('choiceForm').style.display = 'block';
 }
 let tempOTP = null;
+let currentGeneratedOTP = null;
 
-function loginWithGoogle() {
-    showToast("Opening Google Account Selector...");
-    // Simulate Google account selection delay
-    setTimeout(() => {
-        const email = prompt("Google Sign-In\nChoose an account:\n- farmer.pro@gmail.com\n- myfarm123@gmail.com", "farmer.pro@gmail.com");
-        if(email) {
-            processSuccessfulLogin(email.split('@')[0]); // Use first part of email as username
-        }
-    }, 800);
+// Navigation Helpers
+function showRegChoice() {
+    hideAllAuth();
+    document.getElementById('regChoiceForm').style.display = 'block';
+}
+
+function showTraditionalReg() {
+    hideAllAuth();
+    document.getElementById('regForm').style.display = 'block';
 }
 
 function showMobileInput() {
-    hideAllAuthForms();
+    hideAllAuth();
     document.getElementById('otpMobileForm').style.display = 'block';
+}
+
+function backToLogin() {
+    hideAllAuth();
+    document.getElementById('loginForm').style.display = 'block';
+}
+
+function hideAllAuth() {
+    ['loginForm', 'regChoiceForm', 'regForm', 'otpMobileForm', 'otpVerifyForm'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+    });
+}
+
+// Logic Helpers
+function registerAndLogin() {
+    const u = document.getElementById('ru').value;
+    const p = document.getElementById('rp').value;
+    if(u && p) {
+        showToast("Account Created!");
+        autoDashboardLogin(u);
+    } else {
+        showToast("Fill all details");
+    }
 }
 
 function requestOTP() {
     const phone = document.getElementById('mobileNum').value;
-    if (phone.length < 10) {
-        showToast("Enter a valid 10-digit number");
-        return;
+    if(phone.length === 10) {
+        currentGeneratedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+        alert("Verification Code: " + currentGeneratedOTP);
+        hideAllAuth();
+        document.getElementById('otpVerifyForm').style.display = 'block';
+    } else {
+        showToast("Invalid Phone");
     }
-    // Generate random 4-digit code
-    tempOTP = Math.floor(1000 + Math.random() * 9000).toString();
-    alert("SYSTEM: Your 4-digit OTP is " + tempOTP);
-    
-    hideAllAuthForms();
-    document.getElementById('otpVerifyForm').style.display = 'block';
 }
 
 function verifyOTPAndLogin() {
-    const entered = document.getElementById('otpCode').value;
-    if (entered === tempOTP) {
-        processSuccessfulLogin("MobileUser");
+    if(document.getElementById('otpCode').value === currentGeneratedOTP) {
+        autoDashboardLogin("Farmer_" + Math.floor(Math.random()*100));
     } else {
-        showToast("Invalid code. Please check and try again.");
+        showToast("Wrong OTP");
     }
 }
 
-function processSuccessfulLogin(name) {
-    showToast("Welcome, " + name + "!");
-    const user = { username: name, role: 'user', joined: new Date().toLocaleDateString() };
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    // Premium celebration
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-    
-    setTimeout(() => { userHome(); }, 1000);
+function loginWithGoogle() {
+    showToast("Opening Google Account Selector...");
+    setTimeout(() => {
+        const mail = prompt("Select Account:", "farmer.pro@gmail.com");
+        if(mail) autoDashboardLogin(mail.split('@')[0]);
+    }, 1000);
 }
 
+// The core Auto-Login function
+function autoDashboardLogin(username) {
+    const user = { username: username, role: 'user', loginType: 'Instant' };
+    localStorage.setItem('user', JSON.stringify(user));
+    
+    // Celebration
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    
+    showToast("Logging in as " + username);
+    setTimeout(() => { userHome(); }, 1200);
+}
+function processSuccessfulLogin(name) {
+    // Basic logic: if username contains 'admin', give admin role
+    const role = name.toLowerCase().includes('admin') ? 'admin' : 'user';
+    const user = { username: name, role: role, lastActive: Date.now() };
+    
+    localStorage.setItem('user', JSON.stringify(user));
+    showToast(`Welcome ${name}!`);
+    fireConfetti();
+    
+    setTimeout(() => {
+        if(role === 'admin') adminSummary();
+        else userHome();
+    }, 800);
+}
 function hideAllAuthForms() {
     ['loginForm', 'regForm', 'otpMobileForm', 'otpVerifyForm'].forEach(id => {
         document.getElementById(id).style.display = 'none';
     });
 }
 
-function backToLogin() {
-    hideAllAuthForms();
-    document.getElementById('loginForm').style.display = 'block';
-}
-function hideAllAuthForms() {
-    const ids = ['loginForm', 'choiceForm', 'regForm', 'otpMobileForm', 'otpVerifyForm'];
-    ids.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.style.display = 'none';
-    });
-}
-
-function backToLogin() {
-    hideAllAuthForms();
-    document.getElementById('loginForm').style.display = 'block';
-}
 async function initApp() {
   showLogoLoader();
   const savedUser = JSON.parse(localStorage.getItem('user'));
